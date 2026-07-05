@@ -1,0 +1,87 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { ChevronRight, ArrowLeft, Play, Pause, Sliders, Sparkles } from 'lucide-react';
+
+interface PipelineHeaderProps {
+  jobTitle: string;
+  pipelineActive: boolean;
+  setPipelineActive: (val: boolean) => void;
+  onSimulate: () => void;
+  onOpenSettings: () => void;
+}
+
+export default function PipelineHeader({
+  jobTitle,
+  pipelineActive,
+  setPipelineActive,
+  onSimulate,
+  onOpenSettings,
+}: PipelineHeaderProps) {
+  return (
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+      <div>
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1 text-[10px] text-slate-450 font-bold uppercase tracking-wider mb-1">
+          <Link href="/hr/jobs" className="hover:text-purple-600 transition-colors">
+            Jobs
+          </Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-slate-600 block truncate max-w-[200px]">{jobTitle}</span>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-slate-600">Pipeline</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">{jobTitle}</h1>
+          <span className={`h-2.5 w-2.5 rounded-full ${pipelineActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'} block`} />
+        </div>
+      </div>
+
+      {/* Header controls */}
+      <div className="flex items-center gap-3">
+        {/* Back button */}
+        <Link
+          href="/hr/jobs"
+          className="inline-flex items-center gap-1 bg-white/60 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white px-3.5 py-2 rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer"
+        >
+          <ArrowLeft className="h-4.5 w-4.5" />
+          Jobs List
+        </Link>
+
+        {/* Play/Pause */}
+        <button
+          onClick={() => setPipelineActive(!pipelineActive)}
+          className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold shadow-sm transition-all cursor-pointer border ${
+            pipelineActive
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/80'
+              : 'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100/80'
+          }`}
+        >
+          {pipelineActive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+          {pipelineActive ? 'Pipeline Running' : 'Pipeline Paused'}
+        </button>
+
+        {/* Edit thresholds */}
+        <button
+          onClick={onOpenSettings}
+          className="inline-flex items-center gap-1.5 bg-white/60 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer"
+        >
+          <Sliders className="h-3.5 w-3.5 text-purple-650" />
+          Configure thresholds
+        </button>
+
+        {/* Simulate Agent Action */}
+        <button
+          onClick={onSimulate}
+          disabled={!pipelineActive}
+          className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 text-xs shadow-sm transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Simulate Agent Action
+        </button>
+      </div>
+    </div>
+  );
+}

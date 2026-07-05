@@ -1,0 +1,278 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-plus-jakarta), var(--font-inter), system-ui, sans-serif;
+  
+  --text-xs: 0.875rem;      /* Scaled up to 14px */
+  --text-xs--line-height: 1.375rem;
+  
+  --text-sm: 0.975rem;      /* Scaled up to 15.6px */
+  --text-sm--line-height: 1.475rem;
+  
+  --text-base: 1.1rem;      /* Scaled up to 17.6px */
+  --text-base--line-height: 1.675rem;
+  
+  --text-lg: 1.25rem;       /* Scaled up to 20.0px */
+  --text-lg--line-height: 1.875rem;
+  
+  --text-xl: 1.45rem;       /* Scaled up to 23.2px */
+  --text-xl--line-height: 2.05rem;
+  
+  --text-2xl: 1.8rem;       /* Scaled up to 28.8px */
+  --text-2xl--line-height: 2.375rem;
+  
+  --text-3xl: 2.35rem;      /* Scaled up to 37.6px */
+  --text-3xl--line-height: 2.875rem;
+
+  --text-4xl: 3rem;         /* Scaled up to 48.0px */
+  --text-4xl--line-height: 3.5rem;
+
+  --text-5xl: 3.75rem;      /* Scaled up to 60.0px */
+  --text-5xl--line-height: 4.25rem;
+
+  --text-6xl: 4.75rem;      /* Scaled up to 76.0px */
+  --text-6xl--line-height: 5.25rem;
+}
+
+:root {
+  --background: #eef2f6; /* Premium cool silver background */
+  --foreground: #090d16; /* Darker slate headings for higher contrast */
+  --text-body: #1e293b;  /* Slate 800 body text for high readability */
+  --text-muted: #475569; /* Slate 600 muted text for better contrast */
+  --border-color: rgba(255, 255, 255, 0.7); /* Translucent white border */
+  --primary: #4f46e5;    /* Focused vibrant Indigo */
+  --success: #059669;    /* Focused vibrant Emerald */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-body);
+  font-family: var(--font-plus-jakarta), var(--font-inter), system-ui, sans-serif;
+  overflow-x: hidden;
+  font-size: 1.05rem; /* Increased body font size from 1.025rem */
+  line-height: 1.625;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--foreground) !important;
+  font-weight: 700;
+  letter-spacing: -0.025em; /* Cleaner, modern tight tracking */
+  line-height: 1.25;
+}
+
+/* Premium Light Glassmorphism Panels */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.03),
+    0 1px 3px rgba(0, 0, 0, 0.01),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(16px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(135%) !important;
+}
+
+.glass-panel-hover {
+  transition: all 0.25s ease-in-out !important;
+}
+.glass-panel-hover:hover {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 8px 30px rgba(50, 50, 93, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Premium Light Glassmorphism Cards - Clean style */
+.glass-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(20px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(130%) !important;
+  transition: all 0.25s ease-in-out !important;
+  overflow: hidden;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 8px 30px rgba(99, 102, 241, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Primary Accent Glass Card */
+.glass-card-indigo:hover {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Emerald Accent Glass Card */
+.glass-card-emerald:hover {
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Purple Accent Glass Card */
+.glass-card-purple:hover {
+  border-color: rgba(139, 92, 246, 0.25) !important;
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  border-radius: 10px !important;
+  color: var(--foreground) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  transition: all 0.2s ease !important;
+}
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 1px var(--primary), 0 4px 12px rgba(83, 58, 253, 0.08) !important;
+  outline: none !important;
+}
+
+/* Glassmorphic Global Overrides for Sidebars and Headers */
+header {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(16px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(135%) !important;
+}
+
+aside {
+  background-color: rgba(255, 255, 255, 0.35) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+}
+
+/* Force layouts that use bg-slate-50/50 to be transparent so the blobs show through */
+.bg-slate-50\/50 {
+  background-color: transparent !important;
+}
+
+/* High-grade Glossy style button overrides */
+.bg-indigo-600, .bg-emerald-600, .from-emerald-600 {
+  background-image: none !important;
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 9999px !important;
+  box-shadow: 
+    0 4px 12px rgba(99, 102, 241, 0.2), 
+    0 1px 0 rgba(0, 0, 0, 0.05), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.bg-indigo-600:hover, .bg-emerald-600:hover, .hover\:from-emerald-700:hover {
+  background-color: #4f46e5 !important; /* Slightly darker indigo */
+  box-shadow: 
+    0 4px 12px rgba(99, 102, 241, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Sophisticated Accents */
+.text-indigo-600 {
+  color: var(--primary) !important;
+}
+.text-indigo-650, .text-indigo-655, .text-indigo-700 {
+  color: #4f46e5 !important;
+}
+.text-purple-600 {
+  color: #8b5cf6 !important;
+}
+.text-emerald-600 {
+  color: var(--success) !important;
+}
+.bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: var(--success) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+.bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  color: var(--primary) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+.bg-purple-50 {
+  background-color: rgba(139, 92, 246, 0.08) !important;
+  color: #8b5cf6 !important;
+  border-color: rgba(139, 92, 246, 0.2) !important;
+}
+.text-slate-400 {
+  color: var(--text-muted) !important;
+}
+.text-slate-500 {
+  color: var(--text-body) !important;
+}
+
+/* Intercept and scale up arbitrary sub-pixel text classes used across the codebase */
+.text-\[9px\] {
+  font-size: 0.725rem !important; /* Scale up ~9px to ~11.6px */
+  line-height: 1.15rem !important;
+}
+.text-\[10px\] {
+  font-size: 0.775rem !important; /* Scale up 10px to ~12.4px */
+  line-height: 1.25rem !important;
+}
+.text-\[11px\] {
+  font-size: 0.825rem !important; /* Scale up 11px to ~13.2px */
+  line-height: 1.35rem !important;
+}
+
+/* Elegant ambient floating blobs styling */
+.blob-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+  display: block !important;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.blob-1 {
+  top: -10%;
+  left: -5%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.7) 0%, rgba(139, 92, 246, 0.4) 100%);
+}
+
+.blob-2 {
+  bottom: -15%;
+  right: -5%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.6) 0%, rgba(6, 182, 212, 0.4) 100%);
+}
+
+.blob-3 {
+  top: 35%;
+  left: 25%;
+  width: 35vw;
+  height: 35vw;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.5) 0%, rgba(249, 115, 22, 0.3) 100%);
+}
+

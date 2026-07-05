@@ -1,0 +1,331 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { mockJobs, mockApplications } from '@/lib/mockData';
+import {
+  Briefcase,
+  Users,
+  CheckCircle2,
+  Plus,
+  Sparkles,
+  Layers,
+  ChevronRight,
+  AlertCircle,
+  TrendingUp,
+  Activity,
+  ShieldAlert,
+  Calendar,
+  Clock
+} from 'lucide-react';
+
+export default function HrDashboard() {
+  const activeJobs = mockJobs.filter((j) => j.status === 'active');
+  const totalCandidates = mockApplications.length;
+  const interviewingCandidates = mockApplications.filter((app) => app.status === 'interview_scheduled').length;
+  const decisionsCount = mockApplications.filter((app) => app.status === 'decided').length;
+
+  // Vetting action queue candidates
+  const vettedCandidates = [...mockApplications].map((app) => {
+    const tech = app.scores?.technical || (app.status === 'decided' ? 90 : 75);
+    const comm = app.scores?.communication || (app.status === 'decided' ? 85 : 72);
+    const composite = app.scores?.composite || Math.floor((tech + comm) / 2);
+    const proctorFlagsCount = app.proctorFlags?.length || (app.status === 'sourced' ? 1 : 0);
+
+    return {
+      ...app,
+      tech,
+      comm,
+      composite,
+      proctorFlagsCount,
+    };
+  });
+
+  // Upcoming scheduled vetting assessments
+  const upcomingAssessments = mockApplications
+    .filter((app) => app.confirmedSlot || app.status === 'interview_scheduled')
+    .map((app) => ({
+      id: app.id,
+      candidateName: app.candidateName,
+      jobTitle: app.jobTitle.split('—')[0],
+      slot: app.confirmedSlot || '2026-07-06 02:00 PM',
+    }));
+
+  // Dynamic funnel calculation counts
+  const totalApplied = totalCandidates;
+  const totalVetted = mockApplications.filter((a) => a.status === 'interviewed' || a.status === 'decided').length;
+  const totalHired = mockApplications.filter((a) => a.status === 'decided' && a.decision === 'hire').length;
+
+  // Percentage rates
+  const vettedPct = totalApplied > 0 ? Math.round((totalVetted / totalApplied) * 100) : 0;
+  const hiredPct = totalApplied > 0 ? Math.round((totalHired / totalApplied) * 100) : 0;
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-350">
+
+      {/* Console Top branding */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/45 pb-5">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Recruiter Dashboard</h1>
+          <p className="text-xs text-slate-500 font-semibold mt-1">
+            Check upcoming interviews, review candidate scores, and track hiring rates.
+          </p>
+        </div>
+        <Link
+          href="/hr/jobs/new"
+          className="inline-flex items-center gap-1.5 rounded-2xl bg-indigo-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md hover:bg-indigo-700 transition-all cursor-pointer"
+        >
+          <Plus className="h-4 w-4" />
+          Post a New Job
+        </Link>
+      </div>
+
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="glass-card p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650 shadow-sm">
+            <Briefcase className="h-5 w-5" />
+          </div>
+          <div>
+            <span className="block text-xl font-black text-slate-800 tracking-tight">{activeJobs.length}</span>
+            <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block mt-0.5">Active Jobs</span>
+          </div>
+        </div>
+
+        <div className="glass-card p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650 shadow-sm">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <span className="block text-xl font-black text-slate-800 tracking-tight">{totalCandidates}</span>
+            <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">Total Candidates</span>
+          </div>
+        </div>
+
+        <div className="glass-card p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <span className="block text-xl font-black text-slate-800 tracking-tight">{interviewingCandidates}</span>
+            <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">Scheduled Interviews</span>
+          </div>
+        </div>
+
+        <div className="glass-card p-5 flex items-center gap-4">
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-655 shadow-sm">
+            <CheckCircle2 className="h-5 w-5" />
+          </div>
+          <div>
+            <span className="block text-xl font-black text-slate-800 tracking-tight">{decisionsCount}</span>
+            <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">Hires Made</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Workspace grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        {/* Left Section: Active Postings & Vetting Action Queue */}
+        <div className="lg:col-span-2 space-y-8">
+
+          {/* Active Postings */}
+          <div className="space-y-4">
+            <h2 className="text-base font-extrabold text-slate-855 tracking-tight flex items-center gap-2">
+              <Layers className="h-4.5 w-4.5 text-indigo-555" />
+              Active Jobs
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {activeJobs.slice(0, 2).map((job) => (
+                <div
+                  key={job.id}
+                  className="glass-card p-5 flex flex-col justify-between min-h-[120px]"
+                >
+                  <div>
+                    <h3 className="text-sm font-black text-slate-800 tracking-tight">{job.title}</h3>
+                    <span className="text-[10px] text-slate-400 font-bold block mt-1">{job.location} • {job.salary}</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100/50">
+                    <span className="text-[10px] font-extrabold text-slate-500">{job.applicantsCount} in pipeline</span>
+                    <Link
+                      href={`/hr/jobs/${job.id}/pipeline`}
+                      className="text-[10px] font-extrabold text-indigo-600 bg-white border border-slate-200 hover:bg-slate-50/50 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                    >
+                      View Pipeline
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Unified Vetting Action Grid */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-extrabold text-slate-855 tracking-tight flex items-center gap-2">
+                <Activity className="h-4.5 w-4.5 text-indigo-555" />
+                Candidates to Review
+              </h2>
+              <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full uppercase">
+                Needs Review
+              </span>
+            </div>
+
+            <div className="glass-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left min-w-[600px]">
+                  <thead>
+                    <tr className="border-b border-white/45 bg-white/20 text-slate-455 text-xs font-bold uppercase tracking-wider">
+                      <th className="px-6 py-4.5">Candidate</th>
+                      <th className="px-6 py-4.5">Evaluation Score</th>
+                      <th className="px-6 py-4.5">Skills (Tech / Comm)</th>
+                      <th className="px-6 py-4.5">Warnings</th>
+                      <th className="px-6 py-4.5 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-700">
+                    {vettedCandidates.map((app) => (
+                      <tr key={app.id} className="hover:bg-white/20 transition-colors">
+                        <td className="px-6 py-4">
+                          <span className="block font-black text-slate-850 text-sm">{app.candidateName}</span>
+                          <span className="block text-xs text-slate-400 font-bold mt-0.5">{app.jobTitle.split('—')[0]}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1 text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                            <TrendingUp className="h-3.5 w-3.5" />
+                            {app.composite}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 space-y-1.5">
+                          <div>
+                            <div className="flex justify-between text-[10px] font-bold text-slate-455 mb-0.5">
+                              <span>Technical</span>
+                              <span>{app.tech}%</span>
+                            </div>
+                            <div className="w-24 bg-slate-200/50 rounded-full h-1">
+                              <div className="bg-indigo-500 h-1 rounded-full" style={{ width: `${app.tech}%` }} />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-[10px] font-bold text-slate-455 mb-0.5">
+                              <span>Communication</span>
+                              <span>{app.comm}%</span>
+                            </div>
+                            <div className="w-24 bg-slate-200/50 rounded-full h-1">
+                              <div className="bg-indigo-500 h-1 rounded-full" style={{ width: `${app.comm}%` }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {app.proctorFlagsCount > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-605 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full">
+                              <ShieldAlert className="h-3.5 w-3.5" />
+                              {app.proctorFlagsCount === 1 ? '1 Warning' : `${app.proctorFlagsCount} Warnings`}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                              No Flags
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          <Link
+                            href={`/hr/candidates/${app.id}`}
+                            className="inline-flex items-center gap-0.5 text-sm font-extrabold text-indigo-655 hover:text-indigo-800 transition-colors"
+                          >
+                            Review Profile
+                            <ChevronRight className="h-4.5 w-4.5" />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Section: Scheduled Assessments & Conversion Funnel */}
+        <div className="space-y-6">
+
+          {/* Upcoming Vetting Assessments */}
+          <div className="glass-card p-5 space-y-4">
+            <span className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block border-b border-white/45 pb-2 flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-indigo-555" />
+              Upcoming Interviews
+            </span>
+
+            <div className="space-y-3.5">
+              {upcomingAssessments.map((a) => (
+                <div key={a.id} className="space-y-1 border-b border-slate-100/50 pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex justify-between items-center text-xs font-extrabold text-slate-800">
+                    <span>{a.candidateName}</span>
+                    <span className="text-indigo-650 bg-indigo-50 border border-indigo-100/40 px-2 py-0.5 rounded flex items-center gap-1 font-mono text-[10px]">
+                      <Clock className="h-3 w-3" />
+                      {a.slot.split(' ')[1]} {a.slot.split(' ')[2]}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[9px] font-bold text-slate-455 uppercase tracking-tight">
+                    <span>{a.jobTitle}</span>
+                    <span>{a.slot.split(' ')[0]}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Vetting Conversion Funnel */}
+          <div className="glass-card p-5 space-y-4">
+            <span className="text-xs font-bold text-slate-455 uppercase tracking-wider block border-b border-white/45 pb-2">
+              Hiring Funnel
+            </span>
+
+            <div className="space-y-4 pt-1">
+              <div>
+                <div className="flex justify-between text-xs font-bold text-slate-750 mb-1">
+                  <span>Applied</span>
+                  <span className="font-extrabold text-slate-900">{totalApplied} Candidates</span>
+                </div>
+                <div className="w-full bg-white/45 border border-white/20 rounded-full h-1.5 p-0.5">
+                  <div className="bg-indigo-500 h-0.5 rounded-full" style={{ width: '100%' }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-slate-750 mb-1">
+                  <span>Interviewed</span>
+                  <span className="font-extrabold text-indigo-700">{totalVetted} Candidates ({vettedPct}%)</span>
+                </div>
+                <div className="w-full bg-white/45 border border-white/20 rounded-full h-1.5 p-0.5">
+                  <div className="bg-indigo-500 h-0.5 rounded-full" style={{ width: `${vettedPct}%` }} />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs font-bold text-slate-750 mb-1">
+                  <span>Hired</span>
+                  <span className="font-extrabold text-emerald-700">{totalHired} Hires ({hiredPct}%)</span>
+                </div>
+                <div className="w-full bg-white/45 border border-white/20 rounded-full h-1.5 p-0.5">
+                  <div className="bg-emerald-500 h-0.5 rounded-full" style={{ width: `${hiredPct}%` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recruiter Activity Metrics */}
+          <div className="glass-card p-5 text-[11px] font-semibold text-slate-600">
+            <div className="flex justify-between items-center">
+              <span>Avg Vetting Time</span>
+              <span className="font-extrabold text-slate-850">14 days</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
