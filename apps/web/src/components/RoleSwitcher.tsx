@@ -64,7 +64,7 @@ export default function RoleSwitcher() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {isOpen && (
-        <div className="glass-card mb-3 w-80 max-h-[75vh] overflow-y-auto p-4 shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
+        <div className="bg-white border border-slate-200 mb-3 w-80 max-h-[75vh] overflow-y-auto p-4 rounded-2xl shadow-2xl animate-in slide-in-from-bottom-5 duration-200">
           <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-2">
             <span className="font-bold text-slate-800 text-sm">Quick Jump Menu</span>
             <span className="text-xs text-slate-400">Prototype Navigation</span>
