@@ -3,7 +3,6 @@
 import React from 'react';
 import { Activity, Building2, VideoOff, Mic, MicOff, Video } from 'lucide-react';
 import { getCompanyCultureNotes, getRubricWeights } from '@/lib/mockSetupHelpers';
-import { getCompanyDomain } from '@/utils/logo';
 
 interface CalibrationPanelProps {
   company: string;
@@ -26,7 +25,6 @@ export default function CalibrationPanel({
   onToggleMic,
   onToggleCam,
 }: CalibrationPanelProps) {
-  const domain = getCompanyDomain(company);
   const companyCulture = getCompanyCultureNotes(company);
   const weights = getRubricWeights(role);
 

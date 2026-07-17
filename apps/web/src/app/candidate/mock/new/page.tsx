@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mic, ArrowRight, Sparkles, Building2, Briefcase, Star, Trophy, User, Sliders } from 'lucide-react';
+import { Mic, ArrowRight, Sparkles, Building2, Star, Trophy, User, Sliders } from 'lucide-react';
 import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
 import CalibrationPanel from './components/CalibrationPanel';
 
@@ -24,7 +24,7 @@ function MockInterviewSetupForm() {
 
   useEffect(() => {
     if (!micActive) {
-      setMicLevel(0);
+      setTimeout(() => setMicLevel(0), 0);
       return;
     }
     const interval = setInterval(() => {
@@ -34,10 +34,10 @@ function MockInterviewSetupForm() {
   }, [micActive]);
 
   useEffect(() => {
-    setIsCalibrating(true);
+    if (!isCalibrating) return;
     const t = setTimeout(() => setIsCalibrating(false), 350);
     return () => clearTimeout(t);
-  }, [company]);
+  }, [isCalibrating]);
 
   const handleStart = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +49,9 @@ function MockInterviewSetupForm() {
   };
 
   const difficulties = [
-    { key: 'junior', label: 'Junior', sub: '0 - 2 yrs', icon: User },
-    { key: 'mid', label: 'Mid Level', sub: '2 - 5 yrs', icon: Star },
-    { key: 'senior', label: 'Senior', sub: '5+ yrs', icon: Trophy }
+    { key: 'junior' as const, label: 'Junior', sub: '0 - 2 yrs', icon: User },
+    { key: 'mid' as const, label: 'Mid Level', sub: '2 - 5 yrs', icon: Star },
+    { key: 'senior' as const, label: 'Senior', sub: '5+ yrs', icon: Trophy }
   ];
 
   return (
@@ -77,10 +77,10 @@ function MockInterviewSetupForm() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block">Target Company</label>
-              <input type="text" required value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Google, Stripe..." className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white focus:outline-none focus:border-indigo-500 transition-all font-semibold" />
+              <input type="text" required value={company} onChange={(e) => { setCompany(e.target.value); setIsCalibrating(true); }} placeholder="e.g. Google, Stripe..." className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white focus:outline-none focus:border-indigo-500 transition-all font-semibold" />
               <div className="flex flex-wrap gap-1">
                 {SUGGESTED_COMPANIES.map((c) => (
-                  <button key={c} type="button" onClick={() => setCompany(c)} className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-all cursor-pointer ${company.toLowerCase() === c.toLowerCase() ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-500 border-slate-200'}`}>{c}</button>
+                  <button key={c} type="button" onClick={() => { setCompany(c); setIsCalibrating(true); }} className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-all cursor-pointer ${company.toLowerCase() === c.toLowerCase() ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-500 border-slate-200'}`}>{c}</button>
                 ))}
               </div>
             </div>
@@ -112,7 +112,7 @@ function MockInterviewSetupForm() {
                   const Icon = d.icon;
                   const isSelected = difficulty === d.key;
                   return (
-                    <button key={d.key} type="button" onClick={() => setDifficulty(d.key as any)} className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all cursor-pointer ${isSelected ? 'border-indigo-500 bg-indigo-500/5 text-indigo-850' : 'border-slate-200 bg-white/40 text-slate-600 hover:bg-white'}`}>
+                    <button key={d.key} type="button" onClick={() => setDifficulty(d.key)} className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all cursor-pointer ${isSelected ? 'border-indigo-500 bg-indigo-500/5 text-indigo-850' : 'border-slate-200 bg-white/40 text-slate-600 hover:bg-white'}`}>
                       <Icon className={`h-4.5 w-4.5 mb-1 ${isSelected ? 'text-indigo-650' : 'text-slate-455'}`} />
                       <span className="text-[11px] font-bold block">{d.label}</span>
                       <span className="text-[8px] font-semibold text-slate-400 block mt-0.5">{d.sub}</span>

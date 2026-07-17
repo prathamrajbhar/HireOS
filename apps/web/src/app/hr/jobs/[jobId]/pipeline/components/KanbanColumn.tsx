@@ -10,7 +10,6 @@ interface KanbanColumnProps {
 }
 
 export default function KanbanColumn({
-  id,
   name,
   count,
   children,

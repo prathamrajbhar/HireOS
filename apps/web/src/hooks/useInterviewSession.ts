@@ -18,13 +18,12 @@ interface UseInterviewSessionProps {
   role: string;
   difficulty: string;
   storageKey: string;
-  onComplete: (data: any) => void;
+  onComplete: (data: unknown) => void;
 }
 
 export function useInterviewSession({
   company,
   role,
-  difficulty,
   storageKey,
   onComplete,
 }: UseInterviewSessionProps) {

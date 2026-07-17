@@ -390,6 +390,24 @@ These aren't standalone screens but reusable components referenced across multip
 - **Empty States** — no jobs, no candidates, no mock sessions yet, etc., consistent illustration + CTA pattern
 - **Toast Notifications** — success/error feedback across all forms and actions
 
+### F.1 UI Primitive Library (`src/components/ui/`)
+
+A hand-built primitive layer (Tailwind CSS v4 + custom CSS in `globals.css` — **no external component library**, e.g. no shadcn/ui) implements the shared components above concretely, so every screen composes from the same building blocks instead of re-implementing markup per screen:
+
+- **Button** — variants (`primary`, `secondary`, `outline`, `ghost`, `danger`, `success`), sizes, loading state, left/right icon slots
+- **Input** / **Textarea** — label, left icon slot, error + hint text, matches the existing `.glass-input` styling
+- **Select** — styled wrapper over the native `<select>` (kept native for accessibility/keyboard support)
+- **Card** / **CardHeader** / **CardTitle** / **CardDescription** / **CardFooter** — formalizes the repeated `.glass-panel`/`.glass-card` div pattern, with accent variants (indigo/emerald/purple)
+- **Badge** — implements the "Score Badge"/"Agent Status Pill" concept above, with a `statusToIntent()` helper mapping common status strings (active/rejected/pending/etc.) to a badge color
+- **Modal** — implements the "Consent Modal" concept and replaces per-screen hand-rolled modals; portal-mounted, Escape-to-close, backdrop click, focus-safe
+- **Tabs** / **TabsList** / **TabsTrigger** / **TabsContent** — accessible tab pattern used in Settings, Prep content, etc.
+- **Tooltip** — small hover/focus-triggered tooltip
+- **Skeleton** / **CardSkeleton** / **TableSkeleton** — loading placeholders used instead of blank-flash while (mock) data loads
+- **EmptyState** — implements the "Empty States" concept above with a consistent icon + message + CTA layout
+- **Toast system** (`src/contexts/ToastContext.tsx`) — implements "Toast Notifications" above; `<ToastProvider>` wraps the root layout, `useToast().toast({ title, variant })` triggers a toast from anywhere in the tree
+
+New screens should be built exclusively on these primitives. Existing hand-rolled screens are migrated to them opportunistically when touched for other reasons, not via a dedicated sweep.
+
 ---
 
 ## G. Screen-to-role matrix

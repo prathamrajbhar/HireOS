@@ -11,7 +11,6 @@ import {
   Sparkles,
   Layers,
   ChevronRight,
-  AlertCircle,
   TrendingUp,
   Activity,
   ShieldAlert,

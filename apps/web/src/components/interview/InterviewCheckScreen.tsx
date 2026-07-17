@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Play, Mic, VideoOff } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 interface InterviewCheckScreenProps {
   company: string;

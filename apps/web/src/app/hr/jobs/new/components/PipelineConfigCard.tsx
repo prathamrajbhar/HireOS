@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Settings, HelpCircle, AudioLines, Users } from 'lucide-react';
+import { Settings, HelpCircle, AudioLines } from 'lucide-react';
 
 interface PipelineConfigCardProps {
   minScore: number;

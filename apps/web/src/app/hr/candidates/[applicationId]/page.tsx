@@ -2,27 +2,27 @@
 
 import React, { useState, use, useEffect } from 'react';
 import Link from 'next/link';
-import { mockApplications, mockJobs } from '@/lib/mockData';
-import { ChevronRight, Scale, Volume2, ShieldCheck, Award, MessageSquare, Link2, Globe, Video } from 'lucide-react';
+import { mockApplications, mockJobs, Application } from '@/lib/mockData';
+import { ChevronRight, Scale, Link2, Globe, Video } from 'lucide-react';
 import Image from 'next/image';
 import SkillsScorecard from './components/SkillsScorecard';
 import DecisionControl from './components/DecisionControl';
 
 export default function HrCandidateEvaluationPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const { applicationId } = use(params);
-  const defaultApp = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
-  const [app, setApp] = useState(defaultApp);
+  const [app, setApp] = useState<Application | null>(null);
 
-  const job = mockJobs.find((j) => j.id === app.jobId);
+  const job = app ? mockJobs.find((j) => j.id === app.jobId) : undefined;
   const showApprovalButtons = job ? !job.thresholds.autoOffer : true;
 
   useEffect(() => {
+    const defaultAppObj = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
     const local = localStorage.getItem(`candidateInterview_${applicationId}`);
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        setApp({
-          ...defaultApp,
+        const nextApp = {
+          ...defaultAppObj,
           scores: parsed.rubric ? {
             composite: parsed.score,
             technical: parsed.rubric.technical,
@@ -30,14 +30,21 @@ export default function HrCandidateEvaluationPage({ params }: { params: Promise<
             problemSolving: Math.floor(parsed.score * 0.95),
             experience: Math.floor(parsed.score * 0.92),
             confidence: Math.floor(parsed.score * 0.98),
-          } : defaultApp.scores,
-          reasoning: parsed.feedback || defaultApp.reasoning,
-        });
-      } catch (err) {
-        // Fallback
+          } : defaultAppObj.scores,
+          reasoning: parsed.feedback || defaultAppObj.reasoning,
+        };
+        setTimeout(() => setApp(nextApp), 0);
+      } catch {
+        setTimeout(() => setApp(defaultAppObj), 0);
       }
+    } else {
+      setTimeout(() => setApp(defaultAppObj), 0);
     }
-  }, [applicationId, defaultApp]);
+  }, [applicationId]);
+
+  if (!app) {
+    return <div className="text-center text-xs text-slate-400 p-8">Loading profile...</div>;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">

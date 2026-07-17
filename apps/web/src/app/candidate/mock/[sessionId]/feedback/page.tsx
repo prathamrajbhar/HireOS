@@ -12,26 +12,30 @@ export default function MockFeedbackPage({ params }: { params: Promise<{ session
   const [session, setSession] = useState(defaultSession);
 
   useEffect(() => {
+    const defaultSessionObj = mockSessions.find((s) => s.id === sessionId) || mockSessions[0];
     const localData = localStorage.getItem(`mockSession_${sessionId}`);
     if (localData) {
       try {
         const parsed = JSON.parse(localData);
-        setSession({
+        const nextSession = {
           id: sessionId,
-          targetCompany: defaultSession.targetCompany,
-          targetRole: defaultSession.targetRole,
-          difficulty: defaultSession.difficulty,
+          targetCompany: defaultSessionObj.targetCompany,
+          targetRole: defaultSessionObj.targetRole,
+          difficulty: defaultSessionObj.difficulty,
           rubric: parsed.rubric,
           score: parsed.score,
-          date: defaultSession.date,
+          date: defaultSessionObj.date,
           feedback: parsed.feedback,
           transcript: parsed.transcript,
-        });
-      } catch (err) {
-        // Fallback to default
+        };
+        setTimeout(() => setSession(nextSession), 0);
+      } catch {
+        setTimeout(() => setSession(defaultSessionObj), 0);
       }
+    } else {
+      setTimeout(() => setSession(defaultSessionObj), 0);
     }
-  }, [sessionId, defaultSession]);
+  }, [sessionId]);
 
   const performance = session.score >= 85 
     ? { text: 'Excellent Match', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' }

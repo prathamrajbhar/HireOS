@@ -2,25 +2,25 @@
 
 import React, { useState, use, useEffect } from 'react';
 import Link from 'next/link';
-import { mockApplications } from '@/lib/mockData';
+import { mockApplications, Application } from '@/lib/mockData';
 import { ChevronRight, Play, Pause, Download } from 'lucide-react';
 
 export default function HrInterviewReplayPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const { applicationId } = use(params);
-  const defaultApp = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
-  const [app, setApp] = useState(defaultApp);
+  const [app, setApp] = useState<Application | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const currentTime = '02:40';
   const progress = 30; // percentage
 
   useEffect(() => {
+    const defaultAppObj = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
     const local = localStorage.getItem(`candidateInterview_${applicationId}`);
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        setApp({
-          ...defaultApp,
+        const nextApp = {
+          ...defaultAppObj,
           scores: parsed.rubric ? {
             composite: parsed.score,
             technical: parsed.rubric.technical,
@@ -28,14 +28,21 @@ export default function HrInterviewReplayPage({ params }: { params: Promise<{ ap
             problemSolving: Math.floor(parsed.score * 0.95),
             experience: Math.floor(parsed.score * 0.92),
             confidence: Math.floor(parsed.score * 0.98),
-          } : defaultApp.scores,
+          } : defaultAppObj.scores,
           transcript: parsed.transcript,
-        });
-      } catch (err) {
-        // Fallback
+        };
+        setTimeout(() => setApp(nextApp), 0);
+      } catch {
+        setTimeout(() => setApp(defaultAppObj), 0);
       }
+    } else {
+      setTimeout(() => setApp(defaultAppObj), 0);
     }
-  }, [applicationId, defaultApp]);
+  }, [applicationId]);
+
+  if (!app) {
+    return <div className="text-center text-xs text-slate-400 p-8">Loading replay...</div>;
+  }
 
   const transcript = app.transcript || [
     {
@@ -43,7 +50,7 @@ export default function HrInterviewReplayPage({ params }: { params: Promise<{ ap
       answer: 'React Server Components execute solely on the server. The output is streamed as a JSON-like protocol rather than raw HTML or full JS chunks.',
       score: 90,
       feedback: 'Accurate description of Server Component serialization and dependency isolation.'
-    }
+    },
   ];
 
   return (
@@ -108,7 +115,7 @@ export default function HrInterviewReplayPage({ params }: { params: Promise<{ ap
                   <div className="bg-emerald-50/40 border border-emerald-100/50 p-3 rounded-2xl text-[11px] text-slate-500 font-semibold leading-relaxed w-full">
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-extrabold text-slate-850">Evaluator Score Annotation</span>
-                      <span className="text-emerald-705 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">{(item as any).score || app.scores?.composite || 85}% grade</span>
+                      <span className="text-emerald-705 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">{item.score || app.scores?.composite || 85}% grade</span>
                     </div>
                     {item.feedback}
                   </div>

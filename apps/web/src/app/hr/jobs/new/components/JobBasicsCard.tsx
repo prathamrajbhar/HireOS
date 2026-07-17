@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Briefcase, MapPin, DollarSign, Layers } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 interface JobBasicsProps {
   title: string;

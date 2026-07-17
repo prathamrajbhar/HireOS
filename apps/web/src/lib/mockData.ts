@@ -665,6 +665,24 @@ export const mockPrepContent: PrepContent[] = [
   }
 ];
 
+export interface Notification {
+  id: string;
+  type: 'pipeline' | 'decision' | 'alert' | 'interview' | 'offer';
+  text: string;
+  time: string;
+  link: string;
+  read: boolean;
+}
+
+export const mockNotifications: Notification[] = [
+  { id: 'notif-1', type: 'pipeline', text: 'Screening Agent shortlisted 4 candidates for Senior Frontend Engineer.', time: '2 mins ago', link: '/hr/jobs/job-101/pipeline', read: false },
+  { id: 'notif-2', type: 'decision', text: 'Decision Agent held Vikram Malhotra for review (composite: 74%).', time: '10 mins ago', link: '/hr/candidates/app-502', read: false },
+  { id: 'notif-3', type: 'interview', text: 'Interviewer Agent completed interview replay stream for Ananya Iyer.', time: '1 hour ago', link: '/hr/candidates/app-501/interview', read: false },
+  { id: 'notif-4', type: 'offer', text: 'Offer auto-dispatched to Rohan Deshmukh for Backend Engineer.', time: '3 hours ago', link: '/hr/candidates/app-503', read: true },
+  { id: 'notif-5', type: 'alert', text: 'Bias Audit Agent flagged an anomaly in the Product Designer pipeline.', time: 'Yesterday', link: '/hr/analytics', read: true },
+  { id: 'notif-6', type: 'pipeline', text: 'Sourcing Agent added 12 new candidates to the DevOps Engineer pool.', time: '2 days ago', link: '/hr/talent-pool', read: true },
+];
+
 export const mockAgentLogs = [
   { id: 'log-1', agentName: 'Sourcing Agent', action: 'Scraped candidate profile from candidate pool', target: 'Ananya Iyer', status: 'success', timestamp: '2026-07-02 14:22:10' },
   { id: 'log-2', agentName: 'Screening Agent', action: 'Parsed resume and extracted skills vector', target: 'Ananya Iyer', status: 'success', timestamp: '2026-07-02 14:22:30' },
@@ -690,3 +708,811 @@ export const mockSystemHealth = {
   },
   apiErrorRate: '0.02%'
 };
+
+// ----------------------------------------------------
+// Offer Management & Negotiation
+// ----------------------------------------------------
+
+export interface OfferNegotiationMessage {
+  id: string;
+  author: 'candidate' | 'hr';
+  message: string;
+  timestamp: string;
+  proposedSalary?: string;
+}
+
+export interface Offer {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  candidateAvatar: string;
+  jobId: string;
+  jobTitle: string;
+  orgName: string;
+  status: 'draft' | 'sent' | 'negotiating' | 'accepted' | 'declined' | 'expired';
+  baseSalary: string;
+  bonus: string;
+  equity: string;
+  joiningDate: string;
+  expiryDate: string;
+  benefits: string[];
+  negotiationHistory: OfferNegotiationMessage[];
+  letterUrl: string;
+}
+
+export const mockOffers: Offer[] = [
+  {
+    id: 'offer-1',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    candidateAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+    jobId: 'job-101',
+    jobTitle: 'Senior Frontend Engineer — Consumer Platform',
+    orgName: 'Swiggy',
+    status: 'negotiating',
+    baseSalary: '₹34L',
+    bonus: '₹4L annual performance bonus',
+    equity: '0.02% (4yr vest, 1yr cliff)',
+    joiningDate: '2026-08-15',
+    expiryDate: '2026-07-20',
+    benefits: ['Health insurance for family', 'Meal credits', 'WFH stipend ₹15,000/mo', 'Annual learning budget ₹50,000'],
+    negotiationHistory: [
+      { id: 'neg-1', author: 'hr', message: 'We are excited to extend an offer of ₹34L base + ₹4L bonus for the Senior Frontend Engineer role.', timestamp: '2026-07-05 11:00', proposedSalary: '₹34L' },
+      { id: 'neg-2', author: 'candidate', message: 'Thank you! Based on my current comp and market benchmarks, could we discuss a base closer to ₹38L?', timestamp: '2026-07-06 09:30', proposedSalary: '₹38L' },
+      { id: 'neg-3', author: 'hr', message: 'We can move to ₹36L base with an accelerated compensation review at 6 months.', timestamp: '2026-07-06 15:45', proposedSalary: '₹36L' },
+    ],
+    letterUrl: '/mock-offer-letter.pdf',
+  },
+  {
+    id: 'offer-2',
+    applicationId: 'app-505',
+    candidateName: 'Aarav Sharma',
+    candidateAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    jobId: 'job-102',
+    jobTitle: 'Product Manager — Payments Flow',
+    orgName: 'Razorpay',
+    status: 'accepted',
+    baseSalary: '₹27L',
+    bonus: '₹3L annual',
+    equity: '0.015% (4yr vest)',
+    joiningDate: '2026-08-01',
+    expiryDate: '2026-07-15',
+    benefits: ['Health insurance', 'ESOP buyback program', 'Relocation assistance'],
+    negotiationHistory: [
+      { id: 'neg-4', author: 'hr', message: 'Offer extended: ₹27L base for Product Manager — Payments Flow.', timestamp: '2026-07-01 10:00', proposedSalary: '₹27L' },
+      { id: 'neg-5', author: 'candidate', message: 'This works for me — accepting the offer!', timestamp: '2026-07-02 12:00' },
+    ],
+    letterUrl: '/mock-offer-letter.pdf',
+  },
+  {
+    id: 'offer-3',
+    applicationId: 'app-509',
+    candidateName: 'Devendra Kumar',
+    candidateAvatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150',
+    jobId: 'job-104',
+    jobTitle: 'Lead Data Scientist — AI Assistant',
+    orgName: 'Zoho',
+    status: 'sent',
+    baseSalary: '₹36L',
+    bonus: '₹5L annual',
+    equity: 'N/A (private, non-equity band)',
+    joiningDate: '2026-08-20',
+    expiryDate: '2026-07-25',
+    benefits: ['Health insurance', 'Research conference budget ₹1,00,000', 'Sabbatical after 3 years'],
+    negotiationHistory: [
+      { id: 'neg-6', author: 'hr', message: 'Offer extended for Lead Data Scientist — AI Assistant role. Let us know if you have questions.', timestamp: '2026-07-08 14:00', proposedSalary: '₹36L' },
+    ],
+    letterUrl: '/mock-offer-letter.pdf',
+  },
+];
+
+// ----------------------------------------------------
+// Reference Checks
+// ----------------------------------------------------
+
+export interface ReferenceCheck {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  refereeName: string;
+  refereeTitle: string;
+  refereeRelationship: string;
+  status: 'pending' | 'sent' | 'completed' | 'declined';
+  requestedDate: string;
+  completedDate?: string;
+  ratings?: { category: string; score: number }[];
+  summary?: string;
+  wouldRehire?: boolean;
+}
+
+export const mockReferences: ReferenceCheck[] = [
+  {
+    id: 'ref-1',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    refereeName: 'Karan Mehta',
+    refereeTitle: 'Engineering Manager',
+    refereeRelationship: 'Direct manager at previous company (2 years)',
+    status: 'completed',
+    requestedDate: '2026-07-03',
+    completedDate: '2026-07-05',
+    ratings: [
+      { category: 'Technical ability', score: 92 },
+      { category: 'Communication', score: 88 },
+      { category: 'Reliability', score: 95 },
+      { category: 'Collaboration', score: 90 },
+    ],
+    summary: 'Ananya was one of the strongest frontend engineers on my team. She led our design-system migration and mentored two junior engineers. Her code review standards raised the bar for the whole team.',
+    wouldRehire: true,
+  },
+  {
+    id: 'ref-2',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    refereeName: 'Priyanka Das',
+    refereeTitle: 'Senior Product Manager',
+    refereeRelationship: 'Cross-functional partner (1.5 years)',
+    status: 'completed',
+    requestedDate: '2026-07-03',
+    completedDate: '2026-07-06',
+    ratings: [
+      { category: 'Technical ability', score: 90 },
+      { category: 'Communication', score: 93 },
+      { category: 'Reliability', score: 91 },
+      { category: 'Collaboration', score: 94 },
+    ],
+    summary: 'Ananya translated ambiguous product requirements into clean technical plans faster than anyone else I worked with. Always proactive about flagging risk early.',
+    wouldRehire: true,
+  },
+  {
+    id: 'ref-3',
+    applicationId: 'app-502',
+    candidateName: 'Vikram Malhotra',
+    refereeName: 'Suresh Iyengar',
+    refereeTitle: 'Director of Product',
+    refereeRelationship: 'Skip-level manager (1 year)',
+    status: 'sent',
+    requestedDate: '2026-07-07',
+  },
+  {
+    id: 'ref-4',
+    applicationId: 'app-508',
+    candidateName: 'Sneha Gupta',
+    refereeName: 'Ritu Chawla',
+    refereeTitle: 'VP of Product',
+    refereeRelationship: 'Direct manager (2.5 years)',
+    status: 'pending',
+    requestedDate: '2026-07-09',
+  },
+];
+
+// ----------------------------------------------------
+// Aptitude / Psychometric Assessments
+// ----------------------------------------------------
+
+export interface AssessmentQuestion {
+  id: string;
+  type: 'multiple_choice' | 'numerical' | 'personality_scale';
+  prompt: string;
+  options?: string[];
+  timeLimitSeconds: number;
+}
+
+export interface AssessmentResult {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  assessmentName: string;
+  category: 'aptitude' | 'psychometric';
+  status: 'not_started' | 'in_progress' | 'completed';
+  completedDate?: string;
+  durationMinutes: number;
+  overallScore?: number;
+  percentile?: number;
+  sectionScores?: { section: string; score: number; benchmark: number }[];
+  traits?: { trait: string; score: number; description: string }[];
+}
+
+export const mockAssessmentQuestions: AssessmentQuestion[] = [
+  { id: 'aq-1', type: 'numerical', prompt: 'A delivery fleet completes 240 orders in 6 hours. At the same rate, how many orders complete in 9 hours?', options: ['320', '360', '340', '300'], timeLimitSeconds: 60 },
+  { id: 'aq-2', type: 'multiple_choice', prompt: 'Which data structure gives O(1) average lookup time for key-value pairs?', options: ['Linked List', 'Hash Map', 'Binary Search Tree', 'Array'], timeLimitSeconds: 45 },
+  { id: 'aq-3', type: 'numerical', prompt: 'If a checkout conversion rate improves from 2.5% to 3.0%, what is the relative percentage increase?', options: ['20%', '5%', '50%', '0.5%'], timeLimitSeconds: 60 },
+  { id: 'aq-4', type: 'personality_scale', prompt: 'I prefer to resolve disagreements with teammates directly and immediately rather than escalate.', timeLimitSeconds: 30 },
+  { id: 'aq-5', type: 'personality_scale', prompt: 'I feel energized when working under tight, ambiguous deadlines.', timeLimitSeconds: 30 },
+];
+
+export const mockAssessments: AssessmentResult[] = [
+  {
+    id: 'assess-1',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    assessmentName: 'Frontend Engineering Aptitude Test',
+    category: 'aptitude',
+    status: 'completed',
+    completedDate: '2026-07-03',
+    durationMinutes: 28,
+    overallScore: 91,
+    percentile: 96,
+    sectionScores: [
+      { section: 'Logical Reasoning', score: 94, benchmark: 78 },
+      { section: 'Data Structures', score: 90, benchmark: 75 },
+      { section: 'Numerical Ability', score: 88, benchmark: 72 },
+    ],
+  },
+  {
+    id: 'assess-2',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    assessmentName: 'Workplace Personality Profile',
+    category: 'psychometric',
+    status: 'completed',
+    completedDate: '2026-07-03',
+    durationMinutes: 12,
+    traits: [
+      { trait: 'Conscientiousness', score: 88, description: 'Highly organized, detail-oriented, follows through reliably on commitments.' },
+      { trait: 'Collaboration', score: 82, description: 'Prefers direct, transparent communication and consensus-driven decisions.' },
+      { trait: 'Adaptability', score: 79, description: 'Comfortable with ambiguity but prefers structured checkpoints.' },
+      { trait: 'Resilience under pressure', score: 91, description: 'Maintains composure and output quality during tight deadlines.' },
+    ],
+  },
+  {
+    id: 'assess-3',
+    applicationId: 'app-504',
+    candidateName: 'Priya Patel',
+    assessmentName: 'Frontend Engineering Aptitude Test',
+    category: 'aptitude',
+    status: 'in_progress',
+    durationMinutes: 0,
+  },
+  {
+    id: 'assess-4',
+    applicationId: 'app-507',
+    candidateName: 'Amit Verma',
+    assessmentName: 'Full-Stack Engineering Aptitude Test',
+    category: 'aptitude',
+    status: 'not_started',
+    durationMinutes: 0,
+  },
+];
+
+// ----------------------------------------------------
+// Live Coding / System Design / Panel Interview Rounds
+// ----------------------------------------------------
+
+export interface CodingTestCase {
+  id: string;
+  input: string;
+  expectedOutput: string;
+  passed: boolean;
+}
+
+export interface InterviewRound {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  roundNumber: number;
+  roundType: 'ai_voice_screen' | 'live_coding' | 'system_design' | 'panel' | 'take_home';
+  title: string;
+  status: 'not_started' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  scheduledDate?: string;
+  durationMinutes: number;
+  interviewers?: { name: string; title: string; avatar: string }[];
+  score?: number;
+  feedback?: string;
+  codingProblem?: {
+    title: string;
+    prompt: string;
+    starterCode: string;
+    language: string;
+    testCases: CodingTestCase[];
+    candidateCode: string;
+  };
+  systemDesignPrompt?: string;
+  systemDesignNotes?: string;
+  panelFeedback?: { interviewer: string; rating: number; comment: string }[];
+}
+
+export const mockInterviewRounds: InterviewRound[] = [
+  {
+    id: 'round-1',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    roundNumber: 1,
+    roundType: 'ai_voice_screen',
+    title: 'AI Voice Screening',
+    status: 'completed',
+    scheduledDate: '2026-07-02',
+    durationMinutes: 25,
+    score: 89,
+    feedback: 'Strong technical communication and structured problem decomposition.',
+  },
+  {
+    id: 'round-2',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    roundNumber: 2,
+    roundType: 'live_coding',
+    title: 'Live Coding — Frontend Data Structures',
+    status: 'completed',
+    scheduledDate: '2026-07-06',
+    durationMinutes: 45,
+    score: 94,
+    feedback: 'Clean, idiomatic solution. Identified the O(n log n) approach immediately and reasoned about edge cases without prompting.',
+    codingProblem: {
+      title: 'Virtualized List Window Calculator',
+      prompt: 'Given a list of item heights and a viewport height, write a function that returns the indices of items currently visible in the viewport for a given scroll offset.',
+      language: 'typescript',
+      starterCode: `function getVisibleRange(heights: number[], viewportHeight: number, scrollTop: number): [number, number] {\n  // your code here\n}`,
+      candidateCode: `function getVisibleRange(heights: number[], viewportHeight: number, scrollTop: number): [number, number] {\n  let offset = 0;\n  let start = -1;\n  let end = heights.length - 1;\n  for (let i = 0; i < heights.length; i++) {\n    if (offset + heights[i] > scrollTop && start === -1) start = i;\n    if (offset > scrollTop + viewportHeight) { end = i - 1; break; }\n    offset += heights[i];\n  }\n  return [Math.max(start, 0), end];\n}`,
+      testCases: [
+        { id: 'tc-1', input: '[40,40,40,40,40], viewport=100, scrollTop=0', expectedOutput: '[0, 2]', passed: true },
+        { id: 'tc-2', input: '[40,40,40,40,40], viewport=100, scrollTop=80', expectedOutput: '[2, 4]', passed: true },
+        { id: 'tc-3', input: '[100], viewport=50, scrollTop=0', expectedOutput: '[0, 0]', passed: true },
+      ],
+    },
+  },
+  {
+    id: 'round-3',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    roundNumber: 3,
+    roundType: 'system_design',
+    title: 'System Design — Checkout Rendering Pipeline',
+    status: 'completed',
+    scheduledDate: '2026-07-08',
+    durationMinutes: 50,
+    score: 87,
+    feedback: 'Solid high-level architecture with a reasonable caching strategy; slightly underexplored failure modes for the payment retry queue.',
+    systemDesignPrompt: 'Design a client-side rendering pipeline for a food delivery checkout page that must render in under 200ms on 3G, handle real-time price/coupon updates, and gracefully degrade if the pricing microservice is slow.',
+    systemDesignNotes: 'Candidate proposed: (1) server-rendered shell + streaming SSR for above-the-fold content, (2) optimistic price updates with a reconciliation pass once the pricing service responds, (3) a stale-while-revalidate cache layer keyed by cart hash, (4) skeleton states with a 3s timeout fallback to last-known-good price.',
+  },
+  {
+    id: 'round-4',
+    applicationId: 'app-501',
+    candidateName: 'Ananya Iyer',
+    roundNumber: 4,
+    roundType: 'panel',
+    title: 'Panel Interview — Engineering Leadership',
+    status: 'completed',
+    scheduledDate: '2026-07-10',
+    durationMinutes: 60,
+    interviewers: [
+      { name: 'Karthik Rajan', title: 'Engineering Director', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150' },
+      { name: 'Meera Nambiar', title: 'Staff Engineer', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150' },
+      { name: 'Farhan Sheikh', title: 'Design Lead', avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=150' },
+    ],
+    score: 90,
+    panelFeedback: [
+      { interviewer: 'Karthik Rajan', rating: 92, comment: 'Excellent ownership mindset. Would trust her to lead a cross-team migration unsupervised.' },
+      { interviewer: 'Meera Nambiar', rating: 90, comment: 'Deep technical fluency, gives credit to collaborators generously.' },
+      { interviewer: 'Farhan Sheikh', rating: 88, comment: 'Strong design sensibility for an engineer — asked sharp questions about accessibility tradeoffs.' },
+    ],
+  },
+  {
+    id: 'round-5',
+    applicationId: 'app-503',
+    candidateName: 'Rohan Deshmukh',
+    roundNumber: 1,
+    roundType: 'ai_voice_screen',
+    title: 'AI Voice Screening',
+    status: 'scheduled',
+    scheduledDate: '2026-07-12',
+    durationMinutes: 25,
+  },
+  {
+    id: 'round-6',
+    applicationId: 'app-506',
+    candidateName: 'Aditi Rao',
+    roundNumber: 2,
+    roundType: 'take_home',
+    title: 'Take-Home — Ledger Reconciliation Service',
+    status: 'in_progress',
+    scheduledDate: '2026-07-09',
+    durationMinutes: 0,
+  },
+];
+
+// ----------------------------------------------------
+// Async One-Way Video Screening & Take-Home Projects
+// ----------------------------------------------------
+
+export interface AsyncVideoResponse {
+  questionId: string;
+  question: string;
+  videoUrl: string;
+  durationSeconds: number;
+  attempts: number;
+  aiSummary: string;
+}
+
+export interface AsyncScreening {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  jobTitle: string;
+  status: 'invited' | 'in_progress' | 'submitted' | 'reviewed';
+  invitedDate: string;
+  submittedDate?: string;
+  deadline: string;
+  responses: AsyncVideoResponse[];
+  reviewScore?: number;
+  reviewerNotes?: string;
+}
+
+export const mockAsyncScreenings: AsyncScreening[] = [
+  {
+    id: 'async-1',
+    applicationId: 'app-511',
+    candidateName: 'Neha Sharma',
+    jobTitle: 'Frontend Engineer — Seller Portal',
+    status: 'submitted',
+    invitedDate: '2026-07-04',
+    submittedDate: '2026-07-06',
+    deadline: '2026-07-08',
+    responses: [
+      { questionId: 'vq-1', question: 'Walk us through a time you had to optimize a UI for very low-end devices or slow networks.', videoUrl: '/mock-video-response.mp4', durationSeconds: 118, attempts: 2, aiSummary: 'Candidate described reducing bundle size via route-level code splitting and replacing heavy chart libraries with lightweight SVG components for a tier-3 city seller dashboard.' },
+      { questionId: 'vq-2', question: 'How do you approach accessibility for users who may be first-time smartphone owners?', videoUrl: '/mock-video-response.mp4', durationSeconds: 95, attempts: 1, aiSummary: 'Emphasized large tap targets, iconography paired with text labels, and voice-guided onboarding flows tested with non-technical users.' },
+    ],
+    reviewScore: 84,
+    reviewerNotes: 'Clear communicator, grounded in real low-end-device constraints. Good culture fit for the Seller Portal team.',
+  },
+  {
+    id: 'async-2',
+    applicationId: 'app-512',
+    candidateName: 'Rahul Nair',
+    jobTitle: 'Staff Infrastructure Engineer',
+    status: 'invited',
+    invitedDate: '2026-07-09',
+    deadline: '2026-07-13',
+    responses: [],
+  },
+];
+
+export interface TakeHomeProject {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  title: string;
+  description: string;
+  status: 'assigned' | 'in_progress' | 'submitted' | 'graded';
+  assignedDate: string;
+  dueDate: string;
+  submittedDate?: string;
+  repoUrl?: string;
+  rubric: { criterion: string; weight: number; score?: number }[];
+  overallScore?: number;
+  reviewerNotes?: string;
+}
+
+export const mockTakeHomeProjects: TakeHomeProject[] = [
+  {
+    id: 'takehome-1',
+    applicationId: 'app-506',
+    candidateName: 'Aditi Rao',
+    title: 'Ledger Reconciliation Service',
+    description: 'Build a small service that ingests two transaction ledgers (JSON) and outputs a reconciliation report identifying mismatched, missing, and duplicate entries, with tests.',
+    status: 'in_progress',
+    assignedDate: '2026-07-09',
+    dueDate: '2026-07-14',
+    rubric: [
+      { criterion: 'Correctness of reconciliation logic', weight: 40 },
+      { criterion: 'Test coverage', weight: 25 },
+      { criterion: 'Code clarity & structure', weight: 20 },
+      { criterion: 'Edge case handling', weight: 15 },
+    ],
+  },
+  {
+    id: 'takehome-2',
+    applicationId: 'app-507',
+    candidateName: 'Amit Verma',
+    title: 'Billing Webhook Ingestion Pipeline',
+    description: 'Design and implement an idempotent webhook ingestion endpoint that handles out-of-order and duplicate billing events.',
+    status: 'graded',
+    assignedDate: '2026-06-25',
+    dueDate: '2026-06-30',
+    submittedDate: '2026-06-29',
+    repoUrl: 'https://github.com/amitverma/billing-webhook-pipeline',
+    rubric: [
+      { criterion: 'Correctness of reconciliation logic', weight: 40, score: 34 },
+      { criterion: 'Test coverage', weight: 25, score: 20 },
+      { criterion: 'Code clarity & structure', weight: 20, score: 18 },
+      { criterion: 'Edge case handling', weight: 15, score: 10 },
+    ],
+    overallScore: 82,
+    reviewerNotes: 'Solid idempotency key design using event hash + timestamp bucket. Missed a race condition edge case under concurrent duplicate delivery.',
+  },
+];
+
+// ----------------------------------------------------
+// Talent Pool / Sourcing CRM
+// ----------------------------------------------------
+
+export interface TalentPoolCandidate {
+  id: string;
+  name: string;
+  avatar: string;
+  currentTitle: string;
+  currentCompany: string;
+  location: string;
+  skills: string[];
+  source: 'LinkedIn' | 'Referral' | 'GitHub' | 'Job Board' | 'Conference' | 'Inbound';
+  sourcedDate: string;
+  tags: string[];
+  status: 'new' | 'contacted' | 'responded' | 'in_pipeline' | 'not_interested' | 'silver_medalist';
+  matchScore: number;
+  notes?: string;
+  lastContactDate?: string;
+}
+
+export const mockTalentPool: TalentPoolCandidate[] = [
+  { id: 'tp-1', name: 'Ishaan Kapoor', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150', currentTitle: 'Senior DevOps Engineer', currentCompany: 'Freshworks', location: 'Chennai, TN', skills: ['Kubernetes', 'Terraform', 'AWS', 'Go'], source: 'LinkedIn', sourcedDate: '2026-06-20', tags: ['DevOps Engineer', 'High priority'], status: 'contacted', matchScore: 88, lastContactDate: '2026-06-22' },
+  { id: 'tp-2', name: 'Meghana Reddy', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', currentTitle: 'Staff Software Engineer', currentCompany: 'Uber', location: 'Bengaluru, KA', skills: ['Distributed Systems', 'Go', 'Kafka'], source: 'Referral', sourcedDate: '2026-06-15', tags: ['Backend', 'Referral by Karthik R.'], status: 'in_pipeline', matchScore: 94, notes: 'Referred for Staff Infrastructure Engineer role. Strong system design background.', lastContactDate: '2026-07-01' },
+  { id: 'tp-3', name: 'Yash Oberoi', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', currentTitle: 'Frontend Engineer', currentCompany: 'CRED', location: 'Bengaluru, KA', skills: ['React', 'TypeScript', 'Design Systems'], source: 'GitHub', sourcedDate: '2026-07-01', tags: ['Frontend'], status: 'new', matchScore: 79 },
+  { id: 'tp-4', name: 'Divya Shastri', avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150', currentTitle: 'Data Scientist', currentCompany: 'Myntra', location: 'Bengaluru, KA', skills: ['NLP', 'Python', 'MLOps'], source: 'Conference', sourcedDate: '2026-05-28', tags: ['ML', 'PyData 2026 speaker'], status: 'responded', matchScore: 85, lastContactDate: '2026-06-30' },
+  { id: 'tp-5', name: 'Vikram Malhotra', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', currentTitle: 'Senior Product Manager', currentCompany: 'PhonePe', location: 'Bengaluru, KA', skills: ['Payments', 'Growth', 'A/B Testing'], source: 'Job Board', sourcedDate: '2026-06-10', tags: ['Silver medalist — Razorpay PM req'], status: 'silver_medalist', matchScore: 82, notes: 'Held for review on job-102; strong candidate, keep warm for future PM openings.' },
+  { id: 'tp-6', name: 'Anjali Bhatt', avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=150', currentTitle: 'Engineering Manager', currentCompany: 'Groww', location: 'Bengaluru, KA', skills: ['Leadership', 'Node.js', 'System Design'], source: 'Inbound', sourcedDate: '2026-07-05', tags: ['EM pipeline'], status: 'new', matchScore: 76 },
+];
+
+// ----------------------------------------------------
+// Interview Question Bank
+// ----------------------------------------------------
+
+export interface QuestionBankItem {
+  id: string;
+  question: string;
+  category: 'technical' | 'behavioral' | 'system_design' | 'coding' | 'culture_fit';
+  role: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  tags: string[];
+  usageCount: number;
+  avgScore: number;
+  idealAnswerNotes: string;
+  createdBy: string;
+}
+
+export const mockQuestionBank: QuestionBankItem[] = [
+  { id: 'qb-1', question: 'How would you design a rate limiter for a public API handling 50k requests/sec?', category: 'system_design', role: 'Backend Engineer', difficulty: 'hard', tags: ['scalability', 'distributed systems'], usageCount: 34, avgScore: 74, idealAnswerNotes: 'Look for token bucket / sliding window discussion, distributed counter consistency tradeoffs (Redis vs local), and graceful degradation under overload.', createdBy: 'Karthik Rajan' },
+  { id: 'qb-2', question: 'Tell me about a time you disagreed with a product decision. How did you handle it?', category: 'behavioral', role: 'All roles', difficulty: 'medium', tags: ['communication', 'conflict resolution'], usageCount: 58, avgScore: 81, idealAnswerNotes: 'Strong answers show structured escalation, data-backed reasoning, and a resolution that preserved the relationship.', createdBy: 'Priyanka Das' },
+  { id: 'qb-3', question: 'Reverse a linked list in-place. Then explain the time/space complexity.', category: 'coding', role: 'Software Engineer', difficulty: 'easy', tags: ['data structures', 'fundamentals'], usageCount: 112, avgScore: 88, idealAnswerNotes: 'Expect O(n) time, O(1) space iterative solution with clear pointer-swapping explanation.', createdBy: 'Meera Nambiar' },
+  { id: 'qb-4', question: 'Walk through how you would debug a memory leak in a long-running Node.js service.', category: 'technical', role: 'Backend Engineer', difficulty: 'medium', tags: ['debugging', 'node.js'], usageCount: 41, avgScore: 71, idealAnswerNotes: 'Look for heap snapshot comparison, --inspect usage, and identification of common leak sources (closures, timers, event listeners).', createdBy: 'Karthik Rajan' },
+  { id: 'qb-5', question: 'What does great collaboration with design and product look like to you?', category: 'culture_fit', role: 'Frontend Engineer', difficulty: 'easy', tags: ['collaboration'], usageCount: 67, avgScore: 85, idealAnswerNotes: 'Look for proactive communication, willingness to push back with rationale, and respect for design intent.', createdBy: 'Farhan Sheikh' },
+  { id: 'qb-6', question: 'Design the data model and API for a multi-tenant SaaS billing system with usage-based pricing.', category: 'system_design', role: 'Staff Engineer', difficulty: 'hard', tags: ['billing', 'multi-tenancy'], usageCount: 19, avgScore: 68, idealAnswerNotes: 'Strong answers separate tenant isolation strategy, metering pipeline, and reconciliation against payment provider webhooks.', createdBy: 'Meera Nambiar' },
+];
+
+// ----------------------------------------------------
+// Post-Hire Onboarding Tracker
+// ----------------------------------------------------
+
+export interface OnboardingTask {
+  id: string;
+  title: string;
+  category: 'paperwork' | 'equipment' | 'access' | 'training' | 'social';
+  owner: 'HR' | 'IT' | 'Manager' | 'New Hire';
+  status: 'pending' | 'in_progress' | 'completed';
+  dueDate: string;
+}
+
+export interface OnboardingRecord {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  candidateAvatar: string;
+  jobTitle: string;
+  orgName: string;
+  startDate: string;
+  buddyName: string;
+  managerName: string;
+  progressPercent: number;
+  tasks: OnboardingTask[];
+}
+
+export const mockOnboarding: OnboardingRecord[] = [
+  {
+    id: 'onboard-1',
+    applicationId: 'app-505',
+    candidateName: 'Aarav Sharma',
+    candidateAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    jobTitle: 'Product Manager — Payments Flow',
+    orgName: 'Razorpay',
+    startDate: '2026-08-01',
+    buddyName: 'Sanya Kapoor',
+    managerName: 'Priyanka Das',
+    progressPercent: 62,
+    tasks: [
+      { id: 'ot-1', title: 'Sign employment contract & NDA', category: 'paperwork', owner: 'New Hire', status: 'completed', dueDate: '2026-07-10' },
+      { id: 'ot-2', title: 'Submit ID proof & bank details', category: 'paperwork', owner: 'New Hire', status: 'completed', dueDate: '2026-07-15' },
+      { id: 'ot-3', title: 'Provision laptop & peripherals', category: 'equipment', owner: 'IT', status: 'completed', dueDate: '2026-07-25' },
+      { id: 'ot-4', title: 'Grant Slack, email, and Jira access', category: 'access', owner: 'IT', status: 'in_progress', dueDate: '2026-07-30' },
+      { id: 'ot-5', title: 'Complete compliance & security training', category: 'training', owner: 'New Hire', status: 'pending', dueDate: '2026-08-05' },
+      { id: 'ot-6', title: 'Schedule 1:1 intro meetings with core team', category: 'social', owner: 'Manager', status: 'pending', dueDate: '2026-08-03' },
+      { id: 'ot-7', title: 'Assign onboarding buddy', category: 'social', owner: 'HR', status: 'completed', dueDate: '2026-07-20' },
+    ],
+  },
+  {
+    id: 'onboard-2',
+    applicationId: 'app-509',
+    candidateName: 'Devendra Kumar',
+    candidateAvatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150',
+    jobTitle: 'Lead Data Scientist — AI Assistant',
+    orgName: 'Zoho',
+    startDate: '2026-08-20',
+    buddyName: 'Ramesh Iyer',
+    managerName: 'Lakshmi Venkat',
+    progressPercent: 14,
+    tasks: [
+      { id: 'ot-8', title: 'Sign employment contract & NDA', category: 'paperwork', owner: 'New Hire', status: 'completed', dueDate: '2026-07-28' },
+      { id: 'ot-9', title: 'Submit ID proof & bank details', category: 'paperwork', owner: 'New Hire', status: 'pending', dueDate: '2026-08-01' },
+      { id: 'ot-10', title: 'Provision GPU workstation access', category: 'equipment', owner: 'IT', status: 'pending', dueDate: '2026-08-15' },
+      { id: 'ot-11', title: 'Grant model registry & data warehouse access', category: 'access', owner: 'IT', status: 'pending', dueDate: '2026-08-18' },
+      { id: 'ot-12', title: 'Assign onboarding buddy', category: 'social', owner: 'HR', status: 'pending', dueDate: '2026-08-10' },
+    ],
+  },
+];
+
+// ----------------------------------------------------
+// Public Candidate Portfolio Pages
+// ----------------------------------------------------
+
+export interface PortfolioProject {
+  title: string;
+  description: string;
+  tags: string[];
+  link?: string;
+}
+
+export interface CandidatePortfolio {
+  slug: string;
+  applicationId: string;
+  name: string;
+  avatar: string;
+  headline: string;
+  location: string;
+  bio: string;
+  skills: string[];
+  yearsExperience: number;
+  achievements: string[];
+  projects: PortfolioProject[];
+  verifiedScores: { label: string; score: number }[];
+  socialLinks: { label: string; url: string }[];
+  isPublic: boolean;
+}
+
+export const mockPortfolios: CandidatePortfolio[] = [
+  {
+    slug: 'ananya-iyer',
+    applicationId: 'app-501',
+    name: 'Ananya Iyer',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+    headline: 'Senior Frontend Engineer — Performance & Design Systems',
+    location: 'Bengaluru, KA',
+    bio: 'I build fast, accessible interfaces at scale. Previously led the design-system migration at my last company and specialize in rendering performance for high-traffic consumer apps.',
+    skills: ['React', 'Next.js', 'TypeScript', 'Web Performance Optimization', 'CSS Architecture', 'Webpack/Vite'],
+    yearsExperience: 6,
+    achievements: [
+      'Reduced checkout page CLS by 78% through layout-stability engineering',
+      'Led migration of 40+ component design system to a token-based architecture',
+      'Mentored 3 junior engineers into mid-level roles',
+    ],
+    projects: [
+      { title: 'Virtualized Menu Renderer', description: 'Open-source virtualization library handling 100k+ nested list items with sub-16ms frame times.', tags: ['React', 'Performance'], link: 'https://github.com/ananyaiyer/virtual-menu' },
+      { title: 'Design Token Pipeline', description: 'Automated pipeline syncing Figma tokens to Tailwind config across 6 product surfaces.', tags: ['Design Systems', 'Tooling'] },
+    ],
+    verifiedScores: [
+      { label: 'Technical Assessment (AI-verified)', score: 92 },
+      { label: 'Communication', score: 85 },
+      { label: 'System Design', score: 87 },
+    ],
+    socialLinks: [
+      { label: 'GitHub', url: 'https://github.com/ananyaiyer' },
+      { label: 'LinkedIn', url: 'https://linkedin.com/in/ananyaiyer' },
+    ],
+    isPublic: true,
+  },
+  {
+    slug: 'rohan-deshmukh',
+    applicationId: 'app-503',
+    name: 'Rohan Deshmukh',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    headline: 'Frontend Engineer — Consumer Web',
+    location: 'Bengaluru, KA',
+    bio: 'Frontend engineer focused on building resilient, accessible web experiences for high-growth consumer products.',
+    skills: ['React', 'TypeScript', 'Accessibility', 'Testing'],
+    yearsExperience: 4,
+    achievements: ['Shipped WCAG 2.1 AA compliance across the core checkout funnel'],
+    projects: [
+      { title: 'A11y Audit Toolkit', description: 'Internal CLI that scans component libraries for accessibility regressions in CI.', tags: ['Accessibility', 'CLI'] },
+    ],
+    verifiedScores: [
+      { label: 'Technical Assessment (AI-verified)', score: 80 },
+    ],
+    socialLinks: [
+      { label: 'GitHub', url: 'https://github.com/rohandeshmukh' },
+    ],
+    isPublic: true,
+  },
+];
+
+// ----------------------------------------------------
+// Talent-Similarity / Success-Predictor
+// ----------------------------------------------------
+
+export interface SimilarCandidate {
+  applicationId: string;
+  name: string;
+  avatar: string;
+  similarityScore: number;
+  outcome: 'hired_success' | 'hired_underperformed' | 'rejected' | 'in_progress';
+  sharedTraits: string[];
+  jobTitle: string;
+  orgName: string;
+}
+
+export interface SuccessPrediction {
+  applicationId: string;
+  successProbability: number;
+  confidenceLevel: 'low' | 'medium' | 'high';
+  contributingFactors: { factor: string; impact: 'positive' | 'negative'; weight: number }[];
+  similarCandidates: SimilarCandidate[];
+  retentionForecast12mo: number;
+  performanceForecast: 'top_performer' | 'strong' | 'average' | 'risk';
+}
+
+export const mockSuccessPredictions: SuccessPrediction[] = [
+  {
+    applicationId: 'app-501',
+    successProbability: 91,
+    confidenceLevel: 'high',
+    contributingFactors: [
+      { factor: 'Technical assessment score in top 5% of historical hires for this role', impact: 'positive', weight: 32 },
+      { factor: 'System design reasoning matches pattern of high-retention senior engineers', impact: 'positive', weight: 24 },
+      { factor: 'Consistent scoring across all 4 interview rounds (low variance)', impact: 'positive', weight: 20 },
+      { factor: 'No prior experience in food-delivery domain specifically', impact: 'negative', weight: 8 },
+    ],
+    similarCandidates: [
+      { applicationId: 'sim-hist-1', name: 'Karthik Subramaniam', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150', similarityScore: 94, outcome: 'hired_success', sharedTraits: ['React performance specialization', 'Design system leadership', 'High interview score consistency'], jobTitle: 'Senior Frontend Engineer', orgName: 'Swiggy' },
+      { applicationId: 'sim-hist-2', name: 'Nisha Verghese', avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=150', similarityScore: 89, outcome: 'hired_success', sharedTraits: ['Consumer web scale experience', 'Strong system design scores'], jobTitle: 'Senior Frontend Engineer', orgName: 'Flipkart' },
+      { applicationId: 'sim-hist-3', name: 'Arjun Bose', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150', similarityScore: 81, outcome: 'hired_underperformed', sharedTraits: ['High technical score'], jobTitle: 'Senior Frontend Engineer', orgName: 'Meesho' },
+    ],
+    retentionForecast12mo: 88,
+    performanceForecast: 'top_performer',
+  },
+  {
+    applicationId: 'app-502',
+    successProbability: 64,
+    confidenceLevel: 'medium',
+    contributingFactors: [
+      { factor: 'Strong communication scores across rounds', impact: 'positive', weight: 22 },
+      { factor: 'Composite score sits just below the auto-advance threshold', impact: 'negative', weight: 18 },
+      { factor: 'Limited payments-domain specific examples in responses', impact: 'negative', weight: 14 },
+    ],
+    similarCandidates: [
+      { applicationId: 'sim-hist-4', name: 'Tanvi Ghosh', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', similarityScore: 77, outcome: 'hired_success', sharedTraits: ['PM with strong communication', 'Cross-functional leadership'], jobTitle: 'Product Manager', orgName: 'PhonePe' },
+      { applicationId: 'sim-hist-5', name: 'Rakesh Pillai', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', similarityScore: 70, outcome: 'rejected', sharedTraits: ['Composite score near threshold'], jobTitle: 'Product Manager', orgName: 'CRED' },
+    ],
+    retentionForecast12mo: 71,
+    performanceForecast: 'average',
+  },
+];
+
+// ----------------------------------------------------
+// AI Candidate Highlight Reel
+// ----------------------------------------------------
+
+export interface HighlightClip {
+  id: string;
+  applicationId: string;
+  timestamp: string;
+  durationSeconds: number;
+  label: string;
+  question: string;
+  transcriptSnippet: string;
+  score: number;
+  tag: 'strongest_answer' | 'technical_depth' | 'communication' | 'problem_solving';
+}
+
+export const mockHighlightClips: HighlightClip[] = [
+  { id: 'clip-1', applicationId: 'app-501', timestamp: '03:12', durationSeconds: 42, label: 'Virtualized rendering explanation', question: 'How would you optimize list rendering for a food delivery menu containing thousands of nested items?', transcriptSnippet: 'I would implement windowed list rendering using react-window or custom virtualization...', score: 95, tag: 'technical_depth' },
+  { id: 'clip-2', applicationId: 'app-501', timestamp: '08:47', durationSeconds: 35, label: 'CLS debugging walkthrough', question: 'Describe how you would debug a layout shift (CLS) bottleneck on the Swiggy checkout page.', transcriptSnippet: 'I would use the Chrome DevTools Performance panel or Web Vitals library to isolate the layout shift occurrences...', score: 88, tag: 'problem_solving' },
+  { id: 'clip-3', applicationId: 'app-501', timestamp: '14:02', durationSeconds: 28, label: 'Concise, structured delivery', question: 'How do you prioritize performance work against feature delivery?', transcriptSnippet: 'I frame it as a budget — every feature gets a performance budget at design time, so it is never an afterthought...', score: 91, tag: 'communication' },
+  { id: 'clip-4', applicationId: 'app-501', timestamp: '19:30', durationSeconds: 40, label: 'Strongest answer of the session', question: 'Walk us through the hardest performance bug you have fixed.', transcriptSnippet: 'We had a memory leak from a detached DOM tree caused by a stale event listener closure in our infinite scroll component...', score: 97, tag: 'strongest_answer' },
+];

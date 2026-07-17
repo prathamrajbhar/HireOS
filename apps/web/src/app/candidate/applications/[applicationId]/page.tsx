@@ -2,13 +2,34 @@
 
 import React, { use } from 'react';
 import Link from 'next/link';
-import { mockApplications } from '@/lib/mockData';
-import { ChevronRight, Calendar, Video, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
+import { mockApplications, mockOffers, mockAssessments, mockAsyncScreenings, mockTakeHomeProjects, mockOnboarding } from '@/lib/mockData';
+import { ChevronRight, Calendar, Video, FileText, CheckCircle2, ArrowRight, Gift, ClipboardCheck, Camera, Code, UserPlus } from 'lucide-react';
 
 export default function CandidateApplicationDetailPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const { applicationId } = use(params);
-  
+
   const app = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
+
+  const offer = mockOffers.find((o) => o.applicationId === app.id);
+  const assessments = mockAssessments.filter((a) => a.applicationId === app.id);
+  const asyncScreening = mockAsyncScreenings.find((s) => s.applicationId === app.id);
+  const takeHome = mockTakeHomeProjects.find((t) => t.applicationId === app.id);
+  const onboarding = mockOnboarding.find((o) => o.applicationId === app.id);
+
+  const nextSteps = [
+    offer && { icon: Gift, label: 'Review Your Offer', desc: `${offer.status === 'accepted' ? 'Accepted' : 'Action needed'} — ${offer.baseSalary} base`, href: `/candidate/applications/${app.id}/offer`, tone: 'emerald' as const },
+    assessments.length > 0 && { icon: ClipboardCheck, label: 'Aptitude Assessment', desc: assessments[0].status === 'completed' ? 'Completed — view your results' : 'Continue your timed assessment', href: `/candidate/applications/${app.id}/assessment`, tone: 'indigo' as const },
+    asyncScreening && { icon: Camera, label: 'Video Screening', desc: asyncScreening.status === 'invited' ? 'Record your responses' : 'View your submission', href: `/candidate/applications/${app.id}/video-screening`, tone: 'purple' as const },
+    takeHome && { icon: Code, label: 'Take-Home Project', desc: takeHome.status === 'graded' ? 'Graded — view feedback' : 'Continue your submission', href: `/candidate/applications/${app.id}/take-home`, tone: 'amber' as const },
+    onboarding && { icon: UserPlus, label: 'Onboarding Checklist', desc: `${onboarding.progressPercent}% complete — starts ${onboarding.startDate}`, href: `/candidate/applications/${app.id}/onboarding`, tone: 'emerald' as const },
+  ].filter(Boolean) as { icon: typeof Gift; label: string; desc: string; href: string; tone: 'emerald' | 'indigo' | 'purple' | 'amber' }[];
+
+  const toneClass: Record<string, string> = {
+    emerald: 'border-emerald-100 bg-emerald-50/40 text-emerald-700',
+    indigo: 'border-indigo-100 bg-indigo-50/40 text-indigo-700',
+    purple: 'border-purple-100 bg-purple-50/40 text-purple-700',
+    amber: 'border-amber-100 bg-amber-50/40 text-amber-700',
+  };
 
   const stages = [
     { name: 'Applied', desc: 'Application received and resume queue matching active.', done: true },
@@ -117,6 +138,29 @@ export default function CandidateApplicationDetailPage({ params }: { params: Pro
               </p>
               <div className="bg-white/60 p-3.5 rounded-2xl border border-slate-100 text-[11px] text-slate-600 italic font-semibold">
                 &ldquo;Jane showcased expert layouts design and responsive styling logic. She exceeds qualification requirements.&rdquo;
+              </div>
+            </div>
+          )}
+
+          {/* Next Steps — offer / assessment / video screening / take-home / onboarding */}
+          {nextSteps.length > 0 && (
+            <div className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md glass-panel space-y-3">
+              <h3 className="text-xs font-bold text-slate-800">Next Steps</h3>
+              <div className="space-y-2.5">
+                {nextSteps.map((step) => (
+                  <Link
+                    key={step.href}
+                    href={step.href}
+                    className={`flex items-center gap-3 rounded-2xl border p-3.5 transition-all hover:shadow-sm ${toneClass[step.tone]}`}
+                  >
+                    <step.icon className="h-4.5 w-4.5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-bold block">{step.label}</span>
+                      <span className="text-[10px] font-semibold opacity-80 block mt-0.5">{step.desc}</span>
+                    </div>
+                    <ArrowRight className="h-3.5 w-3.5 flex-shrink-0" />
+                  </Link>
+                ))}
               </div>
             </div>
           )}

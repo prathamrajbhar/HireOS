@@ -4,15 +4,17 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  BarChart3, 
-  Settings, 
-  CircleDot, 
+import {
+  LayoutDashboard,
+  Briefcase,
+  BarChart3,
+  Settings,
+  CircleDot,
   User,
   Activity,
-  LogOut
+  LogOut,
+  Users2,
+  Library
 } from 'lucide-react';
 
 interface HrSidebarProps {
@@ -29,6 +31,8 @@ export default function HrSidebar({ avatar = '/avatar-boy.jpg', name = 'Karan Ma
       items: [
         { name: 'Overview', path: '/hr/dashboard', icon: LayoutDashboard },
         { name: 'Jobs', path: '/hr/jobs', icon: Briefcase },
+        { name: 'Talent Pool', path: '/hr/talent-pool', icon: Users2 },
+        { name: 'Question Bank', path: '/hr/question-bank', icon: Library },
         { name: 'Analytics', path: '/hr/analytics', icon: BarChart3 },
       ],
     },

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, ShieldCheck, ShieldAlert, AlertCircle, Clock } from 'lucide-react';
+import { ChevronRight, ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
 import { Application } from '@/lib/mockData';
 
 interface CandidateCardProps {

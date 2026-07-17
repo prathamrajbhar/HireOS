@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Terminal, ShieldAlert } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 
 interface AgentLogsPanelProps {
   logs: string[];

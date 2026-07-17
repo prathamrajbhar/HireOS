@@ -22,7 +22,7 @@ interface ActiveConsoleProps {
 
 export default function InterviewActiveConsole({
   messages, phase, timeRemaining, micActive, camActive, isAnalyzing, isSimulating, isDarkTheme = false,
-  onSubmitAnswer, onSimulateSpeaking, onEndSession, onToggleMic, onToggleCam,
+  onSimulateSpeaking, onEndSession, onToggleMic, onToggleCam,
 }: ActiveConsoleProps) {
   const [gazeScore, setGazeScore] = useState(94);
 

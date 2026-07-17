@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import RoleSwitcher from "@/components/RoleSwitcher";
+import { ToastProvider } from "@/contexts/ToastContext";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -46,11 +47,13 @@ export default function RootLayout({
           <div className="blob blob-3"></div>
         </div>
 
-        {/* Page Content */}
-        <main className="flex-grow flex flex-col">{children}</main>
+        <ToastProvider>
+          {/* Page Content */}
+          <main className="flex-grow flex flex-col">{children}</main>
 
-        {/* Global Developer/Reviewer Menu */}
-        <RoleSwitcher />
+          {/* Global Developer/Reviewer Menu */}
+          <RoleSwitcher />
+        </ToastProvider>
       </body>
     </html>
   );

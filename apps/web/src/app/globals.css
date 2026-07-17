@@ -231,6 +231,77 @@ aside {
   line-height: 1.35rem !important;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Animation utilities                                                     */
+/*                                                                          */
+/* `animate-in`/`fade-in`/`zoom-in-95`/`duration-*` classes are used across */
+/* ~40 files in this codebase but were never backed by an actual animation */
+/* plugin (e.g. tailwindcss-animate) or custom CSS — they render as        */
+/* no-ops today. Rather than add an extra dependency, define the small set */
+/* of keyframes actually used, plus a few new ones for Phase 1 primitives  */
+/* (toast slide-in, skeleton shimmer, orb pulse for later phases).         */
+/* ---------------------------------------------------------------------- */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoom-in-95 {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+}
+
+.animate-in {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+.fade-in {
+  animation-name: fade-in;
+}
+.zoom-in-95 {
+  animation-name: zoom-in-95;
+}
+.duration-200 {
+  animation-duration: 200ms;
+}
+.duration-300 {
+  animation-duration: 300ms;
+}
+
+/* Standalone utility classes (not requiring the .animate-in base class)
+   for use in new Phase 1+ components. */
+.anim-fade-in {
+  animation: fade-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-zoom-in {
+  animation: zoom-in-95 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-slide-in-right {
+  animation: slide-in-right 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-shimmer {
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+.anim-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
 /* Elegant ambient floating blobs styling */
 .blob-container {
   position: fixed;

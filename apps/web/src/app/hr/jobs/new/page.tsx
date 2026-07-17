@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ArrowLeft, Cpu } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 // Component imports
@@ -103,7 +103,7 @@ export default function HrCreateJob() {
     const oldValue = rubric[key];
     const diff = newValue - oldValue;
 
-    let tempRubric = { ...rubric, [key]: newValue };
+    const tempRubric = { ...rubric, [key]: newValue };
     let remainingDiff = diff;
 
     const eligibleKeys = otherKeys.filter((k) => {

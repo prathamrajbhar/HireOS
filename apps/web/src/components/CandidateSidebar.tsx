@@ -11,6 +11,7 @@ import {
   Mic, 
   Library, 
   User, 
+  Settings,
   CheckCircle2,
   LogOut
 } from 'lucide-react';
@@ -35,14 +36,15 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
     {
       title: 'Prep',
       items: [
-        { name: 'Practice', path: '/candidate/mock/new', icon: Mic },
-        { name: 'Library', path: '/candidate/prep', icon: Library },
+        { name: 'Mock Interview', path: '/candidate/mock/new', icon: Mic },
+        { name: 'Prep Library', path: '/candidate/prep', icon: Library },
       ],
     },
     {
       title: 'Account',
       items: [
         { name: 'Profile', path: '/candidate/profile', icon: User },
+        { name: 'Settings', path: '/candidate/settings', icon: Settings },
       ],
     },
   ];
