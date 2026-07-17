@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { CreditCard, HelpCircle, LogIn, ArrowRight } from 'lucide-react';
 
@@ -9,7 +10,7 @@ export default function PublicNavbar() {
   const pathname = usePathname();
 
   const links = [
-    { name: 'About HireOS', path: '/about', icon: HelpCircle },
+    { name: 'About NextRound', path: '/about', icon: HelpCircle },
     { name: 'Pricing', path: '/pricing', icon: CreditCard },
   ];
 
@@ -20,11 +21,16 @@ export default function PublicNavbar() {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 font-bold text-white shadow-md shadow-indigo-200 transition-all group-hover:scale-105">
-                H
-              </span>
-              <span className="text-xl font-bold bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 bg-clip-text text-transparent">
-                Hire<span className="text-indigo-600">OS</span>
+              <div className="relative h-10 w-10 rounded-full overflow-hidden group-hover:scale-105 transition-all flex-shrink-0 select-none">
+                <Image
+                  src="/logo.png"
+                  alt="NextRound Logo"
+                  fill
+                  className="object-cover scale-[1.3]"
+                />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-slate-900 via-brand-950 to-slate-900 bg-clip-text text-transparent">
+                Next<span className="text-brand-600">Round</span>
               </span>
             </Link>
           </div>

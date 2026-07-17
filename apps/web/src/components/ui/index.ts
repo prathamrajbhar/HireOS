@@ -22,6 +22,9 @@ export type { TabsProps } from './Tabs';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
+export { Autocomplete } from './Autocomplete';
+export type { AutocompleteProps } from './Autocomplete';
+
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
 

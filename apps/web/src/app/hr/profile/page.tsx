@@ -17,6 +17,8 @@ import {
   Trash2,
   Sparkles
 } from 'lucide-react';
+import { Autocomplete } from '@/components/ui';
+import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
 
 export default function HrProfile() {
   const [name, setName] = useState('John Recruiter');
@@ -202,28 +204,24 @@ export default function HrProfile() {
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Job Title</label>
-                <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white focus:outline-none focus:border-purple-500 transition-all focus:ring-2 focus:ring-purple-500/10 font-semibold"
-                  />
-                </div>
+                <Autocomplete
+                  options={SUGGESTED_ROLES}
+                  value={role}
+                  onChange={(val) => setRole(val)}
+                  icon={<Briefcase className="h-4 w-4" />}
+                  className="focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 text-xs font-semibold"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Company Name</label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white focus:outline-none focus:border-purple-500 transition-all focus:ring-2 focus:ring-purple-500/10 font-semibold"
-                  />
-                </div>
+                <Autocomplete
+                  options={SUGGESTED_COMPANIES}
+                  value={company}
+                  onChange={(val) => setCompany(val)}
+                  icon={<Building2 className="h-4 w-4" />}
+                  className="focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 text-xs font-semibold"
+                />
               </div>
 
               <div className="sm:col-span-2 space-y-1.5">

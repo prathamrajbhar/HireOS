@@ -1,4 +1,4 @@
-# HireOS — Features
+# NextRound — Features
 
 Two-sided AI recruitment marketplace. Multiple companies post jobs; one central candidate pool applies across all of them. Full pipeline: 8 core hiring agents plus a candidate-facing prep layer, each stage handing off automatically.
 

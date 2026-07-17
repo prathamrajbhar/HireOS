@@ -4,15 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Compass, 
-  Briefcase, 
-  Mic, 
-  Library, 
-  User, 
+import {
+  LayoutDashboard,
+  Compass,
+  Briefcase,
+  Mic,
+  Library,
+  User,
   Settings,
-  CheckCircle2,
   LogOut
 } from 'lucide-react';
 
@@ -54,11 +53,16 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
       {/* Brand Logo inside Dashboard */}
       <div className="mb-6 px-2">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 via-emerald-450 to-indigo-655 font-bold text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200 select-none">
-            H
-          </span>
+          <div className="relative h-9 w-9 rounded-full overflow-hidden group-hover:scale-105 transition-transform duration-200 flex-shrink-0 select-none">
+            <Image
+              src="/logo.png"
+              alt="NextRound Logo"
+              fill
+              className="object-cover scale-[1.3]"
+            />
+          </div>
           <span className="font-extrabold text-lg tracking-tight text-slate-800">
-            Hire<span className="text-emerald-600 bg-gradient-to-r from-emerald-600 to-indigo-600 bg-clip-text text-transparent">OS</span>
+            Next<span className="text-success-600 bg-gradient-to-r from-success-600 to-brand-600 bg-clip-text text-transparent">Round</span>
           </span>
         </Link>
         <span className="text-[10px] text-emerald-600 font-extrabold tracking-widest uppercase block mt-1 ml-11 select-none">
@@ -76,7 +80,7 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 // Determine isActive. Special handling for /candidate/mock paths.
-                const isActive = pathname === item.path || 
+                const isActive = pathname === item.path ||
                   (item.path !== '/candidate/dashboard' && pathname.startsWith(item.path)) ||
                   (item.path === '/candidate/mock/new' && pathname.startsWith('/candidate/mock'));
                 const Icon = item.icon;
@@ -84,15 +88,13 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
                   <Link
                     key={item.path}
                     href={item.path}
-                    className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-[background-color,color,border-color] border-l-2 duration-200 select-none ${
-                      isActive
-                        ? 'bg-emerald-600/8 text-emerald-700 border-emerald-600 shadow-[sm_inset_0_1px_1px_rgba(255,255,255,0.4)]'
-                        : 'text-slate-500 border-transparent hover:bg-slate-100/40 hover:text-slate-800'
-                    }`}
+                    className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-[background-color,color,border-color] border-l-2 duration-200 select-none ${isActive
+                      ? 'bg-emerald-600/8 text-emerald-700 border-emerald-600 shadow-[sm_inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                      : 'text-slate-500 border-transparent hover:bg-slate-100/40 hover:text-slate-800'
+                      }`}
                   >
-                    <Icon className={`h-4.5 w-4.5 transition-transform duration-200 ease-out group-hover:scale-110 ${
-                      isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-650'
-                    }`} />
+                    <Icon className={`h-4.5 w-4.5 transition-transform duration-200 ease-out group-hover:scale-110 ${isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-650'
+                      }`} />
                     <span className="flex-1">{item.name}</span>
                     {isActive && (
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 opacity-80" />
@@ -107,20 +109,6 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
 
       {/* Footer Section */}
       <div className="mt-auto space-y-4 pt-4 border-t border-slate-100/60">
-        {/* Profile Completeness Nudge */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/40 to-teal-50/20 border border-emerald-100/40 shadow-sm group">
-          <div className="flex items-center gap-1.5 mb-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 select-none">Progress</span>
-          </div>
-          <div className="w-full bg-slate-200/50 rounded-full h-1.5 p-0.5 border border-slate-100/40">
-            <div className="bg-emerald-500 h-0.5 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" style={{ width: '80%' }}></div>
-          </div>
-          <span className="text-[9px] font-bold text-slate-550 block mt-1.5 select-none">
-            80% Complete
-          </span>
-        </div>
-
         {/* User Profile Card */}
         <div className="flex items-center justify-between p-2 rounded-2xl border border-slate-100 bg-white/40 hover:bg-white/60 transition-colors duration-250">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -140,7 +128,7 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
               <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Software Applicant</p>
             </div>
           </div>
-          <button 
+          <button
             className="p-1 rounded-lg text-slate-400 hover:text-rose-605 hover:bg-rose-50/50 transition-colors duration-200 cursor-pointer"
             title="Log Out"
           >

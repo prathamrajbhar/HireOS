@@ -9,7 +9,7 @@ import { Calendar, Clock, ChevronRight, Check } from 'lucide-react';
 export default function CandidateSchedulePage({ params }: { params: Promise<{ applicationId: string }> }) {
   const router = useRouter();
   const { applicationId } = use(params);
-  
+
   const app = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
 
   const slots = app.scheduledSlots || [
@@ -71,11 +71,10 @@ export default function CandidateSchedulePage({ params }: { params: Promise<{ ap
                   <button
                     key={slot}
                     onClick={() => setSelectedSlot(slot)}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                      isSelected
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl border text-left transition-all cursor-pointer ${isSelected
                         ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700 shadow-sm'
                         : 'border-slate-200 bg-white/40 hover:bg-slate-100'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3 font-semibold text-xs text-slate-700">
                       <Clock className="h-4 w-4 text-slate-400" />

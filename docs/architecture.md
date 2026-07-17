@@ -1,8 +1,8 @@
-# HireOS — Architecture
+# NextRound — Architecture
 
 ## 1. System overview
 
-HireOS is split into four independent layers so the AI workload (slow, expensive, long-running) never blocks the user-facing API (fast, request/response). A queue sits between them.
+NextRound is split into four independent layers so the AI workload (slow, expensive, long-running) never blocks the user-facing API (fast, request/response). A queue sits between them.
 
 ```
 ┌─────────────────────────────┐

@@ -1,4 +1,4 @@
-# HireOS — Product Requirements Document
+# NextRound — Product Requirements Document
 
 AI-native recruitment marketplace. Companies post jobs on the platform. Candidates create one profile and apply across any company on the platform. AI agents run the entire hiring pipeline — sourcing, screening, interviewing, evaluating, deciding, offering — with zero human steps required. HR only ever sees the final shortlist and decision.
 
@@ -13,7 +13,7 @@ AI-native recruitment marketplace. Companies post jobs on the platform. Candidat
 
 ## 2. Solution
 
-HireOS is a two-sided marketplace:
+NextRound is a two-sided marketplace:
 
 - **Companies** post jobs, configure thresholds, and receive a pre-vetted shortlist — no manual screening or interviewing needed.
 - **Candidates** create one profile, browse jobs across every company on the platform, apply, and go through a fully automated pipeline: sourcing/screening → AI voice interview → evaluation + bias audit → decision → offer or rejection email.
@@ -52,7 +52,7 @@ Core idea: replace recruiter judgment with structured AI judgment and bias audit
 
 ## 5. Why this is different
 
-| Normal ATS / recruiter workflow | HireOS |
+| Normal ATS / recruiter workflow | NextRound |
 |---|---|
 | Recruiter screens resumes manually | AI agent screens, scores, and explains every result |
 | Human schedules interview calls | Agent auto-books based on platform availability settings, no back-and-forth |

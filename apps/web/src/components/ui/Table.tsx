@@ -43,7 +43,7 @@ export function TableRow({ className, interactive = false, children, ...props }:
     <tr
       className={cn(
         'transition-colors',
-        interactive && 'cursor-pointer hover:bg-indigo-50/50',
+        interactive && 'cursor-pointer hover:bg-brand-50/50',
         className
       )}
       {...props}

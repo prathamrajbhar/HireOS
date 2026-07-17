@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Play } from 'lucide-react';
 
 interface InterviewCheckScreenProps {
@@ -20,8 +21,13 @@ export default function InterviewCheckScreen({
 
   return (
     <div className="glass-card max-w-md p-8 space-y-6 text-center animate-in fade-in duration-300 w-full mx-auto">
-      <div className="h-16 w-16 items-center justify-center rounded-2xl bg-white border border-slate-200/80 p-2 shadow-sm overflow-hidden mx-auto flex flex-shrink-0">
-        <span className="text-xs font-black text-indigo-650 tracking-wider">HireOS</span>
+      <div className="h-16 w-16 relative items-center justify-center rounded-full overflow-hidden mx-auto flex flex-shrink-0 select-none">
+        <Image
+          src="/logo.png"
+          alt="NextRound Logo"
+          fill
+          className="object-cover scale-[1.3]"
+        />
       </div>
       <div>
         <h2 className="text-xl font-black text-slate-900">Hardware & Consent Check</h2>

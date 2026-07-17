@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Mic, ArrowRight, Sparkles, Building2, Star, Trophy, User, Sliders } from 'lucide-react';
 import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
 import CalibrationPanel from './components/CalibrationPanel';
+import { Autocomplete } from '@/components/ui';
 
 function MockInterviewSetupForm() {
   const router = useRouter();
@@ -68,31 +69,35 @@ function MockInterviewSetupForm() {
 
       <form onSubmit={handleStart} className="space-y-6">
         {/* Step 1: Target Profile */}
-        <div className="glass-card p-6 sm:p-8 space-y-6">
+        <div className="glass-card p-6 sm:p-8 space-y-6 !overflow-visible">
           <div>
-            <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2"><Building2 className="h-4.5 w-4.5 text-indigo-550" />1. Job Role</h3>
+            <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2"><Building2 className="h-4.5 w-4.5 text-indigo-555" />1. Job Role</h3>
             <p className="text-[11px] text-slate-450 font-semibold mt-0.5">Select the target company and role for the AI conversational topics.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block">Target Company</label>
-              <input type="text" required value={company} onChange={(e) => { setCompany(e.target.value); setIsCalibrating(true); }} placeholder="e.g. Google, Stripe..." className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white focus:outline-none focus:border-indigo-500 transition-all font-semibold" />
-              <div className="flex flex-wrap gap-1">
-                {SUGGESTED_COMPANIES.map((c) => (
-                  <button key={c} type="button" onClick={() => { setCompany(c); setIsCalibrating(true); }} className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-all cursor-pointer ${company.toLowerCase() === c.toLowerCase() ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-500 border-slate-200'}`}>{c}</button>
-                ))}
-              </div>
+              <Autocomplete
+                required
+                options={SUGGESTED_COMPANIES}
+                value={company}
+                onChange={(val) => { setCompany(val); setIsCalibrating(true); }}
+                placeholder="e.g. Google, Stripe..."
+                className="text-xs font-semibold"
+              />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block">Target Job Title</label>
-              <input type="text" required value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer..." className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white focus:outline-none focus:border-indigo-500 transition-all font-semibold" />
-              <div className="flex flex-wrap gap-1">
-                {SUGGESTED_ROLES.map((r) => (
-                  <button key={r} type="button" onClick={() => setRole(r)} className={`text-[9px] font-bold px-2 py-0.5 rounded border transition-all cursor-pointer ${role.toLowerCase() === r.toLowerCase() ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white/70 text-slate-500 border-slate-200'}`}>{r}</button>
-                ))}
-              </div>
+              <Autocomplete
+                required
+                options={SUGGESTED_ROLES}
+                value={role}
+                onChange={(val) => setRole(val)}
+                placeholder="e.g. Software Engineer..."
+                className="text-xs font-semibold"
+              />
             </div>
           </div>
         </div>

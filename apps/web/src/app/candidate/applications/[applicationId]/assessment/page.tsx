@@ -111,11 +111,10 @@ export default function CandidateAssessmentPage({ params }: { params: Promise<{ 
                       <button
                         key={opt}
                         onClick={() => handleSelectAnswer(currentQ.id, opt)}
-                        className={`w-full text-left p-4 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-                          isSelected
+                        className={`w-full text-left p-4 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${isSelected
                             ? 'border-indigo-505 bg-indigo-50/50 text-indigo-705 shadow-sm'
                             : 'border-slate-200 bg-white/30 hover:bg-white/60'
-                        }`}
+                          }`}
                       >
                         {opt}
                       </button>
@@ -137,11 +136,10 @@ export default function CandidateAssessmentPage({ params }: { params: Promise<{ 
                         <button
                           key={num}
                           onClick={() => handleSelectAnswer(currentQ.id, num)}
-                          className={`h-11 w-11 rounded-full border text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
-                            isSelected
+                          className={`h-11 w-11 rounded-full border text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${isSelected
                               ? 'border-indigo-505 bg-indigo-50/50 text-indigo-705 shadow-sm scale-105'
                               : 'border-slate-200 bg-white/30 hover:bg-white/60'
-                          }`}
+                            }`}
                         >
                           {num}
                         </button>
@@ -189,13 +187,12 @@ export default function CandidateAssessmentPage({ params }: { params: Promise<{ 
                   <button
                     key={q.id}
                     onClick={() => setCurrentIdx(idx)}
-                    className={`h-9 w-9 rounded-xl border text-[11px] font-bold flex items-center justify-center transition-all cursor-pointer ${
-                      active
+                    className={`h-9 w-9 rounded-xl border text-[11px] font-bold flex items-center justify-center transition-all cursor-pointer ${active
                         ? 'border-indigo-600 bg-indigo-600/10 text-indigo-700 scale-105'
                         : answered
-                        ? 'border-indigo-200 bg-indigo-50/40 text-indigo-600'
-                        : 'border-slate-200 bg-white/30 hover:bg-white/60'
-                    }`}
+                          ? 'border-indigo-200 bg-indigo-50/40 text-indigo-600'
+                          : 'border-slate-200 bg-white/30 hover:bg-white/60'
+                      }`}
                   >
                     {idx + 1}
                   </button>
@@ -220,11 +217,10 @@ export default function CandidateAssessmentPage({ params }: { params: Promise<{ 
                 <p className="text-xs text-slate-500 font-semibold">Category: <span className="text-indigo-600 font-bold uppercase">{assessment.category}</span></p>
               </div>
             </div>
-            <span className={`text-[10px] font-bold px-3 py-1 rounded-full border uppercase tracking-wider ${
-              assessment.status === 'completed'
+            <span className={`text-[10px] font-bold px-3 py-1 rounded-full border uppercase tracking-wider ${assessment.status === 'completed'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                 : 'bg-indigo-50 text-indigo-700 border-indigo-100'
-            }`}>
+              }`}>
               {assessment.status.replace('_', ' ')}
             </span>
           </div>

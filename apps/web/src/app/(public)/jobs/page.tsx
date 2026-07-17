@@ -40,7 +40,7 @@ export default function JobsPage() {
         <div className="mb-10 text-center md:text-left">
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Open Opportunities</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Apply to top-tier startups and organizations with a single unified HireOS candidate profile.
+            Apply to top-tier startups and organizations with a single unified NextRound candidate profile.
           </p>
         </div>
 

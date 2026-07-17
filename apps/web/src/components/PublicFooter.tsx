@@ -7,8 +7,8 @@ export default function PublicFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <span className="text-lg font-bold bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 bg-clip-text text-transparent">
-              Hire<span className="text-indigo-600">OS</span>
+            <span className="text-lg font-bold bg-gradient-to-r from-slate-900 via-brand-950 to-slate-900 bg-clip-text text-transparent">
+              Next<span className="text-brand-600">Round</span>
             </span>
             <p className="text-sm text-slate-500 max-w-xs">
               The AI-native recruitment marketplace running zero-human operations to screen, interview, and decide offers.
@@ -53,7 +53,7 @@ export default function PublicFooter() {
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Disclaimer</h4>
             <p className="text-xs text-slate-400">
-              © {new Date().getFullYear()} HireOS Inc. All rights reserved. Built for modern recruiting teams and advanced preparation.
+              © {new Date().getFullYear()} NextRound Inc. All rights reserved. Built for modern recruiting teams and advanced preparation.
             </p>
           </div>
         </div>

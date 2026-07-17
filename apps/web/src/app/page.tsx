@@ -65,7 +65,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-7xl px-6 lg:px-8 mb-24 w-full">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            How HireOS Works
+            How NextRound Works
           </h2>
           <p className="mt-3 text-slate-600 text-sm">
             Select an option to see the automated pipeline in action.

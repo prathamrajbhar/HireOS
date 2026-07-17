@@ -75,7 +75,7 @@ export function TabsTrigger({
       onClick={() => setValue(value)}
       className={cn(
         'px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer',
-        isActive ? 'bg-white text-indigo-650 shadow-sm' : 'text-slate-500 hover:text-slate-800',
+        isActive ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-500 hover:text-slate-800',
         className
       )}
     >

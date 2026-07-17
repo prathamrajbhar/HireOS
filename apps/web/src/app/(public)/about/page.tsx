@@ -18,7 +18,7 @@ export default function AboutPage() {
             Equal Vetting, Instant Decisions
           </h1>
           <p className="mt-4 text-slate-600 text-sm max-w-xl mx-auto leading-relaxed">
-            HireOS replaces slow, biased manual sourcing processes with structured evaluation rubrics and automated, explainable voice interviews.
+            NextRound replaces slow, biased manual sourcing processes with structured evaluation rubrics and automated, explainable voice interviews.
           </p>
         </div>
 

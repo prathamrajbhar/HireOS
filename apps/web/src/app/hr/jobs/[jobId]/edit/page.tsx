@@ -3,7 +3,9 @@
 import React, { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { mockJobs } from '@/lib/mockData';
-import { Sliders, Settings } from 'lucide-react';
+import { Sliders, Settings, Briefcase } from 'lucide-react';
+import { Autocomplete } from '@/components/ui';
+import { SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
 
 export default function HrEditJobPage({ params }: { params: Promise<{ jobId: string }> }) {
   const router = useRouter();
@@ -38,12 +40,13 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
           <div className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md glass-panel space-y-4">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Position Title</label>
-              <input
-                type="text"
+              <Autocomplete
                 required
+                options={SUGGESTED_ROLES}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200/80 bg-white/50 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all glass-input"
+                onChange={(val) => setTitle(val)}
+                icon={<Briefcase className="h-4 w-4" />}
+                className="text-xs font-semibold"
               />
             </div>
             <div>

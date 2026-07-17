@@ -1,4 +1,4 @@
-# HireOS — Screens
+# NextRound — Screens
 
 Full screen inventory for the platform, grouped by surface: Public, Auth, HR Portal, Candidate Portal, and Interview (shared). Each screen lists purpose, route, and the components it needs.
 

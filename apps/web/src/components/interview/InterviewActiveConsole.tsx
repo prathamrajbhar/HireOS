@@ -56,18 +56,16 @@ export default function InterviewActiveConsole({
   };
 
   return (
-    <div className={`w-full max-w-4xl mx-auto flex flex-col gap-6 p-6 rounded-3xl border shadow-xl transition-all ${
-      isDarkTheme ? 'bg-slate-950 border-slate-900 text-white' : 'bg-white border-slate-200/80 text-slate-800'
-    }`}>
+    <div className={`w-full max-w-4xl mx-auto flex flex-col gap-6 p-6 rounded-3xl border shadow-xl transition-all ${isDarkTheme ? 'bg-slate-950 border-slate-900 text-white' : 'bg-white border-slate-200/80 text-slate-800'
+      }`}>
       {/* Top Header - Super Clean Progress */}
       <div className="flex justify-between items-center border-b pb-3 border-slate-100">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Session Stage:</span>
-          <span className={`text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md border ${
-            isDarkTheme 
-              ? 'bg-indigo-950/40 border-indigo-900/50 text-indigo-400' 
+          <span className={`text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-md border ${isDarkTheme
+              ? 'bg-indigo-950/40 border-indigo-900/50 text-indigo-400'
               : 'bg-indigo-50 border-indigo-100/50 text-indigo-700'
-          }`}>
+            }`}>
             {phase}
           </span>
         </div>
@@ -81,7 +79,7 @@ export default function InterviewActiveConsole({
         {camActive ? (
           <div className="w-full h-full flex items-center justify-center text-slate-655 font-bold relative">
             <span className="text-xs tracking-wider opacity-60">Webcam Vetting Stream Active</span>
-            
+
             {/* Minimal overlays - High-end assessment feel */}
             <div className="absolute top-4 left-4 flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 text-[9px] font-bold tracking-wider text-emerald-400 select-none">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
@@ -109,12 +107,11 @@ export default function InterviewActiveConsole({
 
       {/* Simplified, borderless captions below video */}
       <div className="px-4 py-2 min-h-[50px] flex items-center justify-center">
-        <p className={`text-xs md:text-sm font-semibold tracking-wide text-center leading-relaxed max-w-2xl ${
-          isDarkTheme ? 'text-slate-200' : 'text-slate-800'
-        }`}>
-          {isSimulating 
-            ? `Captions: "${lastMsg?.content || ''}"` 
-            : lastMsg 
+        <p className={`text-xs md:text-sm font-semibold tracking-wide text-center leading-relaxed max-w-2xl ${isDarkTheme ? 'text-slate-200' : 'text-slate-800'
+          }`}>
+          {isSimulating
+            ? `Captions: "${lastMsg?.content || ''}"`
+            : lastMsg
               ? `"${lastMsg.content}"`
               : 'Starting dynamic conversation portal...'}
         </p>
@@ -126,7 +123,7 @@ export default function InterviewActiveConsole({
           <button onClick={onToggleMic} className={`p-2.5 rounded-xl border cursor-pointer transition-all ${micActive ? 'bg-white hover:bg-slate-55 text-slate-700 border-slate-200' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>{micActive ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}</button>
           <button onClick={onToggleCam} className={`p-2.5 rounded-xl border cursor-pointer transition-all ${camActive ? 'bg-white hover:bg-slate-55 text-slate-700 border-slate-200' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>{camActive ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}</button>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button onClick={onSimulateSpeaking} disabled={isSimulating || isAnalyzing} className="px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow disabled:opacity-50 cursor-pointer">✦ Simulate Speaking</button>
           <button onClick={onEndSession} className="px-4 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow"><PhoneOff className="h-3.5 w-3.5" />End Session</button>

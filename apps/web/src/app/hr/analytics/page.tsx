@@ -121,16 +121,16 @@ export default function HrAnalyticsDashboard() {
             <div className="relative">
               <svg className="w-full h-auto" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Grids */}
-                <line x1="40" y1="20" x2="460" y2="20" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="55" x2="460" y2="55" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="90" x2="460" y2="90" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="125" x2="460" y2="125" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="160" x2="460" y2="160" stroke="#e2e8f0" strokeWidth="1" />
+                <line x1="40" y1="20" x2="460" y2="20" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="55" x2="460" y2="55" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="90" x2="460" y2="90" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="125" x2="460" y2="125" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="160" x2="460" y2="160" stroke="var(--color-slate-200)" strokeWidth="1" />
 
                 {/* Y Axis Labels */}
-                <text x="15" y="24" fill="#94a3b8" fontSize="8" fontWeight="bold" fontFamily="monospace">100</text>
-                <text x="15" y="94" fill="#94a3b8" fontSize="8" fontWeight="bold" fontFamily="monospace">50</text>
-                <text x="20" y="164" fill="#94a3b8" fontSize="8" fontWeight="bold" fontFamily="monospace">0</text>
+                <text x="15" y="24" fill="var(--color-slate-400)" fontSize="8" fontWeight="bold" fontFamily="monospace">100</text>
+                <text x="15" y="94" fill="var(--color-slate-400)" fontSize="8" fontWeight="bold" fontFamily="monospace">50</text>
+                <text x="20" y="164" fill="var(--color-slate-400)" fontSize="8" fontWeight="bold" fontFamily="monospace">0</text>
 
                 {/* Area Gradient Fill */}
                 <path d={areaPath} fill="url(#purpleAreaGrad)" />
@@ -145,8 +145,8 @@ export default function HrAnalyticsDashboard() {
                       cx={p.x}
                       cy={p.y}
                       r={activeTooltip === idx ? '6' : '4'}
-                      fill={activeTooltip === idx ? '#9333ea' : '#a855f7'}
-                      stroke="#ffffff"
+                      fill={activeTooltip === idx ? 'var(--color-purple-600)' : 'var(--color-purple-500)'}
+                      stroke="var(--color-white)"
                       strokeWidth="2"
                       className="transition-all duration-150"
                     />
@@ -159,7 +159,7 @@ export default function HrAnalyticsDashboard() {
                     key={idx}
                     x={p.x}
                     y="180"
-                    fill={activeTooltip === idx ? '#7c3aed' : '#64748b'}
+                    fill={activeTooltip === idx ? 'var(--color-purple-600)' : 'var(--color-slate-500)'}
                     fontSize="9"
                     fontWeight="bold"
                     textAnchor="middle"
@@ -171,12 +171,12 @@ export default function HrAnalyticsDashboard() {
                 {/* Definitions */}
                 <defs>
                   <linearGradient id="purpleLineGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#a855f7" />
-                    <stop offset="100%" stopColor="#6366f1" />
+                    <stop offset="0%" stopColor="var(--color-purple-500)" />
+                    <stop offset="100%" stopColor="var(--color-brand-500)" />
                   </linearGradient>
                   <linearGradient id="purpleAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(168, 85, 247, 0.15)" />
-                    <stop offset="100%" stopColor="rgba(99, 102, 241, 0.0)" />
+                    <stop offset="0%" stopColor="color-mix(in srgb, var(--color-purple-500) 15%, transparent)" />
+                    <stop offset="100%" stopColor="color-mix(in srgb, var(--color-brand-500) 0%, transparent)" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -274,13 +274,13 @@ export default function HrAnalyticsDashboard() {
               {/* SVG Donut */}
               <div className="relative h-20 w-20 flex-shrink-0">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f1f5f9" strokeWidth="4" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-slate-100)" strokeWidth="4" />
                   {/* segment 1: Frontend (45%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#a855f7" strokeWidth="4" strokeDasharray="45 100" strokeDashoffset="0" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-purple-500)" strokeWidth="4" strokeDasharray="45 100" strokeDashoffset="0" />
                   {/* segment 2: Backend (35%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#6366f1" strokeWidth="4" strokeDasharray="35 100" strokeDashoffset="-45" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-brand-500)" strokeWidth="4" strokeDasharray="35 100" strokeDashoffset="-45" />
                   {/* segment 3: PM (20%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-80" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-success-500)" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-80" />
                 </svg>
               </div>
 

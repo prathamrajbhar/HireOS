@@ -18,20 +18,15 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  // Relies on the global .bg-indigo-600 override in globals.css for the
-  // glossy pill treatment already used across the app.
-  primary:
-    'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200/60 disabled:hover:bg-indigo-600',
-  success:
-    'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-200/60 disabled:hover:bg-emerald-600',
+  primary: 'btn-glossy-brand text-white disabled:hover:bg-brand-600',
+  success: 'btn-glossy-success text-white disabled:hover:bg-success-600',
   secondary:
     'bg-white/70 text-slate-700 border border-slate-200/80 hover:bg-white hover:text-slate-900 shadow-sm glass-input',
   outline:
     'bg-transparent text-slate-700 border border-slate-300/80 hover:bg-slate-50/80 hover:border-slate-400',
   ghost:
     'bg-transparent text-slate-500 hover:bg-slate-100/70 hover:text-slate-800',
-  danger:
-    'bg-rose-600 text-white hover:bg-rose-700 shadow-md shadow-rose-200/60 disabled:hover:bg-rose-600',
+  danger: 'btn-glossy-danger text-white disabled:hover:bg-danger-600',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -65,7 +60,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           'inline-flex items-center justify-center font-semibold cursor-pointer',
           'transition-all duration-200 ease-out',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
           fullWidth && 'w-full',
           variantClasses[variant],
           sizeClasses[size],

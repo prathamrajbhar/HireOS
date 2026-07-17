@@ -7,12 +7,12 @@ export type BadgeIntent = 'neutral' | 'indigo' | 'purple' | 'emerald' | 'amber' 
 
 const intentClasses: Record<BadgeIntent, string> = {
   neutral: 'bg-slate-100/80 text-slate-600 border-slate-200/80',
-  indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+  indigo: 'bg-brand-50 text-brand-600 border-brand-100',
   purple: 'bg-purple-50 text-purple-600 border-purple-100',
-  emerald: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  amber: 'bg-amber-50 text-amber-700 border-amber-100',
-  rose: 'bg-rose-50 text-rose-600 border-rose-100',
-  sky: 'bg-sky-50 text-sky-600 border-sky-100',
+  emerald: 'bg-success-50 text-success-700 border-success-100',
+  amber: 'bg-warning-50 text-warning-700 border-warning-100',
+  rose: 'bg-danger-50 text-danger-600 border-danger-100',
+  sky: 'bg-info-50 text-info-600 border-info-100',
 };
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -46,12 +46,12 @@ export function Badge({
           className={cn(
             'h-1.5 w-1.5 rounded-full',
             intent === 'neutral' && 'bg-slate-400',
-            intent === 'indigo' && 'bg-indigo-500',
+            intent === 'indigo' && 'bg-brand-500',
             intent === 'purple' && 'bg-purple-500',
-            intent === 'emerald' && 'bg-emerald-500',
-            intent === 'amber' && 'bg-amber-500',
-            intent === 'rose' && 'bg-rose-500',
-            intent === 'sky' && 'bg-sky-500'
+            intent === 'emerald' && 'bg-success-500',
+            intent === 'amber' && 'bg-warning-500',
+            intent === 'rose' && 'bg-danger-500',
+            intent === 'sky' && 'bg-info-500'
           )}
         />
       )}

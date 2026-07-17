@@ -18,7 +18,7 @@ export default function CandidateTakeHomeProjectPage({ params }: { params: Promi
   const [copied, setCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const gitCommand = `git clone https://github.com/hireos-challenges/${project.id}.git`;
+  const gitCommand = `git clone https://github.com/nextround-challenges/${project.id}.git`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(gitCommand);

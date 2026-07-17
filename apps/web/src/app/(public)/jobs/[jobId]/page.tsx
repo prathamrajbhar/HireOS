@@ -130,7 +130,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
             <div className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md glass-panel">
               <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">The Company</h3>
               <p className="mt-3 text-xs text-slate-500 leading-relaxed font-semibold">
-                {job.orgName} is an industry-leading organization cooperating with HireOS to run zero-bias AI vetting.
+                {job.orgName} is an industry-leading organization cooperating with NextRound to run zero-bias AI vetting.
               </p>
               <Link
                 href="/about"

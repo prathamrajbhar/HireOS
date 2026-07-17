@@ -1,4 +1,4 @@
-# HireOS — API Reference
+# NextRound — API Reference
 
 REST API served by `apps/api` (Express.js). All endpoints are prefixed with `/api/v1`. All authenticated endpoints require `Authorization: Bearer <jwt>` (sent automatically via httpOnly cookie from the frontend). Org-scoped endpoints derive `org_id` from the JWT, never from the request body/params.
 

@@ -81,7 +81,7 @@ export default function HrJobPipeline({ params }: { params: Promise<{ jobId: str
       const candidateScore = chosen.scores?.composite || 78;
       const isShortlisted = candidateScore >= minScore;
       const action = isShortlisted
-        ? autoOffer 
+        ? autoOffer
           ? 'Dispatching automated offer contracts.'
           : 'Added to hiring shortlist for review.'
         : 'Archived application (below shortlist threshold).';

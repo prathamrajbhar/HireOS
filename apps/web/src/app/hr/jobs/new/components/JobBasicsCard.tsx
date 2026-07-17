@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { Briefcase } from 'lucide-react';
+import { Autocomplete } from '@/components/ui';
+import { SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
 
 interface JobBasicsProps {
   title: string;
@@ -43,13 +45,14 @@ export default function JobBasicsCard({
         {/* Title */}
         <div className="md:col-span-2">
           <label className="text-xs font-bold text-slate-500 block mb-1">Position Title</label>
-          <input
-            type="text"
+          <Autocomplete
             required
+            options={SUGGESTED_ROLES}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(val) => setTitle(val)}
             placeholder="e.g. Senior Fullstack Engineer (React & Go)"
-            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200/80 bg-white/50 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all glass-input"
+            icon={<Briefcase className="h-4 w-4" />}
+            className="text-xs font-semibold"
           />
         </div>
 
