@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { saveStoredJob } from '@/lib/mockData';
 
 // Component imports
 import JobBasicsCard from './components/JobBasicsCard';
@@ -47,6 +48,18 @@ export default function HrCreateJob() {
   const [qCount, setQCount] = useState(5);
   const [enableSourcing, setEnableSourcing] = useState(true);
   const [voiceProfile, setVoiceProfile] = useState('Serena (Warm/Professional)');
+
+  const [stages, setStages] = useState<('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[]>([
+    'screening',
+    'assessment',
+    'voice_screen',
+    'decision',
+  ]);
+  const [assessmentConfig, setAssessmentConfig] = useState({
+    mcqCount: 5,
+    codingProblemId: 'virtualized-list',
+    passingScore: 80,
+  });
 
   const handleAiAssist = () => {
     if (!jd) return;
@@ -146,6 +159,35 @@ export default function HrCreateJob() {
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isRubricBalanced) return;
+
+    const newJob = {
+      id: `job-${Date.now()}`,
+      orgId: 'org-custom',
+      orgName: 'My Company',
+      orgLogo: 'https://logo.clearbit.com/github.com',
+      title,
+      description: jd || 'No description provided.',
+      rubric: {
+        technical: rubric.technical,
+        communication: rubric.communication,
+        problemSolving: rubric.problemSolving,
+        experience: rubric.experience,
+      },
+      thresholds: {
+        minScore,
+        autoOffer,
+      },
+      status: 'active' as const,
+      location: locationType === 'Remote' ? 'Remote' : 'Bengaluru, KA (On-site)',
+      salary: `₹${(minSalary / 100000).toFixed(1)}L - ₹${(maxSalary / 100000).toFixed(1)}L`,
+      experienceLevel,
+      postedDate: new Date().toISOString().slice(0, 10),
+      applicantsCount: 0,
+      stages,
+      assessmentConfig,
+    };
+
+    saveStoredJob(newJob);
     router.push('/hr/jobs');
   };
 
@@ -256,6 +298,10 @@ export default function HrCreateJob() {
             setEnableSourcing={setEnableSourcing}
             voiceProfile={voiceProfile}
             setVoiceProfile={setVoiceProfile}
+            stages={stages}
+            setStages={setStages}
+            assessmentConfig={assessmentConfig}
+            setAssessmentConfig={setAssessmentConfig}
           />
         </div>
       </form>

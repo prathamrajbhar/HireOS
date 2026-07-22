@@ -24,8 +24,6 @@ export default function RoleSwitcher() {
     { name: 'Mock Interview (Session)', path: '/candidate/mock/mock-session-123' },
     { name: 'Mock Interview (Feedback)', path: '/candidate/mock/mock-session-123/feedback' },
     { name: 'Mock History', path: '/candidate/mock/history' },
-    { name: 'Prep Library', path: '/candidate/prep' },
-    { name: 'Company Prep Detail', path: '/candidate/prep/google/software-engineer' },
   ];
 
   const hrPages = [

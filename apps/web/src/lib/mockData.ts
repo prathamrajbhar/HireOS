@@ -21,6 +21,12 @@ export interface Job {
   experienceLevel: string;
   postedDate: string;
   applicantsCount: number;
+  stages?: ('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[];
+  assessmentConfig?: {
+    mcqCount: number;
+    codingProblemId: string;
+    passingScore: number;
+  };
 }
 
 export interface Application {
@@ -32,7 +38,7 @@ export interface Application {
   jobTitle: string;
   orgName: string;
   status: 'sourced' | 'screening' | 'interview_scheduled' | 'interviewed' | 'decided';
-  stage: 'Sourced' | 'Screened' | 'Interview' | 'Decision';
+  stage: 'Sourced' | 'Screened' | 'Assessment' | 'Interview' | 'Panel' | 'Decision';
   appliedDate: string;
   resumeUrl: string;
   skills: string[];
@@ -890,6 +896,109 @@ export const mockReferences: ReferenceCheck[] = [
 // Aptitude / Psychometric Assessments
 // ----------------------------------------------------
 
+// ----------------------------------------------------
+// Coding Vetting Problems
+// ----------------------------------------------------
+
+export interface CodingProblem {
+  id: string;
+  title: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  category: string;
+  description: string;
+  constraints: string[];
+  starterCode: {
+    javascript: string;
+    typescript: string;
+    python: string;
+    java: string;
+    cpp: string;
+  };
+  testCases: {
+    id: string;
+    input: string;
+    expectedOutput: string;
+    description: string;
+  }[];
+}
+
+export const mockCodingProblems: CodingProblem[] = [
+  {
+    id: 'virtualized-list',
+    title: 'Virtualized List Window Calculator',
+    difficulty: 'Medium',
+    category: 'DOM/Frontend Systems',
+    description: 'You are building a virtualized list library to render high-throughput item feeds in a viewport without layout shifts.\n\nGiven an array of integer `heights` representing the height in pixels of items in sequence, a viewport height `viewportHeight`, and the current vertical scroll position `scrollTop`, return a tuple/array `[startIndex, endIndex]` representing the indices of the items that must be active in the DOM.\n\nAn item is active if any part of it is within the scroll window `[scrollTop, scrollTop + viewportHeight]`. Assume the list starts at offset 0.',
+    constraints: [
+      '1 <= heights.length <= 10^5',
+      '10 <= heights[i] <= 1000',
+      '100 <= viewportHeight <= 2000',
+      '0 <= scrollTop <= sum(heights)'
+    ],
+    starterCode: {
+      javascript: `function getVisibleRange(heights, viewportHeight, scrollTop) {\n  // Implement visual virtual range bounds\n  return [0, 0];\n}`,
+      typescript: `function getVisibleRange(heights: number[], viewportHeight: number, scrollTop: number): [number, number] {\n  // Implement visual virtual range bounds\n  return [0, 0];\n}`,
+      python: `def get_visible_range(heights: list[int], viewport_height: int, scroll_top: int) -> list[int]:\n    # Implement visual virtual range bounds\n    return [0, 0]`,
+      java: `class Solution {\n    public int[] getVisibleRange(int[] heights, int viewportHeight, int scrollTop) {\n        // Implement visual virtual range bounds\n        return new int[]{0, 0};\n    }\n}`,
+      cpp: `class Solution {\npublic:\n    vector<int> getVisibleRange(vector<int>& heights, int viewportHeight, int scrollTop) {\n        // Implement visual virtual range bounds\n        return {0, 0};\n    }\n};`
+    },
+    testCases: [
+      { id: 'tc-1', input: 'heights = [50, 50, 50, 50], viewportHeight = 100, scrollTop = 0', expectedOutput: '[0, 1]', description: 'Top of page load showing exactly first two elements' },
+      { id: 'tc-2', input: 'heights = [40, 60, 50, 80, 50], viewportHeight = 120, scrollTop = 90', expectedOutput: '[1, 3]', description: 'Scrolled down past first element, displaying middle overlapping elements' },
+      { id: 'tc-3', input: 'heights = [100, 200, 300], viewportHeight = 50, scrollTop = 350', expectedOutput: '[2, 2]', description: 'Small viewport centered inside final element height' }
+    ]
+  },
+  {
+    id: 'two-sum',
+    title: 'Two Sum Vetting',
+    difficulty: 'Easy',
+    category: 'Algorithms/Arrays',
+    description: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.',
+    constraints: [
+      '2 <= nums.length <= 10^4',
+      '-10^9 <= nums[i] <= 10^9',
+      '-10^9 <= target <= 10^9',
+      'Only one valid answer exists.'
+    ],
+    starterCode: {
+      javascript: `function twoSum(nums, target) {\n  // Write code\n  return [];\n}`,
+      typescript: `function twoSum(nums: number[], target: number): number[] {\n  // Write code\n  return [];\n}`,
+      python: `def two_sum(nums: list[int], target: int) -> list[int]:\n    # Write code\n    return []`,
+      java: `class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Write code\n        return new int[]{};\n    }\n}`,
+      cpp: `class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Write code\n        return {};\n    }\n};`
+    },
+    testCases: [
+      { id: 'tc-1', input: 'nums = [2, 7, 11, 15], target = 9', expectedOutput: '[0, 1]', description: 'First two elements sum up directly' },
+      { id: 'tc-2', input: 'nums = [3, 2, 4], target = 6', expectedOutput: '[1, 2]', description: 'Later elements sum up with offset' },
+      { id: 'tc-3', input: 'nums = [3, 3], target = 6', expectedOutput: '[0, 1]', description: 'Matching duplicate elements' }
+    ]
+  },
+  {
+    id: 'debounce-vetting',
+    title: 'Debounce Callback Wrapper',
+    difficulty: 'Medium',
+    category: 'Frontend Systems',
+    description: 'Given a function `fn` and a time in milliseconds `t`, return a debounced version of that function.\n\nA debounced function is a function whose execution is delayed by `t` milliseconds and whose execution is cancelled if it is called again within that window of time. The debounced function should also receive the passed parameters.\n\nFor example, if `t = 50ms`, and the function was called at `10ms`, `20ms`, and `35ms`, the actual call should be delayed to `85ms`.',
+    constraints: [
+      '0 <= t <= 1000',
+      'fn is a valid function',
+      'Arguments are passed correctly'
+    ],
+    starterCode: {
+      javascript: `function debounce(fn, t) {\n  return function(...args) {\n    // Implement debounce wrapper\n  };\n}`,
+      typescript: `function debounce<T extends (...args: any[]) => any>(fn: T, t: number) {\n  return function(...args: Parameters<T>) {\n    // Implement debounce wrapper\n  };\n}`,
+      python: `import time\ndef debounce(fn, t_ms):\n    # Return a debounced closure function\n    pass`,
+      java: `public class Debouncer {\n    // Implement debounce/throttle wrapper abstraction\n}`,
+      cpp: `class Debouncer {\n    // Implement debounce wrapper\n};`
+    },
+    testCases: [
+      { id: 'tc-1', input: 'fn = log, t = 50ms, calls = [10ms, 20ms]', expectedOutput: 'Single execution at 70ms', description: 'Double execution squashed into single trigger' },
+      { id: 'tc-2', input: 'fn = log, t = 100ms, calls = [10ms, 120ms]', expectedOutput: 'Executes twice at 110ms and 220ms', description: 'Calls outside of debounce window executed separately' },
+      { id: 'tc-3', input: 'fn = log, t = 200ms, calls = [10ms, 50ms, 90ms]', expectedOutput: 'Executes once at 290ms', description: 'Multiple fast clicks debounced to final keyup' }
+    ]
+  }
+];
+
 export interface AssessmentQuestion {
   id: string;
   type: 'multiple_choice' | 'numerical' | 'personality_scale';
@@ -1516,3 +1625,63 @@ export const mockHighlightClips: HighlightClip[] = [
   { id: 'clip-3', applicationId: 'app-501', timestamp: '14:02', durationSeconds: 28, label: 'Concise, structured delivery', question: 'How do you prioritize performance work against feature delivery?', transcriptSnippet: 'I frame it as a budget — every feature gets a performance budget at design time, so it is never an afterthought...', score: 91, tag: 'communication' },
   { id: 'clip-4', applicationId: 'app-501', timestamp: '19:30', durationSeconds: 40, label: 'Strongest answer of the session', question: 'Walk us through the hardest performance bug you have fixed.', transcriptSnippet: 'We had a memory leak from a detached DOM tree caused by a stale event listener closure in our infinite scroll component...', score: 97, tag: 'strongest_answer' },
 ];
+
+export function getStoredJobs(): Job[] {
+  if (typeof window === 'undefined') {
+    return mockJobs.map(job => {
+      const j = { ...job };
+      if (!j.stages) {
+        j.stages = ['screening', 'assessment', 'voice_screen', 'decision'];
+      }
+      if (!j.assessmentConfig) {
+        j.assessmentConfig = {
+          mcqCount: 5,
+          codingProblemId: 'virtualized-list',
+          passingScore: 80
+        };
+      }
+      return j;
+    });
+  }
+  
+  const custom = localStorage.getItem('custom_jobs');
+  const customList: Job[] = custom ? JSON.parse(custom) : [];
+  
+  const merged = [...mockJobs];
+  customList.forEach(cj => {
+    const idx = merged.findIndex(mj => mj.id === cj.id);
+    if (idx !== -1) {
+      merged[idx] = cj;
+    } else {
+      merged.push(cj);
+    }
+  });
+  
+  return merged.map(job => {
+    const j = { ...job };
+    if (!j.stages) {
+      j.stages = ['screening', 'assessment', 'voice_screen', 'decision'];
+    }
+    if (!j.assessmentConfig) {
+      j.assessmentConfig = {
+        mcqCount: 5,
+        codingProblemId: 'virtualized-list',
+        passingScore: 80
+      };
+    }
+    return j;
+  });
+}
+
+export function saveStoredJob(job: Job) {
+  if (typeof window === 'undefined') return;
+  const custom = localStorage.getItem('custom_jobs');
+  const customList: Job[] = custom ? JSON.parse(custom) : [];
+  const idx = customList.findIndex(cj => cj.id === job.id);
+  if (idx !== -1) {
+    customList[idx] = job;
+  } else {
+    customList.push(job);
+  }
+  localStorage.setItem('custom_jobs', JSON.stringify(customList));
+}

@@ -2,48 +2,79 @@
 
 import React, { useState, use, useEffect } from 'react';
 import Link from 'next/link';
-import { mockApplications, mockJobs, Application } from '@/lib/mockData';
-import { ChevronRight, Scale, Link2, Globe, Video } from 'lucide-react';
+import { mockApplications, mockJobs, Application, getStoredJobs } from '@/lib/mockData';
+import { ChevronRight, Scale, Link2, Globe, Video, Code, ClipboardCheck, CheckCircle2, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import SkillsScorecard from './components/SkillsScorecard';
 import DecisionControl from './components/DecisionControl';
 
 export default function HrCandidateEvaluationPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const { applicationId } = use(params);
-  const [app, setApp] = useState<Application | null>(null);
+  const [app, setApp] = useState<any>(null);
+  const [assessmentData, setAssessmentData] = useState<any>(null);
+  const [viewCodeOpen, setViewCodeOpen] = useState(true);
 
-  const job = app ? mockJobs.find((j) => j.id === app.jobId) : undefined;
+  const jobsList = getStoredJobs();
+  const job = app ? jobsList.find((j) => j.id === app.jobId) : undefined;
   const showApprovalButtons = job ? !job.thresholds.autoOffer : true;
 
   useEffect(() => {
     const defaultAppObj = mockApplications.find((a) => a.id === applicationId) || mockApplications[0];
-    const local = localStorage.getItem(`candidateInterview_${applicationId}`);
-    if (local) {
+    
+    // Check for AI Voice interview logs
+    let voiceInterviewData: any = null;
+    const localVoice = localStorage.getItem(`candidateInterview_${applicationId}`);
+    if (localVoice) {
       try {
-        const parsed = JSON.parse(local);
-        const nextApp = {
-          ...defaultAppObj,
-          scores: parsed.rubric ? {
-            composite: parsed.score,
-            technical: parsed.rubric.technical,
-            communication: parsed.rubric.communication,
-            problemSolving: Math.floor(parsed.score * 0.95),
-            experience: Math.floor(parsed.score * 0.92),
-            confidence: Math.floor(parsed.score * 0.98),
-          } : defaultAppObj.scores,
-          reasoning: parsed.feedback || defaultAppObj.reasoning,
-        };
-        setTimeout(() => setApp(nextApp), 0);
-      } catch {
-        setTimeout(() => setApp(defaultAppObj), 0);
-      }
-    } else {
-      setTimeout(() => setApp(defaultAppObj), 0);
+        voiceInterviewData = JSON.parse(localVoice);
+      } catch {}
     }
+
+    // Check for Online Assessment (MCQ + Coding) logs
+    let assessData: any = null;
+    const localAssess = localStorage.getItem(`assessmentResult_${applicationId}`);
+    if (localAssess) {
+      try {
+        assessData = JSON.parse(localAssess);
+        setAssessmentData(assessData);
+      } catch {}
+    }
+
+    // Merge scores and feedback
+    let mergedScores = defaultAppObj.scores;
+    let mergedReasoning = defaultAppObj.reasoning;
+
+    if (assessData) {
+      mergedScores = {
+        composite: Math.round(((assessData.overallScore || 80) + (voiceInterviewData?.score || 78)) / 2),
+        technical: assessData.codingScore || 80,
+        communication: voiceInterviewData?.rubric?.communication || defaultAppObj.scores?.communication || 75,
+        problemSolving: assessData.mcqScore || 80,
+        experience: defaultAppObj.scores?.experience || 75,
+        confidence: voiceInterviewData?.rubric?.cultureFit || defaultAppObj.scores?.confidence || 80,
+      };
+      mergedReasoning = `Online Vetting Assessment: Completed (${assessData.overallScore}% score). MCQ Logic: ${assessData.mcqScore}%, Coding algorithm: ${assessData.codingScore}%. ` + (voiceInterviewData?.feedback || defaultAppObj.reasoning);
+    } else if (voiceInterviewData) {
+      mergedScores = {
+        composite: voiceInterviewData.score,
+        technical: voiceInterviewData.rubric.technical,
+        communication: voiceInterviewData.rubric.communication,
+        problemSolving: Math.floor(voiceInterviewData.score * 0.95),
+        experience: Math.floor(voiceInterviewData.score * 0.92),
+        confidence: Math.floor(voiceInterviewData.score * 0.98),
+      };
+      mergedReasoning = voiceInterviewData.feedback || defaultAppObj.reasoning;
+    }
+
+    setApp({
+      ...defaultAppObj,
+      scores: mergedScores,
+      reasoning: mergedReasoning,
+    });
   }, [applicationId]);
 
   if (!app) {
-    return <div className="text-center text-xs text-slate-400 p-8">Loading profile...</div>;
+    return <div className="text-center text-xs text-slate-400 p-8 font-bold">Loading candidate profile...</div>;
   }
 
   return (
@@ -89,6 +120,87 @@ export default function HrCandidateEvaluationPage({ params }: { params: Promise<
             <h3 className="text-sm font-bold text-slate-850 border-b border-slate-100 pb-2">AI Agent Vetting Reasoning</h3>
             <p className="text-xs text-slate-655 leading-relaxed font-semibold">{app.reasoning}</p>
           </div>
+
+          {/* 1. Dynamic Assessment Section (Displays if completed) */}
+          {assessmentData && (
+            <div className="rounded-3xl border border-amber-100 bg-amber-50/5 p-6 shadow-sm backdrop-blur-md glass-panel space-y-5 animate-in slide-in-from-top-3 duration-250">
+              <div className="flex items-center justify-between border-b border-amber-100/50 pb-2.5">
+                <div className="flex items-center gap-2 text-amber-700 font-bold">
+                  <ClipboardCheck className="h-5 w-5" />
+                  <h3 className="text-sm">Online Assessment Scorecard</h3>
+                </div>
+                <span className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-3 py-0.5 rounded-full uppercase">
+                  Vetting: {assessmentData.overallScore}%
+                </span>
+              </div>
+
+              {/* Subsection scores */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/40 border border-slate-200/50 p-3 rounded-2xl text-xs font-semibold text-slate-600">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">MCQ Logic Vetting</span>
+                  <span className="text-base font-extrabold text-slate-800 mt-1 block">{assessmentData.mcqScore}%</span>
+                </div>
+                <div className="bg-white/40 border border-slate-200/50 p-3 rounded-2xl text-xs font-semibold text-slate-600">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Coding Algorithmic Logic</span>
+                  <span className="text-base font-extrabold text-slate-800 mt-1 block">{assessmentData.codingScore}%</span>
+                </div>
+              </div>
+
+              {/* MCQ Response Analysis */}
+              <div className="space-y-2">
+                <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Concept Answers sheet</span>
+                <div className="border border-slate-200/60 rounded-2xl overflow-hidden bg-white/30 text-xs font-semibold">
+                  <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-100/70 border-b border-slate-200/80 text-[10px] text-slate-450 font-bold uppercase">
+                    <span>Question</span>
+                    <span>Candidate Answer</span>
+                    <span className="text-right">Result</span>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    <div className="grid grid-cols-3 gap-2 p-2.5 items-center">
+                      <span className="text-slate-800 truncate">aq-1: Fleet Orders Rates</span>
+                      <span className="text-slate-500">{assessmentData.mcqAnswers?.['aq-1'] || 'No answer'}</span>
+                      <span className="text-right text-emerald-600 font-bold">✅ Correct</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 p-2.5 items-center">
+                      <span className="text-slate-800 truncate">aq-2: O(1) average lookup</span>
+                      <span className="text-slate-500">{assessmentData.mcqAnswers?.['aq-2'] || 'No answer'}</span>
+                      <span className="text-right text-emerald-600 font-bold">✅ Correct</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 p-2.5 items-center">
+                      <span className="text-slate-800 truncate">aq-3: Checkout conversion %</span>
+                      <span className="text-slate-500">{assessmentData.mcqAnswers?.['aq-3'] || 'No answer'}</span>
+                      <span className="text-right text-emerald-600 font-bold">✅ Correct</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Monospace Code Viewer */}
+              {assessmentData.submittedCode && (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setViewCodeOpen(!viewCodeOpen)}
+                    className="w-full flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider hover:text-slate-800 transition-colors cursor-pointer"
+                  >
+                    <span>Submitted Algorithm Code ({assessmentData.selectedLanguage})</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${viewCodeOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {viewCodeOpen && (
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-900 shadow-md">
+                      <div className="bg-slate-950 text-[10px] font-mono p-4 overflow-x-auto text-emerald-400 whitespace-pre leading-relaxed max-h-72">
+                        <div className="absolute top-2 right-2 text-[9px] bg-slate-900 border border-slate-800 text-slate-450 px-2 py-0.5 rounded font-sans uppercase font-bold">
+                          {assessmentData.selectedLanguage}
+                        </div>
+                        {assessmentData.submittedCode}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Gap Analysis */}
           <div className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md glass-panel space-y-4">

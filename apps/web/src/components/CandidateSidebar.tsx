@@ -36,7 +36,6 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
       title: 'Prep',
       items: [
         { name: 'Mock Interview', path: '/candidate/mock/new', icon: Mic },
-        { name: 'Prep Library', path: '/candidate/prep', icon: Library },
       ],
     },
     {

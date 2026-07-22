@@ -3,7 +3,7 @@
 import React, { use, useState } from 'react';
 import Link from 'next/link';
 import { mockJobs, mockApplications } from '@/lib/mockData';
-import { MapPin, DollarSign, Briefcase, Calendar, Award, ChevronRight, Check } from 'lucide-react';
+import { MapPin, DollarSign, Briefcase, Calendar, Award, ChevronRight, Check, Sparkles, Mic, Code } from 'lucide-react';
 
 export default function CandidateJobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = use(params);
@@ -142,6 +142,55 @@ export default function CandidateJobDetailPage({ params }: { params: Promise<{ j
                   <span className="block text-[10px] text-slate-400 font-bold uppercase">Date Posted</span>
                   <span>{job.postedDate}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Practice & Prep Arena */}
+          <div className="rounded-3xl border border-amber-100 bg-amber-50/10 p-6 shadow-sm backdrop-blur-md glass-panel space-y-4">
+            <div>
+              <h3 className="text-sm font-black text-amber-800 flex items-center gap-1.5">
+                <Sparkles className="h-4.5 w-4.5" />
+                AI Practice & Prep Arena
+              </h3>
+              <p className="text-[10px] text-slate-500 font-semibold leading-relaxed mt-1.5">
+                Prepare for the official hiring process. Try our tailored AI mock rounds.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              {/* Voice Mock Interview */}
+              <div className="p-3 bg-white/50 border border-slate-200/60 rounded-2xl space-y-2">
+                <div className="flex items-center gap-2 text-indigo-700">
+                  <Mic className="h-4 w-4" />
+                  <span className="text-xs font-bold">Voice Interview Practice</span>
+                </div>
+                <p className="text-[10px] text-slate-450 leading-relaxed font-semibold">
+                  Practice dynamic conversational questions matching {job.orgName}'s interview criteria.
+                </p>
+                <Link
+                  href={`/candidate/mock/new?company=${encodeURIComponent(job.orgName)}&role=${encodeURIComponent(job.title)}`}
+                  className="w-full flex items-center justify-center gap-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 text-[10px] transition-all cursor-pointer shadow-sm"
+                >
+                  Start Mock Session
+                </Link>
+              </div>
+
+              {/* Assessment Practice */}
+              <div className="p-3 bg-white/50 border border-slate-200/60 rounded-2xl space-y-2">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Code className="h-4 w-4" />
+                  <span className="text-xs font-bold">Coding & MCQ Practice</span>
+                </div>
+                <p className="text-[10px] text-slate-455 leading-relaxed font-semibold">
+                  Try a mock LeetCode-style compiler test running against test case inputs.
+                </p>
+                <Link
+                  href="/candidate/applications/app-501/assessment"
+                  className="w-full flex items-center justify-center gap-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 text-[10px] transition-all cursor-pointer shadow-sm"
+                >
+                  Launch Practice Test
+                </Link>
               </div>
             </div>
           </div>
