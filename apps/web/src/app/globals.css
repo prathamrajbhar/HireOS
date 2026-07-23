@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-plus-jakarta), var(--font-inter), system-ui, sans-serif;
 
@@ -49,7 +52,8 @@
   --color-brand-200: var(--brand-200);
   --color-brand-300: var(--brand-300);
   --color-brand-400: var(--brand-400);
-  --color-brand-505: var(--brand-500); /* custom fix */
+  --color-brand-505: var(--brand-500);
+  /* custom fix */
   --color-brand-500: var(--brand-500);
   --color-brand-600: var(--brand-600);
   --color-brand-700: var(--brand-700);
@@ -98,7 +102,8 @@
   --color-indigo-200: var(--brand-200);
   --color-indigo-300: var(--brand-300);
   --color-indigo-400: var(--brand-400);
-  --color-indigo-505: var(--brand-500); /* custom fix */
+  --color-indigo-505: var(--brand-500);
+  /* custom fix */
   --color-indigo-500: var(--brand-500);
   --color-indigo-600: var(--brand-600);
   --color-indigo-650: var(--brand-600);
@@ -199,6 +204,18 @@
   --purple-700: var(--brand-600);
 }
 
+/* =========================================
+   DARK MODE CSS VARIABLES
+   Applied when <html class="dark"> is set
+   ========================================= */
+.dark {
+  --background: #0d1117;
+  --foreground: #f1f5f9;
+  --text-body: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
 body {
   background-color: var(--background);
   color: var(--text-body);
@@ -210,6 +227,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -236,6 +254,15 @@ h6 {
   border-radius: 16px !important;
   backdrop-filter: blur(16px) saturate(120%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  transition: background 0.3s ease, border-color 0.3s ease !important;
+}
+
+.dark .glass-panel {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
 }
 
 .glass-panel-hover {
@@ -248,6 +275,11 @@ h6 {
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.03),
     inset 0 1px 1px rgba(255, 255, 255, 1) !important;
+}
+
+.dark .glass-panel-hover:hover {
+  background: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Premium Light Glassmorphism Cards - Clean style (Adjusted for white background) */
@@ -265,12 +297,28 @@ h6 {
   overflow: hidden;
 }
 
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.04) !important;
+}
+
 .glass-card:hover {
   background: rgba(255, 255, 255, 0.85) !important;
   border-color: rgba(0, 0, 0, 0.09) !important;
   box-shadow:
     0 8px 30px rgba(249, 115, 22, 0.03),
     inset 0 1px 1px rgba(255, 255, 255, 1) !important;
+}
+
+.dark .glass-card:hover {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 8px 30px rgba(249, 115, 22, 0.1),
+    inset 0 1px 1px rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Primary Accent Glass Card */
@@ -312,6 +360,12 @@ header {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
   backdrop-filter: blur(16px) saturate(120%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark header {
+  background-color: rgba(13, 17, 23, 0.85) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 aside {
@@ -319,6 +373,12 @@ aside {
   border-right: 1px solid rgba(0, 0, 0, 0.06) !important;
   backdrop-filter: blur(20px) saturate(110%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(110%) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark aside {
+  background-color: rgba(13, 17, 23, 0.8) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Force layouts that use bg-slate-50/50 to be transparent so the blobs show through */
@@ -532,6 +592,7 @@ aside {
   filter: blur(140px);
   opacity: 0.06;
   pointer-events: none;
+  transition: opacity 0.5s ease;
 }
 
 .blob-1 {
@@ -556,4 +617,42 @@ aside {
   width: 35vw;
   height: 35vw;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+/* Dark mode blob adjustments */
+.dark .blob-1 {
+  opacity: 0.12;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.08) 100%);
+}
+
+.dark .blob-2 {
+  opacity: 0.1;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, rgba(74, 222, 128, 0.06) 100%);
+}
+
+.dark .blob-3 {
+  opacity: 0.04;
+  background: radial-gradient(circle, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.3) 100%);
+}
+
+/* Dark mode h1-h6 override */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  color: var(--foreground) !important;
+}
+
+/* Dark mode glass-input */
+.dark .glass-input {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--foreground) !important;
+}
+
+.dark .glass-input:focus {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: var(--primary) !important;
 }

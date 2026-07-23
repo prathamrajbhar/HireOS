@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import CandidateSidebar from '@/components/CandidateSidebar';
-import { Bell, Menu, X } from 'lucide-react';
+import { Bell, Menu, X } from '@/lib/lucide-google-icons';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import Image from 'next/image';
 
 export default function CandidateLayout({
@@ -78,42 +79,43 @@ export default function CandidateLayout({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50/50 relative">
+    <div className="flex h-screen overflow-hidden bg-slate-50/50 dark:bg-slate-950/60 relative transition-colors duration-300">
       {/* Backdrop overlay for mobile */}
       {isSidebarOpen && (
-        <div 
+        <div
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-slate-900/35 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-900/35 dark:bg-slate-950/70 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
         />
       )}
 
       {/* Sidebar container */}
-      <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-305 ease-in-out md:relative md:translate-x-0 ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
         <CandidateSidebar avatar={avatar} name={name} />
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-white/60 bg-white/20 backdrop-blur-sm flex items-center justify-between px-4 md:px-8 relative z-30">
+        <header className="h-16 border-b border-white/60 dark:border-slate-800/80 bg-white/20 dark:bg-slate-900/60 backdrop-blur-sm flex items-center justify-between px-4 md:px-8 relative z-30 transition-colors duration-300">
           <div className="flex items-center gap-3">
             {/* Hamburger Menu Trigger */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-1.5 rounded-lg border border-slate-200 bg-white/50 text-slate-500 hover:text-slate-800 hover:bg-white transition-all cursor-pointer md:hidden flex items-center justify-center"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer md:hidden flex items-center justify-center"
             >
               {isSidebarOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
             </button>
-            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider hidden sm:inline">Candidate Workspace</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider hidden sm:inline">Candidate Workspace</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* Dark Mode Toggle Button */}
+            <ThemeToggle />
+
             {/* Notification Bell Dropdown */}
             <div className="notification-container relative">
-              <button 
+              <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-1.5 rounded-lg border border-slate-200 bg-white/50 text-slate-500 hover:text-slate-800 hover:bg-white transition-all cursor-pointer block"
+                className="relative p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-all cursor-pointer block"
               >
                 <Bell className="h-4.5 w-4.5" />
                 {unreadCount > 0 && (
@@ -124,27 +126,27 @@ export default function CandidateLayout({
               {showNotifications && (
                 <>
                   {/* Popover Card */}
-                  <div className="absolute right-0 mt-2.5 w-80 bg-slate-100 border border-slate-200/80 shadow-2xl rounded-3xl p-4 z-50 animate-in fade-in slide-in-from-top-3 duration-200 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="absolute right-0 mt-2.5 w-80 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xl rounded-3xl p-4 z-50 animate-in fade-in slide-in-from-top-3 duration-200 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-black text-slate-800">Notifications</span>
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-200">Notifications</span>
                         {unreadCount > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-[9px] font-black text-emerald-700 uppercase border border-emerald-100">
+                          <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-[9px] font-black text-emerald-700 dark:text-emerald-400 uppercase border border-emerald-100 dark:border-emerald-900/60">
                             {unreadCount} New
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={markAllAsRead}
-                          className="text-[9px] font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
+                          className="text-[9px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors"
                         >
                           Mark read
                         </button>
-                        <span className="text-slate-200 text-[10px]">•</span>
-                        <button 
+                        <span className="text-slate-300 dark:text-slate-700 text-[10px]">•</span>
+                        <button
                           onClick={clearAll}
-                          className="text-[9px] font-bold text-rose-600 hover:text-rose-700 transition-colors"
+                          className="text-[9px] font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
                         >
                           Clear
                         </button>
@@ -154,26 +156,25 @@ export default function CandidateLayout({
                     <div className="max-h-60 overflow-y-auto space-y-2">
                       {notifications.length > 0 ? (
                         notifications.map((n) => (
-                          <div 
-                            key={n.id} 
+                          <div
+                            key={n.id}
                             onClick={() => toggleRead(n.id)}
-                            className={`p-3 rounded-2xl border transition-all text-[11px] cursor-pointer flex gap-2 items-start ${
-                              n.read 
-                                ? 'bg-slate-50 border-slate-200/60 text-slate-400 font-semibold' 
-                                : 'bg-emerald-50 border-emerald-100 text-slate-700 font-extrabold shadow-sm'
-                            }`}
+                            className={`p-3 rounded-2xl border transition-all text-[11px] cursor-pointer flex gap-2 items-start ${n.read
+                                ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-semibold'
+                                : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/50 text-slate-700 dark:text-slate-200 font-extrabold shadow-sm'
+                              }`}
                           >
-                            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 ${n.read ? 'bg-slate-300' : 'bg-emerald-500'}`} />
+                            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 ${n.read ? 'bg-slate-300 dark:bg-slate-700' : 'bg-emerald-500'}`} />
                             <div className="min-w-0 flex-1">
                               <p className="leading-relaxed break-words">{n.text}</p>
-                              <span className="text-[9px] text-slate-400 font-semibold block mt-1">{n.time}</span>
+                              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold block mt-1">{n.time}</span>
                             </div>
                           </div>
                         ))
                       ) : (
                         <div className="text-center py-6">
-                          <span className="text-xs text-slate-450 font-bold block">All caught up!</span>
-                          <span className="text-[9px] text-slate-400 block mt-0.5">No new system events found.</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500 font-bold block">All caught up!</span>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">No new system events found.</span>
                         </div>
                       )}
                     </div>
@@ -184,13 +185,13 @@ export default function CandidateLayout({
 
             {/* Candidate Avatar Info */}
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-700">{name}</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{name}</span>
               <Image
                 src={avatar}
                 alt="Candidate Avatar"
                 width={32}
                 height={32}
-                className="h-8 w-8 rounded-full border border-emerald-100 shadow-sm object-cover"
+                className="h-8 w-8 rounded-full border border-emerald-100 dark:border-emerald-900/60 shadow-sm object-cover"
                 unoptimized
               />
             </div>

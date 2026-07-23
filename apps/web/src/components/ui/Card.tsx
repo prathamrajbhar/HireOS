@@ -63,7 +63,7 @@ export function CardHeader({ className, children, ...props }: React.HTMLAttribut
 
 export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-base font-extrabold text-slate-900 tracking-tight', className)} {...props}>
+    <h3 className={cn('text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight', className)} {...props}>
       {children}
     </h3>
   );
@@ -71,7 +71,7 @@ export function CardTitle({ className, children, ...props }: React.HTMLAttribute
 
 export function CardDescription({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn('text-xs font-semibold text-slate-500 mt-0.5', className)} {...props}>
+    <p className={cn('text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5', className)} {...props}>
       {children}
     </p>
   );
@@ -79,7 +79,7 @@ export function CardDescription({ className, children, ...props }: React.HTMLAtt
 
 export function CardFooter({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('mt-4 pt-4 border-t border-slate-100/70 flex items-center gap-3', className)} {...props}>
+    <div className={cn('mt-4 pt-4 border-t border-slate-100/70 dark:border-slate-800 flex items-center gap-3', className)} {...props}>
       {children}
     </div>
   );

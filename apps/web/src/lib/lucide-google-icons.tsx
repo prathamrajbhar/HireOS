@@ -21,7 +21,7 @@ const createMaterialIcon = (iconName: string) => {
   const Component = React.forwardRef<HTMLSpanElement, IconProps>(
     ({ size, className = '', ...props }, ref) => {
       let fontSize = size ? (typeof size === 'number' ? `${size}px` : size) : undefined;
-      
+
       if (!fontSize) {
         const classes = className.split(' ');
         for (const cls of classes) {
@@ -185,4 +185,5 @@ export const Heading = createMaterialIcon('title');
 export const Heart = createMaterialIcon('favorite');
 export const AudioLines = createMaterialIcon('graphic_eq');
 export const ChevronLeft = createMaterialIcon('chevron_left');
-
+export const Sun = createMaterialIcon('light_mode');
+export const Moon = createMaterialIcon('dark_mode');

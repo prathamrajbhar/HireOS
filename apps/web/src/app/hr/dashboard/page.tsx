@@ -16,7 +16,7 @@ import {
   ShieldAlert,
   Calendar,
   Clock
-} from 'lucide-react';
+} from '@/lib/lucide-google-icons';
 
 export default function HrDashboard() {
   const activeJobs = mockJobs.filter((j) => j.status === 'active');
@@ -63,16 +63,16 @@ export default function HrDashboard() {
     <div className="space-y-8 animate-in fade-in duration-350">
 
       {/* Console Top branding */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/45 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-5">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Recruiter Dashboard</h1>
-          <p className="text-xs text-slate-500 font-semibold mt-1">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Recruiter Dashboard</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
             Check upcoming interviews, review candidate scores, and track hiring rates.
           </p>
         </div>
         <Link
           href="/hr/jobs/new"
-          className="inline-flex items-center gap-1.5 rounded-2xl bg-indigo-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-md hover:bg-indigo-700 transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-2xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-5 py-2.5 text-xs font-extrabold text-white shadow-md transition-all cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Post a New Job
@@ -82,42 +82,42 @@ export default function HrDashboard() {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="glass-card p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-orange-950/50 border border-brand-100 dark:border-orange-900/60 flex items-center justify-center text-brand-600 dark:text-orange-400 shadow-sm">
             <Briefcase className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-black text-slate-800 tracking-tight">{activeJobs.length}</span>
-            <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider block mt-0.5">Active Jobs</span>
+            <span className="block text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{activeJobs.length}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Active Jobs</span>
           </div>
         </div>
 
         <div className="glass-card p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-650 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-100 dark:border-purple-900/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-sm">
             <Users className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-black text-slate-800 tracking-tight">{totalCandidates}</span>
-            <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">Total Candidates</span>
+            <span className="block text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{totalCandidates}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Total Candidates</span>
           </div>
         </div>
 
         <div className="glass-card p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-black text-slate-800 tracking-tight">{interviewingCandidates}</span>
-            <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">Scheduled Interviews</span>
+            <span className="block text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{interviewingCandidates}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Scheduled Interviews</span>
           </div>
         </div>
 
         <div className="glass-card p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-655 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-black text-slate-800 tracking-tight">{decisionsCount}</span>
-            <span className="text-[10px] text-slate-455 font-bold uppercase tracking-wider block mt-0.5">Hires Made</span>
+            <span className="block text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{decisionsCount}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Hires Made</span>
           </div>
         </div>
       </div>
@@ -130,8 +130,8 @@ export default function HrDashboard() {
 
           {/* Active Postings */}
           <div className="space-y-4">
-            <h2 className="text-base font-extrabold text-slate-855 tracking-tight flex items-center gap-2">
-              <Layers className="h-4.5 w-4.5 text-indigo-555" />
+            <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
+              <Layers className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />
               Active Jobs
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -141,14 +141,14 @@ export default function HrDashboard() {
                   className="glass-card p-5 flex flex-col justify-between min-h-[120px]"
                 >
                   <div>
-                    <h3 className="text-sm font-black text-slate-800 tracking-tight">{job.title}</h3>
-                    <span className="text-[10px] text-slate-400 font-bold block mt-1">{job.location} • {job.salary}</span>
+                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight">{job.title}</h3>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold block mt-1">{job.location} • {job.salary}</span>
                   </div>
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100/50">
-                    <span className="text-[10px] font-extrabold text-slate-500">{job.applicantsCount} in pipeline</span>
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800">
+                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400">{job.applicantsCount} in pipeline</span>
                     <Link
                       href={`/hr/jobs/${job.id}/pipeline`}
-                      className="text-[10px] font-extrabold text-indigo-600 bg-white border border-slate-200 hover:bg-slate-50/50 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                      className="text-[10px] font-extrabold text-brand-600 dark:text-orange-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
                     >
                       View Pipeline
                     </Link>
@@ -161,11 +161,11 @@ export default function HrDashboard() {
           {/* Unified Vetting Action Grid */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-extrabold text-slate-855 tracking-tight flex items-center gap-2">
-                <Activity className="h-4.5 w-4.5 text-indigo-555" />
+              <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                <Activity className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />
                 Candidates to Review
               </h2>
-              <span className="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full uppercase">
+              <span className="text-xs font-bold text-brand-700 dark:text-orange-300 bg-brand-50 dark:bg-orange-950/60 border border-brand-100 dark:border-orange-900/60 px-2.5 py-0.5 rounded-full uppercase">
                 Needs Review
               </span>
             </div>
@@ -174,7 +174,7 @@ export default function HrDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left min-w-[600px]">
                   <thead>
-                    <tr className="border-b border-white/45 bg-white/20 text-slate-455 text-xs font-bold uppercase tracking-wider">
+                    <tr className="border-b border-slate-200/60 dark:border-slate-800 bg-white/20 dark:bg-slate-800/40 text-slate-400 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
                       <th className="px-6 py-4.5">Candidate</th>
                       <th className="px-6 py-4.5">Evaluation Score</th>
                       <th className="px-6 py-4.5">Skills (Tech / Comm)</th>
@@ -182,47 +182,47 @@ export default function HrDashboard() {
                       <th className="px-6 py-4.5 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-700">
+                  <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {vettedCandidates.map((app) => (
-                      <tr key={app.id} className="hover:bg-white/20 transition-colors">
+                      <tr key={app.id} className="hover:bg-white/20 dark:hover:bg-slate-800/40 transition-colors">
                         <td className="px-6 py-4">
-                          <span className="block font-black text-slate-850 text-sm">{app.candidateName}</span>
-                          <span className="block text-xs text-slate-400 font-bold mt-0.5">{app.jobTitle.split('—')[0]}</span>
+                          <span className="block font-black text-slate-800 dark:text-slate-100 text-sm">{app.candidateName}</span>
+                          <span className="block text-xs text-slate-400 dark:text-slate-400 font-bold mt-0.5">{app.jobTitle.split('—')[0]}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-1 text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                          <span className="inline-flex items-center gap-1 text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-orange-950/60 text-brand-700 dark:text-orange-300 border border-brand-100 dark:border-orange-900/60">
                             <TrendingUp className="h-3.5 w-3.5" />
                             {app.composite}%
                           </span>
                         </td>
                         <td className="px-6 py-4 space-y-1.5">
                           <div>
-                            <div className="flex justify-between text-[10px] font-bold text-slate-455 mb-0.5">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-400 mb-0.5">
                               <span>Technical</span>
                               <span>{app.tech}%</span>
                             </div>
-                            <div className="w-24 bg-slate-200/50 rounded-full h-1">
-                              <div className="bg-indigo-500 h-1 rounded-full" style={{ width: `${app.tech}%` }} />
+                            <div className="w-24 bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1">
+                              <div className="bg-brand-500 dark:bg-orange-400 h-1 rounded-full" style={{ width: `${app.tech}%` }} />
                             </div>
                           </div>
                           <div>
-                            <div className="flex justify-between text-[10px] font-bold text-slate-455 mb-0.5">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-400 mb-0.5">
                               <span>Communication</span>
                               <span>{app.comm}%</span>
                             </div>
-                            <div className="w-24 bg-slate-200/50 rounded-full h-1">
-                              <div className="bg-indigo-500 h-1 rounded-full" style={{ width: `${app.comm}%` }} />
+                            <div className="w-24 bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1">
+                              <div className="bg-brand-500 dark:bg-orange-400 h-1 rounded-full" style={{ width: `${app.comm}%` }} />
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           {app.proctorFlagsCount > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-605 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/60 px-2.5 py-1 rounded-full">
                               <ShieldAlert className="h-3.5 w-3.5" />
                               {app.proctorFlagsCount === 1 ? '1 Warning' : `${app.proctorFlagsCount} Warnings`}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 px-2.5 py-1 rounded-full">
                               No Flags
                             </span>
                           )}
@@ -230,7 +230,7 @@ export default function HrDashboard() {
                         <td className="px-6 py-4 text-right whitespace-nowrap">
                           <Link
                             href={`/hr/candidates/${app.id}`}
-                            className="inline-flex items-center gap-0.5 text-sm font-extrabold text-indigo-655 hover:text-indigo-800 transition-colors"
+                            className="inline-flex items-center gap-0.5 text-sm font-extrabold text-brand-600 dark:text-orange-400 hover:underline transition-colors"
                           >
                             Review Profile
                             <ChevronRight className="h-4.5 w-4.5" />
@@ -251,22 +251,22 @@ export default function HrDashboard() {
 
           {/* Upcoming Vetting Assessments */}
           <div className="glass-card p-5 space-y-4">
-            <span className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block border-b border-white/45 pb-2 flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-indigo-555" />
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800 pb-2 flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-brand-600 dark:text-orange-400" />
               Upcoming Interviews
             </span>
 
             <div className="space-y-3.5">
               {upcomingAssessments.map((a) => (
-                <div key={a.id} className="space-y-1 border-b border-slate-100/50 pb-3 last:border-b-0 last:pb-0">
-                  <div className="flex justify-between items-center text-xs font-extrabold text-slate-800">
+                <div key={a.id} className="space-y-1 border-b border-slate-200/60 dark:border-slate-800 pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex justify-between items-center text-xs font-extrabold text-slate-800 dark:text-slate-100">
                     <span>{a.candidateName}</span>
-                    <span className="text-indigo-650 bg-indigo-50 border border-indigo-100/40 px-2 py-0.5 rounded flex items-center gap-1 font-mono text-[10px]">
+                    <span className="text-brand-700 dark:text-orange-300 bg-brand-50 dark:bg-orange-950/60 border border-brand-100 dark:border-orange-900/60 px-2 py-0.5 rounded flex items-center gap-1 font-mono text-[10px]">
                       <Clock className="h-3 w-3" />
                       {a.slot.split(' ')[1]} {a.slot.split(' ')[2]}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center text-[9px] font-bold text-slate-455 uppercase tracking-tight">
+                  <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-tight">
                     <span>{a.jobTitle}</span>
                     <span>{a.slot.split(' ')[0]}</span>
                   </div>
@@ -277,48 +277,48 @@ export default function HrDashboard() {
 
           {/* Vetting Conversion Funnel */}
           <div className="glass-card p-5 space-y-4">
-            <span className="text-xs font-bold text-slate-455 uppercase tracking-wider block border-b border-white/45 pb-2">
+            <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800 pb-2">
               Hiring Funnel
             </span>
 
             <div className="space-y-4 pt-1">
               <div>
-                <div className="flex justify-between text-xs font-bold text-slate-750 mb-1">
+                <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   <span>Applied</span>
-                  <span className="font-extrabold text-slate-900">{totalApplied} Candidates</span>
+                  <span className="font-extrabold text-slate-900 dark:text-slate-100">{totalApplied} Candidates</span>
                 </div>
-                <div className="w-full bg-white/45 border border-white/20 rounded-full h-1.5 p-0.5">
-                  <div className="bg-indigo-500 h-0.5 rounded-full" style={{ width: '100%' }} />
+                <div className="w-full bg-white/45 dark:bg-slate-800/60 border border-white/20 dark:border-slate-700 rounded-full h-1.5 p-0.5">
+                  <div className="bg-brand-500 dark:bg-orange-400 h-0.5 rounded-full" style={{ width: '100%' }} />
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-bold text-slate-750 mb-1">
+                <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   <span>Interviewed</span>
-                  <span className="font-extrabold text-indigo-700">{totalVetted} Candidates ({vettedPct}%)</span>
+                  <span className="font-extrabold text-brand-600 dark:text-orange-400">{totalVetted} Candidates ({vettedPct}%)</span>
                 </div>
-                <div className="w-full bg-white/45 border border-white/20 rounded-full h-1.5 p-0.5">
-                  <div className="bg-indigo-500 h-0.5 rounded-full" style={{ width: `${vettedPct}%` }} />
+                <div className="w-full bg-white/45 dark:bg-slate-800/60 border border-white/20 dark:border-slate-700 rounded-full h-1.5 p-0.5">
+                  <div className="bg-brand-500 dark:bg-orange-400 h-0.5 rounded-full" style={{ width: `${vettedPct}%` }} />
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-bold text-slate-750 mb-1">
+                <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   <span>Hired</span>
-                  <span className="font-extrabold text-emerald-700">{totalHired} Hires ({hiredPct}%)</span>
+                  <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{totalHired} Hires ({hiredPct}%)</span>
                 </div>
-                <div className="w-full bg-white/45 border border-white/20 rounded-full h-1.5 p-0.5">
-                  <div className="bg-emerald-500 h-0.5 rounded-full" style={{ width: `${hiredPct}%` }} />
+                <div className="w-full bg-white/45 dark:bg-slate-800/60 border border-white/20 dark:border-slate-700 rounded-full h-1.5 p-0.5">
+                  <div className="bg-emerald-500 dark:bg-emerald-400 h-0.5 rounded-full" style={{ width: `${hiredPct}%` }} />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Recruiter Activity Metrics */}
-          <div className="glass-card p-5 text-[11px] font-semibold text-slate-600">
+          <div className="glass-card p-5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
             <div className="flex justify-between items-center">
               <span>Avg Vetting Time</span>
-              <span className="font-extrabold text-slate-850">14 days</span>
+              <span className="font-extrabold text-slate-850 dark:text-slate-100">14 days</span>
             </div>
           </div>
 

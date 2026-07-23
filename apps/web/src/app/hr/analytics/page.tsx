@@ -6,7 +6,7 @@ import {
   TrendingUp,
   Scale,
   Clock
-} from 'lucide-react';
+} from '@/lib/lucide-google-icons';
 
 export default function HrAnalyticsDashboard() {
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
@@ -53,12 +53,12 @@ export default function HrAnalyticsDashboard() {
     <div className="space-y-6 animate-in fade-in duration-300">
 
       {/* Page Header */}
-      <div className="border-b border-slate-200/80 pb-4">
-        <span className="text-xs font-bold text-purple-600 uppercase tracking-widest block mb-1">
+      <div className="border-b border-slate-200/60 dark:border-slate-800 pb-4">
+        <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest block mb-1">
           Intelligence Console
         </span>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Hiring Analytics</h1>
-        <p className="text-xs text-slate-500 font-semibold mt-1">
+        <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Hiring Analytics</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
           Review recruiting volume conversion funnels, monthly interview completion trends, and bias check aggregate reports.
         </p>
       </div>
@@ -66,33 +66,33 @@ export default function HrAnalyticsDashboard() {
       {/* Overview Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
-        <div className="rounded-3xl border border-white/60 bg-white/70 p-5 shadow-xl shadow-slate-200/35 backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
-          <div className="h-10 w-10 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shadow-inner">
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 shadow-xl backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
+          <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-inner">
             <Clock className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-extrabold text-slate-800 leading-none">42 Hours</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Avg Time-to-Hire</span>
+            <span className="block text-xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">42 Hours</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-1">Avg Time-to-Hire</span>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/60 bg-white/70 p-5 shadow-xl shadow-slate-200/35 backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
-          <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-inner">
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 shadow-xl backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
             <Scale className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-extrabold text-slate-800 leading-none">98.5%</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Bias Norm Compliance</span>
+            <span className="block text-xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">98.5%</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-1">Bias Norm Compliance</span>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/60 bg-white/70 p-5 shadow-xl shadow-slate-200/35 backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
-          <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-inner">
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 shadow-xl backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
             <TrendingUp className="h-5 w-5" />
           </div>
           <div>
-            <span className="block text-xl font-extrabold text-slate-800 leading-none">74%</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Hiring Conversion Gain</span>
+            <span className="block text-xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">74%</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-1">Hiring Conversion Gain</span>
           </div>
         </div>
 
@@ -105,13 +105,13 @@ export default function HrAnalyticsDashboard() {
         <div className="lg:col-span-2 space-y-6">
 
           {/* SVG Trend Line Chart */}
-          <div className="rounded-3xl border border-white/60 bg-white/70 p-6 md:p-8 shadow-md backdrop-blur-md glass-panel space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
-                <BarChart3 className="h-4.5 w-4.5 text-purple-600" />
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 md:p-8 shadow-md backdrop-blur-md glass-panel space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <BarChart3 className="h-4.5 w-4.5 text-purple-600 dark:text-purple-400" />
                 Hiring Activity Trend
               </h3>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-150 px-2 py-0.5 rounded-md flex items-center gap-0.5">
+              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-150 dark:border-emerald-900/60 px-2 py-0.5 rounded-md flex items-center gap-0.5">
                 <TrendingUp className="h-3 w-3" />
                 +25% MoM
               </span>
@@ -121,16 +121,16 @@ export default function HrAnalyticsDashboard() {
             <div className="relative">
               <svg className="w-full h-auto" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                 {/* Grids */}
-                <line x1="40" y1="20" x2="460" y2="20" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="55" x2="460" y2="55" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="90" x2="460" y2="90" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="125" x2="460" y2="125" stroke="var(--color-slate-100)" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="160" x2="460" y2="160" stroke="var(--color-slate-200)" strokeWidth="1" />
+                <line x1="40" y1="20" x2="460" y2="20" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="55" x2="460" y2="55" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="90" x2="460" y2="90" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="125" x2="460" y2="125" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="160" x2="460" y2="160" stroke="currentColor" className="text-slate-300 dark:text-slate-700" strokeWidth="1" />
 
                 {/* Y Axis Labels */}
-                <text x="15" y="24" fill="var(--color-slate-400)" fontSize="8" fontWeight="bold" fontFamily="monospace">100</text>
-                <text x="15" y="94" fill="var(--color-slate-400)" fontSize="8" fontWeight="bold" fontFamily="monospace">50</text>
-                <text x="20" y="164" fill="var(--color-slate-400)" fontSize="8" fontWeight="bold" fontFamily="monospace">0</text>
+                <text x="15" y="24" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">100</text>
+                <text x="15" y="94" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">50</text>
+                <text x="20" y="164" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">0</text>
 
                 {/* Area Gradient Fill */}
                 <path d={areaPath} fill="url(#purpleAreaGrad)" />
@@ -145,10 +145,9 @@ export default function HrAnalyticsDashboard() {
                       cx={p.x}
                       cy={p.y}
                       r={activeTooltip === idx ? '6' : '4'}
-                      fill={activeTooltip === idx ? 'var(--color-purple-600)' : 'var(--color-purple-500)'}
-                      stroke="var(--color-white)"
+                      className={activeTooltip === idx ? 'fill-purple-600 dark:fill-purple-400' : 'fill-purple-500 dark:fill-purple-400'}
+                      stroke="currentColor"
                       strokeWidth="2"
-                      className="transition-all duration-150"
                     />
                   </g>
                 ))}
@@ -159,9 +158,7 @@ export default function HrAnalyticsDashboard() {
                     key={idx}
                     x={p.x}
                     y="180"
-                    fill={activeTooltip === idx ? 'var(--color-purple-600)' : 'var(--color-slate-500)'}
-                    fontSize="9"
-                    fontWeight="bold"
+                    className={activeTooltip === idx ? 'fill-purple-600 dark:fill-purple-400 font-bold text-[9px]' : 'fill-slate-500 dark:fill-slate-400 font-bold text-[9px]'}
                     textAnchor="middle"
                   >
                     {p.month}
@@ -171,12 +168,12 @@ export default function HrAnalyticsDashboard() {
                 {/* Definitions */}
                 <defs>
                   <linearGradient id="purpleLineGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="var(--color-purple-500)" />
-                    <stop offset="100%" stopColor="var(--color-brand-500)" />
+                    <stop offset="0%" stopColor="#9333ea" />
+                    <stop offset="100%" stopColor="#ea580c" />
                   </linearGradient>
                   <linearGradient id="purpleAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="color-mix(in srgb, var(--color-purple-500) 15%, transparent)" />
-                    <stop offset="100%" stopColor="color-mix(in srgb, var(--color-brand-500) 0%, transparent)" />
+                    <stop offset="0%" stopColor="#9333ea" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#9333ea" stopOpacity="0" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -184,7 +181,7 @@ export default function HrAnalyticsDashboard() {
               {/* Tooltip Hover Overlay */}
               {activeTooltip !== null && (
                 <div
-                  className="absolute bg-slate-900 text-white rounded-xl p-2.5 shadow-xl text-[10px] pointer-events-none space-y-0.5 border border-slate-800 animate-in fade-in zoom-in-95 duration-100"
+                  className="absolute bg-slate-900 dark:bg-slate-800 text-white rounded-xl p-2.5 shadow-xl text-[10px] pointer-events-none space-y-0.5 border border-slate-800 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-100"
                   style={{
                     left: `${(points[activeTooltip].x / 500) * 100}%`,
                     top: `${(points[activeTooltip].y / 200) * 100 - 30}%`,
@@ -204,19 +201,19 @@ export default function HrAnalyticsDashboard() {
           </div>
 
           {/* Conversion Funnel */}
-          <div className="rounded-3xl border border-white/60 bg-white/70 p-6 md:p-8 shadow-md backdrop-blur-md glass-panel space-y-6">
-            <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2.5">
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 md:p-8 shadow-md backdrop-blur-md glass-panel space-y-6">
+            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 border-b border-slate-200/60 dark:border-slate-800 pb-2.5">
               Hiring Conversion Funnel
             </h3>
 
             <div className="space-y-4">
               {funnelSteps.map((step, idx) => (
                 <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold text-slate-700">
+                  <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-200">
                     <span>{step.name}</span>
-                    <span className="text-slate-400 font-extrabold">{step.count} ({step.pct}%)</span>
+                    <span className="text-slate-400 dark:text-slate-400 font-extrabold">{step.count} ({step.pct}%)</span>
                   </div>
-                  <div className="w-full bg-slate-200/50 rounded-full h-3">
+                  <div className="w-full bg-slate-200/50 dark:bg-slate-800/60 rounded-full h-3">
                     <div
                       className="bg-gradient-to-r from-purple-500 to-indigo-600 h-3 rounded-full transition-all duration-500 shadow-sm"
                       style={{ width: `${step.pct}%` }}
@@ -233,31 +230,31 @@ export default function HrAnalyticsDashboard() {
         <div className="space-y-6">
 
           {/* Diversity Check Index */}
-          <div className="rounded-3xl border border-white/60 bg-white/70 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
-            <div className="border-b border-slate-100 pb-2.5">
-              <h3 className="text-sm font-black text-slate-900">Diversity Check Index</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Demographics audit</p>
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
+            <div className="border-b border-slate-200/60 dark:border-slate-800 pb-2.5">
+              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">Diversity Check Index</h3>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">Demographics audit</p>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
               Anonymized metrics report variance comparison ratios between different genders and regional schools.
             </p>
 
             <div className="space-y-4 pt-2">
               <div>
-                <div className="flex justify-between text-[11px] font-semibold text-slate-700 mb-1">
+                <div className="flex justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-200 mb-1">
                   <span>Gender Variance Score</span>
-                  <span className="text-emerald-600 font-bold">0.02% variance</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">0.02% variance</span>
                 </div>
-                <div className="w-full bg-slate-200/50 rounded-full h-1.5">
+                <div className="w-full bg-slate-200/50 dark:bg-slate-800/60 rounded-full h-1.5">
                   <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full" style={{ width: '99%' }}></div>
                 </div>
               </div>
               <div>
-                <div className="flex justify-between text-[11px] font-semibold text-slate-700 mb-1">
+                <div className="flex justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-200 mb-1">
                   <span>School Origin Weighting</span>
-                  <span className="text-emerald-600 font-bold">0.05% variance</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">0.05% variance</span>
                 </div>
-                <div className="w-full bg-slate-200/50 rounded-full h-1.5">
+                <div className="w-full bg-slate-200/50 dark:bg-slate-800/60 rounded-full h-1.5">
                   <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full" style={{ width: '98%' }}></div>
                 </div>
               </div>
@@ -265,8 +262,8 @@ export default function HrAnalyticsDashboard() {
           </div>
 
           {/* Vetting Distribution Donuts */}
-          <div className="rounded-3xl border border-white/60 bg-white/70 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
-            <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2.5">
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
+            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 border-b border-slate-200/60 dark:border-slate-800 pb-2.5">
               Interviews by Domain
             </h3>
 
@@ -274,38 +271,38 @@ export default function HrAnalyticsDashboard() {
               {/* SVG Donut */}
               <div className="relative h-20 w-20 flex-shrink-0">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-slate-100)" strokeWidth="4" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" className="stroke-slate-200 dark:stroke-slate-800" strokeWidth="4" />
                   {/* segment 1: Frontend (45%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-purple-500)" strokeWidth="4" strokeDasharray="45 100" strokeDashoffset="0" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#9333ea" strokeWidth="4" strokeDasharray="45 100" strokeDashoffset="0" />
                   {/* segment 2: Backend (35%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-brand-500)" strokeWidth="4" strokeDasharray="35 100" strokeDashoffset="-45" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#6366f1" strokeWidth="4" strokeDasharray="35 100" strokeDashoffset="-45" />
                   {/* segment 3: PM (20%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--color-success-500)" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-80" />
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-80" />
                 </svg>
               </div>
 
               {/* Legends */}
               <div className="space-y-2 min-w-0 flex-grow">
                 <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-500">
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                     <span className="h-2 w-2 rounded-full bg-purple-500" />
                     Frontend
                   </span>
-                  <span className="text-slate-800">45%</span>
+                  <span className="text-slate-800 dark:text-slate-100">45%</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-500">
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                     <span className="h-2 w-2 rounded-full bg-indigo-500" />
                     Backend
                   </span>
-                  <span className="text-slate-800">35%</span>
+                  <span className="text-slate-800 dark:text-slate-100">35%</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-500">
+                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     Product
                   </span>
-                  <span className="text-slate-800">20%</span>
+                  <span className="text-slate-800 dark:text-slate-100">20%</span>
                 </div>
               </div>
             </div>

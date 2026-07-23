@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -26,6 +27,20 @@ export const metadata: Metadata = {
   description: "Build hiring pipelines, run voice AI interviews, and get structured bias-audited recruitment shortlists with NextRound.",
 };
 
+const themeInitScript = `
+  (function() {
+    try {
+      var storedTheme = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {}
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,12 +49,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
       </head>
-      <body className="min-h-full flex flex-col bg-transparent text-slate-900 font-sans selection:bg-indigo-500 selection:text-white relative">
+      <body className="min-h-full flex flex-col bg-transparent text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white relative">
         {/* Decorative Background Blobs */}
         <div className="blob-container">
           <div className="blob blob-1"></div>
@@ -47,13 +64,15 @@ export default function RootLayout({
           <div className="blob blob-3"></div>
         </div>
 
-        <ToastProvider>
-          {/* Page Content */}
-          <main className="flex-grow flex flex-col">{children}</main>
+        <ThemeProvider>
+          <ToastProvider>
+            {/* Page Content */}
+            <main className="flex-grow flex flex-col">{children}</main>
 
-          {/* Global Developer/Reviewer Menu */}
-          <RoleSwitcher />
-        </ToastProvider>
+            {/* Global Developer/Reviewer Menu */}
+            <RoleSwitcher />
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

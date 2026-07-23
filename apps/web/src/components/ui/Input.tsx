@@ -20,13 +20,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn('w-full', wrapperClassName)}>
         {label && (
-          <label htmlFor={inputId} className="text-xs font-bold text-slate-700 block mb-1">
+          <label htmlFor={inputId} className="text-xs font-bold text-slate-700 dark:text-slate-200 block mb-1">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 pointer-events-none flex items-center justify-center">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 dark:text-slate-500 pointer-events-none flex items-center justify-center">
               {icon}
             </span>
           )}
@@ -34,8 +34,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'w-full py-2.5 text-sm rounded-xl bg-white/50 transition-all glass-input',
-              'placeholder:text-slate-400 placeholder:font-medium',
+              'w-full py-2.5 text-sm rounded-xl bg-white/50 dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 transition-all glass-input',
+              'placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-medium',
               'focus:outline-none',
               icon ? 'pl-10 pr-4' : 'px-4',
               error && 'border-danger-300 focus:border-danger-500',
@@ -48,12 +48,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
         </div>
         {error && (
-          <p id={`${inputId}-error`} className="mt-1.5 text-xs font-semibold text-danger-600">
+          <p id={`${inputId}-error`} className="mt-1.5 text-xs font-semibold text-danger-600 dark:text-danger-400">
             {error}
           </p>
         )}
         {!error && hint && (
-          <p id={`${inputId}-hint`} className="mt-1.5 text-xs font-medium text-slate-450">
+          <p id={`${inputId}-hint`} className="mt-1.5 text-xs font-medium text-slate-450 dark:text-slate-400">
             {hint}
           </p>
         )}
@@ -76,7 +76,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className={cn('w-full', wrapperClassName)}>
         {label && (
-          <label htmlFor={areaId} className="text-xs font-bold text-slate-700 block mb-1">
+          <label htmlFor={areaId} className="text-xs font-bold text-slate-700 dark:text-slate-200 block mb-1">
             {label}
           </label>
         )}
@@ -84,8 +84,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={areaId}
           className={cn(
-            'w-full px-4 py-2.5 text-sm rounded-xl bg-white/50 transition-all glass-input',
-            'placeholder:text-slate-400 placeholder:font-medium resize-y',
+            'w-full px-4 py-2.5 text-sm rounded-xl bg-white/50 dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 transition-all glass-input',
+            'placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-medium resize-y',
             'focus:outline-none',
             error && 'border-danger-300 focus:border-danger-500',
             className
@@ -93,8 +93,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-invalid={!!error}
           {...props}
         />
-        {error && <p className="mt-1.5 text-xs font-semibold text-danger-600">{error}</p>}
-        {!error && hint && <p className="mt-1.5 text-xs font-medium text-slate-450">{hint}</p>}
+        {error && <p className="mt-1.5 text-xs font-semibold text-danger-600 dark:text-danger-400">{error}</p>}
+        {!error && hint && <p className="mt-1.5 text-xs font-medium text-slate-450 dark:text-slate-400">{hint}</p>}
       </div>
     );
   }

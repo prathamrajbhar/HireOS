@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mic, ArrowRight, Sparkles, Building2, Star, Trophy, User, Sliders } from 'lucide-react';
+import { Mic, ArrowRight, Sparkles, Building2, Star, Trophy, User, Sliders } from '@/lib/lucide-google-icons';
 import { SUGGESTED_COMPANIES, SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
 import CalibrationPanel from './components/CalibrationPanel';
 import { Autocomplete } from '@/components/ui';
@@ -57,13 +57,13 @@ function MockInterviewSetupForm() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16 animate-in fade-in duration-300">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/45 pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-5">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 uppercase mb-2">
-            <Sparkles className="h-3 w-3 text-indigo-650" /> AI Practice Interview
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider text-brand-700 dark:text-orange-300 bg-brand-50 dark:bg-orange-950/60 border border-brand-100 dark:border-orange-900/60 uppercase mb-2">
+            <Sparkles className="h-3 w-3 text-brand-600 dark:text-orange-400" /> AI Practice Interview
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Setup Practice Interview</h1>
-          <p className="text-xs text-slate-500 font-semibold mt-1">Choose target settings and check devices before launching the dynamic conversation.</p>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Setup Practice Interview</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">Choose target settings and check devices before launching the dynamic conversation.</p>
         </div>
       </div>
 
@@ -71,13 +71,15 @@ function MockInterviewSetupForm() {
         {/* Step 1: Target Profile */}
         <div className="glass-card p-6 sm:p-8 space-y-6 !overflow-visible">
           <div>
-            <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2"><Building2 className="h-4.5 w-4.5 text-indigo-555" />1. Job Role</h3>
-            <p className="text-[11px] text-slate-450 font-semibold mt-0.5">Select the target company and role for the AI conversational topics.</p>
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
+              <Building2 className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />1. Job Role
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Select the target company and role for the AI conversational topics.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block">Target Company</label>
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Target Company</label>
               <Autocomplete
                 required
                 options={SUGGESTED_COMPANIES}
@@ -89,7 +91,7 @@ function MockInterviewSetupForm() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block">Target Job Title</label>
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Target Job Title</label>
               <Autocomplete
                 required
                 options={SUGGESTED_ROLES}
@@ -105,22 +107,33 @@ function MockInterviewSetupForm() {
         {/* Step 2: Settings */}
         <div className="glass-card p-6 sm:p-8 space-y-6">
           <div>
-            <h3 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-2"><Sliders className="h-4.5 w-4.5 text-indigo-555" />2. Vetting Settings</h3>
-            <p className="text-[11px] text-slate-455 font-semibold mt-0.5">Define candidate seniority level for standard evaluation routing.</p>
+            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
+              <Sliders className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />2. Vetting Settings
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">Define candidate seniority level for standard evaluation routing.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             <div className="space-y-3">
-              <label className="text-[10px] font-bold text-slate-455 uppercase tracking-wider block">Experience Level</label>
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Experience Level</label>
               <div className="grid grid-cols-3 gap-2">
                 {difficulties.map((d) => {
                   const Icon = d.icon;
                   const isSelected = difficulty === d.key;
                   return (
-                    <button key={d.key} type="button" onClick={() => setDifficulty(d.key)} className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all cursor-pointer ${isSelected ? 'border-indigo-500 bg-indigo-500/5 text-indigo-850' : 'border-slate-200 bg-white/40 text-slate-600 hover:bg-white'}`}>
-                      <Icon className={`h-4.5 w-4.5 mb-1 ${isSelected ? 'text-indigo-650' : 'text-slate-455'}`} />
+                    <button
+                      key={d.key}
+                      type="button"
+                      onClick={() => setDifficulty(d.key)}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-brand-500 bg-brand-500/10 dark:bg-orange-950/40 text-brand-700 dark:text-orange-300'
+                          : 'border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-slate-800/40 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Icon className={`h-4.5 w-4.5 mb-1 ${isSelected ? 'text-brand-600 dark:text-orange-400' : 'text-slate-400 dark:text-slate-500'}`} />
                       <span className="text-[11px] font-bold block">{d.label}</span>
-                      <span className="text-[8px] font-semibold text-slate-400 block mt-0.5">{d.sub}</span>
+                      <span className="text-[8px] font-semibold text-slate-400 dark:text-slate-400 block mt-0.5">{d.sub}</span>
                     </button>
                   );
                 })}
@@ -128,11 +141,11 @@ function MockInterviewSetupForm() {
             </div>
 
             {/* Dynamic length info panel */}
-            <div className="bg-indigo-50/40 border border-indigo-100/50 rounded-2xl p-4 flex gap-3.5 items-start">
-              <Sparkles className="h-5 w-5 text-indigo-600 flex-shrink-0 mt-0.5 animate-pulse" />
+            <div className="bg-brand-50/40 dark:bg-orange-950/30 border border-brand-100/50 dark:border-orange-900/40 rounded-2xl p-4 flex gap-3.5 items-start">
+              <Sparkles className="h-5 w-5 text-brand-600 dark:text-orange-400 flex-shrink-0 mt-0.5 animate-pulse" />
               <div className="space-y-1">
-                <h4 className="text-[11px] font-extrabold text-indigo-950 uppercase tracking-wide">Adaptive AI Vetting Length</h4>
-                <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">The interview is voice-led and fully adaptive. The AI dynamically determines the question path and depth based on your replies. Expect 3 to 5 comprehensive conversational turns.</p>
+                <h4 className="text-[11px] font-extrabold text-brand-950 dark:text-orange-200 uppercase tracking-wide">Adaptive AI Vetting Length</h4>
+                <p className="text-[10px] text-slate-600 dark:text-slate-300 font-semibold leading-relaxed">The interview is voice-led and fully adaptive. The AI dynamically determines the question path and depth based on your replies. Expect 3 to 5 comprehensive conversational turns.</p>
               </div>
             </div>
           </div>
@@ -144,10 +157,10 @@ function MockInterviewSetupForm() {
         {/* Consent & Start */}
         <div className="glass-card p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <label className="flex items-start gap-2.5 cursor-pointer max-w-lg select-none">
-            <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 rounded border-slate-300 bg-white text-indigo-600 cursor-pointer" />
-            <span className="text-[10px] text-slate-550 leading-relaxed font-bold">I agree to let the system analyze my mic audio and camera eye-gaze during the practice interview.</span>
+            <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-brand-600 cursor-pointer" />
+            <span className="text-[10px] text-slate-600 dark:text-slate-300 leading-relaxed font-bold">I agree to let the system analyze my mic audio and camera eye-gaze during the practice interview.</span>
           </label>
-          <button type="submit" disabled={loading || !consent} className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 px-8 text-xs transition-all shadowdisabled:opacity-50 cursor-pointer whitespace-nowrap">
+          <button type="submit" disabled={loading || !consent} className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-2xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 text-white font-extrabold py-3.5 px-8 text-xs transition-all shadow disabled:opacity-50 cursor-pointer whitespace-nowrap">
             <Mic className="h-4.5 w-4.5" /> {loading ? 'Starting Interview...' : 'Start Practice Interview'} <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -158,7 +171,7 @@ function MockInterviewSetupForm() {
 
 export default function MockInterviewSetup() {
   return (
-    <Suspense fallback={<div className="text-center text-xs text-slate-400 p-8">Loading setup parameters...</div>}>
+    <Suspense fallback={<div className="text-center text-xs text-slate-400 dark:text-slate-500 p-8">Loading setup parameters...</div>}>
       <MockInterviewSetupForm />
     </Suspense>
   );

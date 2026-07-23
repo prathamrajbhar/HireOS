@@ -41,3 +41,5 @@ export type { RadarChartProps, RadarSeries } from './RadarChart';
 
 export { ClusterPlot } from './ClusterPlot';
 export type { ClusterPlotProps, ClusterPoint } from './ClusterPlot';
+
+export { ThemeToggle } from './ThemeToggle';

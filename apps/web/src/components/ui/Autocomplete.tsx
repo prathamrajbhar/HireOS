@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/lib/lucide-google-icons';
 import { cn } from '@/lib/cn';
 
 export interface AutocompleteProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -70,13 +70,13 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
     return (
       <div ref={containerRef} className={cn('relative w-full', wrapperClassName)}>
         {label && (
-          <label htmlFor={inputId} className="text-xs font-bold text-slate-700 block mb-1">
+          <label htmlFor={inputId} className="text-xs font-bold text-slate-700 dark:text-slate-200 block mb-1">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 pointer-events-none flex items-center justify-center">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 dark:text-slate-500 pointer-events-none flex items-center justify-center">
               {icon}
             </span>
           )}
@@ -92,9 +92,9 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             className={cn(
-              'w-full py-2.5 text-sm rounded-xl bg-white/50 transition-all glass-input pr-10',
-              'placeholder:text-slate-400 placeholder:font-medium',
-              'focus:outline-none focus:bg-white',
+              'w-full py-2.5 text-sm rounded-xl bg-white/50 dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 transition-all glass-input pr-10',
+              'placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-medium',
+              'focus:outline-none focus:bg-white dark:focus:bg-slate-800',
               icon ? 'pl-10' : 'pl-4',
               error && 'border-danger-300 focus:border-danger-500',
               props.disabled && 'opacity-60 cursor-not-allowed',
@@ -108,14 +108,14 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
             type="button"
             onClick={() => setIsOpen((prev) => !prev)}
             tabIndex={-1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 hover:text-slate-655 cursor-pointer flex items-center justify-center"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500 hover:text-slate-655 dark:hover:text-slate-300 cursor-pointer flex items-center justify-center"
           >
             <ChevronDown className={cn('h-4 w-4 transition-transform duration-200', isOpen && 'rotate-180')} />
           </button>
         </div>
 
         {isOpen && (filteredOptions.length > 0 || value.trim() !== '') && (
-          <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl border border-white/60 bg-white/80 shadow-xl backdrop-blur-md glass-panel py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto rounded-xl border border-white/60 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 shadow-xl backdrop-blur-md glass-panel py-1 animate-in fade-in slide-in-from-top-1 duration-150">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, index) => {
                 const isSelected = value.toLowerCase() === opt.toLowerCase();
@@ -129,14 +129,16 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
                     }}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={cn(
-                      'px-4 py-2 text-xs font-semibold text-slate-700 cursor-pointer transition-all flex items-center justify-between',
-                      isActive ? 'bg-indigo-650 text-white' : 'hover:bg-slate-50',
-                      isSelected && !isActive && 'text-indigo-650 bg-indigo-50/50'
+                      'px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer transition-all flex items-center justify-between',
+                      isActive
+                        ? 'bg-brand-600 dark:bg-orange-600 text-white'
+                        : 'hover:bg-slate-100/60 dark:hover:bg-slate-800/60',
+                      isSelected && !isActive && 'text-brand-600 dark:text-orange-400 bg-brand-50/50 dark:bg-orange-950/40'
                     )}
                   >
                     <span>{opt}</span>
                     {isSelected && (
-                      <span className={cn('text-[10px] font-bold', isActive ? 'text-white' : 'text-indigo-650')}>
+                      <span className={cn('text-[10px] font-bold', isActive ? 'text-white' : 'text-brand-600 dark:text-orange-400')}>
                         Selected
                       </span>
                     )}
@@ -144,7 +146,7 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
                 );
               })
             ) : (
-              <div className="px-4 py-2.5 text-xs font-semibold text-slate-400">
+              <div className="px-4 py-2.5 text-xs font-semibold text-slate-400 dark:text-slate-500">
                 No matching suggestions. Press Enter to use custom value.
               </div>
             )}
@@ -152,12 +154,12 @@ export const Autocomplete = React.forwardRef<HTMLInputElement, AutocompleteProps
         )}
 
         {error && (
-          <p id={`${inputId}-error`} className="mt-1.5 text-xs font-semibold text-danger-600">
+          <p id={`${inputId}-error`} className="mt-1.5 text-xs font-semibold text-danger-600 dark:text-danger-400">
             {error}
           </p>
         )}
         {!error && hint && (
-          <p id={`${inputId}-hint`} className="mt-1.5 text-xs font-medium text-slate-450">
+          <p id={`${inputId}-hint`} className="mt-1.5 text-xs font-medium text-slate-450 dark:text-slate-400">
             {hint}
           </p>
         )}
