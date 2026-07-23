@@ -23,6 +23,8 @@ import {
   ShieldCheck,
   ShieldAlert,
   ArrowLeft,
+  GithubIcon,
+  LinkedinIcon,
 } from '@/lib/lucide-google-icons';
 import SkillsScorecard from './components/SkillsScorecard';
 import DecisionControl from './components/DecisionControl';
@@ -175,12 +177,25 @@ export default function HrCandidateEvaluationPage({ params }: { params: Promise<
                 <Clock className="h-3.5 w-3.5 text-slate-400" /> Applied on {app.appliedDate}
               </span>
               <span>•</span>
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
-                  <Link2 className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-2">
+                <a
+                  href={`https://linkedin.com/in/${app.candidateName.toLowerCase().replace(/\s+/g, '-')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-900/60 px-2.5 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/80 transition-colors"
+                >
+                  <LinkedinIcon className="h-3 w-3" />
+                  <span>LinkedIn</span>
                 </a>
-                <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                  <Globe className="h-3.5 w-3.5" />
+
+                <a
+                  href={`https://github.com/${app.candidateName.toLowerCase().replace(/\s+/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <GithubIcon className="h-3 w-3" />
+                  <span>GitHub</span>
                 </a>
               </div>
             </div>

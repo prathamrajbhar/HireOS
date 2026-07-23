@@ -44,10 +44,6 @@ export default function PublicNavbar() {
                 <span className="text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 font-display">
                   Next<span className="text-brand-600 dark:text-orange-400">Round</span>
                 </span>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-extrabold text-brand-600 dark:text-orange-400 bg-brand-50 dark:bg-orange-950/80 border border-brand-200/60 dark:border-orange-900/60 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  AI Hiring OS
-                </span>
               </div>
             </Link>
           </div>

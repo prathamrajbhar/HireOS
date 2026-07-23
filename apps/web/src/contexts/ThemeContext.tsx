@@ -11,20 +11,24 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light');
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>('dark');
 
   useEffect(() => {
-    // Read actual class on html root (set by inline blocking script)
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    setThemeState(isDarkMode ? 'dark' : 'light');
-    setMounted(true);
+    const root = document.documentElement;
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'light') {
+      root.classList.remove('dark');
+      setThemeState('light');
+    } else {
+      root.classList.add('dark');
+      setThemeState('dark');
+    }
   }, []);
 
   const applyTheme = (newTheme: Theme) => {

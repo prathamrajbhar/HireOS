@@ -23,6 +23,8 @@ import {
   Calendar,
   Sparkles,
   UserCheck,
+  GithubIcon,
+  LinkedinIcon,
 } from '@/lib/lucide-google-icons';
 import { Application } from '@/lib/mockData';
 
@@ -93,7 +95,24 @@ export default function CandidateProfileDrawer({
               <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
                 <span>Stage: <strong className="text-brand-600 dark:text-orange-400 uppercase">{app.stage}</strong></span>
                 <span>•</span>
-                <span>Applied {app.appliedDate}</span>
+                <a
+                  href={`https://linkedin.com/in/${app.candidateName.toLowerCase().replace(/\s+/g, '-')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-900/60 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/80 transition-colors"
+                >
+                  <LinkedinIcon className="h-2.5 w-2.5" />
+                  <span>LinkedIn</span>
+                </a>
+                <a
+                  href={`https://github.com/${app.candidateName.toLowerCase().replace(/\s+/g, '')}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[9px] font-extrabold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <GithubIcon className="h-2.5 w-2.5" />
+                  <span>GitHub</span>
+                </a>
               </div>
             </div>
           </div>

@@ -31,13 +31,14 @@ const themeInitScript = `
   (function() {
     try {
       var storedTheme = localStorage.getItem('theme');
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
-        document.documentElement.classList.add('dark');
-      } else {
+      if (storedTheme === 'light') {
         document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
       }
-    } catch (e) {}
+    } catch (e) {
+      document.documentElement.classList.add('dark');
+    }
   })();
 `;
 
@@ -50,13 +51,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${plusJakartaSans.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
       </head>
-      <body className="min-h-full flex flex-col bg-transparent text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white relative">
+      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-white relative">
         {/* Decorative Background Blobs */}
         <div className="blob-container">
           <div className="blob blob-1"></div>

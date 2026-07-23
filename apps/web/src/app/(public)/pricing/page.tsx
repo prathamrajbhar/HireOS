@@ -112,7 +112,7 @@ export default function PricingPage() {
             Plans Built for Growing Engineering Teams
           </h1>
           <p className="mt-4 text-slate-600 dark:text-slate-400 text-xs sm:text-sm max-w-xl mx-auto font-medium leading-relaxed">
-            Select a plan tailored to your hiring volume. Automate candidate screening with transparent, unbiased evaluation tools.
+            Select a plan tailored to your hiring volume. Automate candidate screening with transparent, reliable evaluation tools.
           </p>
 
           {/* Billing Cycle Toggle */}
