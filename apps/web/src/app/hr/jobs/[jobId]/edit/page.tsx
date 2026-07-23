@@ -3,7 +3,7 @@
 import React, { useState, use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getStoredJobs, saveStoredJob } from '@/lib/mockData';
-import { Sliders, Briefcase, ArrowLeft } from 'lucide-react';
+import { Sliders, Briefcase, ArrowLeft, Building2, MapPin, DollarSign, Layers, Award, Sparkles, Check } from 'lucide-react';
 import Link from 'next/link';
 import { Autocomplete } from '@/components/ui';
 import { SUGGESTED_ROLES } from '@/lib/mockSetupHelpers';
@@ -19,7 +19,11 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
   // Form states
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  
+  const [location, setLocation] = useState('Remote (Worldwide)');
+  const [salary, setSalary] = useState('$140,000 - $180,000');
+  const [experienceLevel, setExperienceLevel] = useState('Senior (5+ yrs)');
+  const [skills, setSkills] = useState<string[]>(['React', 'TypeScript', 'Next.js', 'System Architecture']);
+
   const [techWeight, setTechWeight] = useState(25);
   const [commWeight, setCommWeight] = useState(25);
   const [probWeight, setProbWeight] = useState(25);
@@ -45,6 +49,9 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
       setJob(found);
       setTitle(found.title);
       setDescription(found.description);
+      setLocation(found.location || 'Remote (Worldwide)');
+      setSalary(found.salary || '$140,000 - $180,000');
+      setExperienceLevel(found.experienceLevel || 'Senior (5+ yrs)');
       setTechWeight(found.rubric.technical);
       setCommWeight(found.rubric.communication);
       setProbWeight(found.rubric.problemSolving || 25);
@@ -71,6 +78,9 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
       ...job,
       title,
       description,
+      location,
+      salary,
+      experienceLevel,
       rubric: {
         technical: techWeight,
         communication: commWeight,
@@ -100,81 +110,193 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
   const isRubricBalanced = totalWeight === 100;
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in duration-200">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-4">
+    <div className="space-y-6 max-w-7xl mx-auto animate-in fade-in duration-200 pb-12">
+      {/* Header Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-4">
         <div>
-          <div className="flex items-center gap-1 text-[10px] text-slate-450 font-bold uppercase tracking-wider mb-1">
-            <Link href="/hr/jobs" className="hover:text-purple-650 transition-colors">Jobs</Link>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-600">Edit Settings</span>
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-1">
+            <Link href="/hr/jobs" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Jobs</Link>
+            <span className="text-slate-300 dark:text-slate-700">/</span>
+            <span className="text-slate-700 dark:text-slate-300">Edit Settings</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Edit Job Opening</h1>
-          <p className="text-xs text-slate-505 font-semibold mt-1">
-            Modify active pipeline stages, evaluation parameters, and gating thresholds.
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight font-display">
+            Edit Job Opening
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
+            Modify job specifications, active pipeline stages, evaluation parameters, and gating thresholds.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link
             href="/hr/jobs"
-            className="inline-flex items-center gap-1 bg-white/60 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 px-4 py-2 rounded-full text-xs font-bold transition-all shadow-2xs cursor-pointer"
           >
-            <ArrowLeft className="h-4.5 w-4.5" />
+            <ArrowLeft className="h-4 w-4" />
             Cancel
           </Link>
           <button
             type="button"
             disabled={!isRubricBalanced}
             onClick={handleUpdate}
-            className="rounded-full bg-purple-600 hover:bg-purple-750 text-white font-bold px-5 py-2 text-xs shadow-md transition-all cursor-pointer disabled:opacity-40"
+            className="rounded-full bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 text-white font-extrabold px-6 py-2.5 text-xs shadow-md transition-all cursor-pointer disabled:opacity-40 hover:scale-[1.01]"
           >
             Update Job Listing
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleUpdate} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Details */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md glass-panel space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Position Title</label>
-              <Autocomplete
-                required
-                options={SUGGESTED_ROLES}
-                value={title}
-                onChange={(val) => setTitle(val)}
-                icon={<Briefcase className="h-4 w-4" />}
-                className="text-xs font-semibold"
-              />
+      {/* Balanced 50/50 2-Column Grid */}
+      <form onSubmit={handleUpdate} className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        {/* Left Column: Job Details, Parameters & Description */}
+        <div className="space-y-6">
+          {/* Position Title & Parameters */}
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 md:p-7 shadow-md backdrop-blur-md glass-panel space-y-5">
+            <div className="flex items-center gap-2 border-b border-slate-200/60 dark:border-slate-800 pb-3">
+              <Building2 className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display">
+                Position Basics &amp; Meta
+              </h3>
             </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+                  Position Title
+                </label>
+                <Autocomplete
+                  required
+                  options={SUGGESTED_ROLES}
+                  value={title}
+                  onChange={(val) => setTitle(val)}
+                  icon={<Briefcase className="h-4 w-4 text-slate-400" />}
+                  className="text-xs font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+                    Location
+                  </label>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/50 dark:bg-slate-800/50">
+                    <MapPin className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      required
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
+                      placeholder="e.g. Remote (Worldwide)"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+                    Salary Range
+                  </label>
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/50 dark:bg-slate-800/50">
+                    <DollarSign className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      required
+                      value={salary}
+                      onChange={(e) => setSalary(e.target.value)}
+                      className="w-full bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
+                      placeholder="e.g. $140k - $180k"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+                  Experience Level
+                </label>
+                <select
+                  value={experienceLevel}
+                  onChange={(e) => setExperienceLevel(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-white/50 dark:bg-slate-800/50 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                >
+                  <option value="Junior (0 - 2 yrs)">Junior (0 - 2 yrs)</option>
+                  <option value="Mid Level (2 - 5 yrs)">Mid Level (2 - 5 yrs)</option>
+                  <option value="Senior (5+ yrs)">Senior (5+ yrs)</option>
+                  <option value="Lead / Staff (8+ yrs)">Lead / Staff (8+ yrs)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Job Description Card */}
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 md:p-7 shadow-md backdrop-blur-md glass-panel space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display flex items-center gap-2">
+                <Layers className="h-4.5 w-4.5 text-indigo-500" />
+                Job Description &amp; Scope
+              </h3>
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                Markdown Supported
+              </span>
+            </div>
+
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Description</label>
               <textarea
                 required
-                rows={8}
+                rows={10}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200/80 bg-white/50 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all glass-input"
+                className="w-full px-4 py-3 text-xs rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white/50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-all font-medium leading-relaxed"
+                placeholder="Detail core responsibilities, tech stack expectations, and team goals..."
               />
+            </div>
+
+            {/* Required Skill Tags */}
+            <div className="space-y-2 pt-2 border-t border-slate-200/60 dark:border-slate-800">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                Required Tech Stack Tags
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="text-xs font-semibold px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700 flex items-center gap-1.5"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Configurations Column */}
+        {/* Right Column: AI Rubric & Pipeline Agent Config */}
         <div className="space-y-6">
           {/* Rubric Weights */}
-          <div className="rounded-3xl border border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-md glass-panel space-y-4">
-            <div className="flex items-center gap-1.5 text-purple-605 border-b border-slate-100 pb-2">
-              <Sliders className="h-4.5 w-4.5" />
-              <h3 className="text-xs font-bold text-slate-800 font-sans">Rubric Weighting</h3>
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 md:p-7 shadow-md backdrop-blur-md glass-panel space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Sliders className="h-4.5 w-4.5 text-purple-600 dark:text-purple-400" />
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display">
+                  AI Evaluation Rubric Weights
+                </h3>
+              </div>
+              <span
+                className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase ${
+                  isRubricBalanced
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/60'
+                    : 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/60'
+                }`}
+              >
+                Total: {totalWeight}% {isRubricBalanced ? '(Balanced)' : '(Must Equal 100%)'}
+              </span>
             </div>
-            
-            <div className="space-y-4 text-xs font-semibold text-slate-600">
+
+            <div className="space-y-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
               <div>
-                <div className="flex justify-between mb-1.5 text-[11px]">
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
                   <span>Technical Skills</span>
-                  <span>{techWeight}%</span>
+                  <span className="text-brand-600 dark:text-orange-400 font-extrabold">{techWeight}%</span>
                 </div>
                 <input
                   type="range"
@@ -182,14 +304,14 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
                   max="100"
                   value={techWeight}
                   onChange={(e) => handleWeightChange('tech', Number(e.target.value))}
-                  className="w-full accent-purple-600 cursor-pointer"
+                  className="w-full accent-brand-600 dark:accent-orange-500 cursor-pointer"
                 />
               </div>
 
               <div>
-                <div className="flex justify-between mb-1.5 text-[11px]">
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
                   <span>Communication</span>
-                  <span>{commWeight}%</span>
+                  <span className="text-purple-600 dark:text-purple-400 font-extrabold">{commWeight}%</span>
                 </div>
                 <input
                   type="range"
@@ -202,9 +324,9 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
               </div>
 
               <div>
-                <div className="flex justify-between mb-1.5 text-[11px]">
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
                   <span>Problem Solving</span>
-                  <span>{probWeight}%</span>
+                  <span className="text-pink-600 dark:text-pink-400 font-extrabold">{probWeight}%</span>
                 </div>
                 <input
                   type="range"
@@ -212,14 +334,14 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
                   max="100"
                   value={probWeight}
                   onChange={(e) => handleWeightChange('prob', Number(e.target.value))}
-                  className="w-full accent-purple-600 cursor-pointer"
+                  className="w-full accent-pink-600 cursor-pointer"
                 />
               </div>
 
               <div>
-                <div className="flex justify-between mb-1.5 text-[11px]">
-                  <span>Experience</span>
-                  <span>{expWeight}%</span>
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
+                  <span>Relevant Experience</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{expWeight}%</span>
                 </div>
                 <input
                   type="range"
@@ -227,17 +349,13 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
                   max="100"
                   value={expWeight}
                   onChange={(e) => handleWeightChange('exp', Number(e.target.value))}
-                  className="w-full accent-purple-600 cursor-pointer"
+                  className="w-full accent-emerald-500 cursor-pointer"
                 />
-              </div>
-
-              <div className="text-[10px] text-right font-bold text-slate-400">
-                Total Weight: <span className={isRubricBalanced ? 'text-emerald-600' : 'text-rose-600'}>{totalWeight}%</span> (must equal 100%)
               </div>
             </div>
           </div>
 
-          {/* Pipeline Configuration Card */}
+          {/* Pipeline & Agent Configuration Card */}
           <PipelineConfigCard
             minScore={minScore}
             setMinScore={setMinScore}

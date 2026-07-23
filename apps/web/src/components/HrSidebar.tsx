@@ -29,8 +29,7 @@ export default function HrSidebar({ avatar = '/avatar-boy.jpg', name = 'Karan Ma
       items: [
         { name: 'Overview', path: '/hr/dashboard', icon: LayoutDashboard },
         { name: 'Jobs', path: '/hr/jobs', icon: Briefcase },
-        { name: 'Talent Pool', path: '/hr/talent-pool', icon: Users2 },
-        { name: 'Question Bank', path: '/hr/question-bank', icon: Library },
+        { name: 'Candidate Directory', path: '/hr/talent-pool', icon: Users2 },
         { name: 'Analytics', path: '/hr/analytics', icon: BarChart3 },
       ],
     },
@@ -60,6 +59,9 @@ export default function HrSidebar({ avatar = '/avatar-boy.jpg', name = 'Karan Ma
             Next<span className="text-brand-600 dark:text-orange-400 bg-gradient-to-r from-brand-600 to-success-600 dark:from-orange-400 dark:to-emerald-400 bg-clip-text text-transparent">Round</span>
           </span>
         </Link>
+        <span className="text-[10px] text-orange-600 dark:text-orange-400 font-extrabold tracking-widest uppercase block mt-1 ml-11 select-none">
+          HR Console
+        </span>
       </div>
 
       {/* Nav Menu */}
@@ -78,15 +80,15 @@ export default function HrSidebar({ avatar = '/avatar-boy.jpg', name = 'Karan Ma
                     key={item.path}
                     href={item.path}
                     className={`group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all border-l-2 duration-200 select-none ${isActive
-                        ? 'bg-purple-600/10 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-600 dark:border-purple-400 shadow-sm'
+                        ? 'bg-orange-500/10 dark:bg-orange-500/15 text-slate-900 dark:text-slate-100 border-orange-500 dark:border-orange-400 shadow-sm font-bold'
                         : 'text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200'
                       }`}
                   >
-                    <Icon className={`h-4.5 w-4.5 transition-transform duration-200 ease-out group-hover:scale-110 ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
+                    <Icon className={`h-4.5 w-4.5 transition-transform duration-200 ease-out group-hover:scale-110 ${isActive ? 'text-orange-600 dark:text-orange-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
                       }`} />
                     <span className="flex-1">{item.name}</span>
                     {isActive && (
-                      <span className="h-1.5 w-1.5 rounded-full bg-purple-500 opacity-80" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-500 dark:bg-orange-400 opacity-90" />
                     )}
                   </Link>
                 );
@@ -107,7 +109,7 @@ export default function HrSidebar({ avatar = '/avatar-boy.jpg', name = 'Karan Ma
                 alt={name}
                 width={36}
                 height={36}
-                className="h-9 w-9 rounded-xl border border-purple-100 dark:border-purple-900/60 shadow-sm object-cover"
+                className="h-9 w-9 rounded-xl border border-orange-100 dark:border-orange-900/60 shadow-sm object-cover"
                 unoptimized
               />
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900"></span>

@@ -39,12 +39,12 @@ export default function HrTalentPoolPage() {
       {/* Console Top branding */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-5">
         <div>
-          <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest block mb-1">
-            Recruiter Console
+          <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest block mb-1">
+            HR Console
           </span>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Talent Pool Directory</h1>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Candidate Directory</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
-            Browse candidate profiles, scores, and candidate information.
+            Search candidate profiles, evaluation scorecards, and skill profiles across your hiring pipeline.
           </p>
         </div>
       </div>

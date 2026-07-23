@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { mockJobs, mockApplications } from '@/lib/mockData';
+import { JobCard } from '@/components/ui';
 import { Search, MapPin, DollarSign, Briefcase, Filter } from '@/lib/lucide-google-icons';
 
 export default function CandidateJobsPage() {
@@ -90,79 +91,23 @@ export default function CandidateJobsPage() {
             const matchPercent = job.id === 'job-101' ? 98 : job.id === 'job-102' ? 89 : 74;
 
             return (
-              <div
+              <JobCard
                 key={job.id}
-                className="rounded-2xl border border-white/60 dark:border-slate-800 bg-white/40 dark:bg-slate-900/60 p-5 shadow-sm hover:shadow-md transition-all glass-panel glass-panel-hover flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-extrabold text-base shadow-sm overflow-hidden p-1 flex-shrink-0">
-                        {job.orgLogo.startsWith('http') || job.orgLogo.startsWith('/') ? (
-                          <img src={job.orgLogo} alt={job.orgName} className="h-full w-full object-contain" />
-                        ) : (
-                          job.orgLogo
-                        )}
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{job.title}</h3>
-                          {hasApplied && (
-                            <span className="text-[8px] font-extrabold px-1.5 py-0.5 rounded bg-brand-50 dark:bg-orange-950/60 text-brand-700 dark:text-orange-300 border border-brand-150 dark:border-orange-900/60 uppercase">
-                              Applied
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[11px] font-semibold text-brand-600 dark:text-orange-400 flex items-center gap-1.5">
-                          {job.orgName}
-                          <span className="h-1 w-1 rounded-full bg-slate-350 dark:bg-slate-600"></span>
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">{matchPercent}% Score</span>
-                        </span>
-                      </div>
-                    </div>
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                      job.status === 'active' 
-                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900/60' 
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
-                    }`}>
-                      {job.status}
-                    </span>
-                  </div>
-
-                  <p className="mt-4 text-xs text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed font-medium">
-                    {job.description}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-t border-slate-200/50 dark:border-slate-800 pt-4">
-                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-semibold">
-                      <MapPin className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-semibold">
-                      <DollarSign className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-                      <span>{job.salary}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-semibold">
-                      <Briefcase className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-                      <span>{job.experienceLevel}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-center justify-between pt-2">
-                  <span className="text-[9px] text-slate-400 dark:text-slate-400 font-bold">
-                    Posted on {job.postedDate}
-                  </span>
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/candidate/jobs/${job.id}`}
-                      className="text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-brand-600 dark:hover:text-orange-400 transition-colors border border-slate-200 dark:border-slate-700 bg-white/40 dark:bg-slate-800/40 px-4 py-2 rounded-full glass-panel"
-                    >
-                      View details
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                id={job.id}
+                orgName={job.orgName}
+                orgLogo={job.orgLogo}
+                title={job.title}
+                description={job.description}
+                location={job.location}
+                salary={job.salary}
+                experienceLevel={job.experienceLevel}
+                postedDate={job.postedDate}
+                applicantsCount={job.applicantsCount}
+                status={job.status}
+                matchScore={matchPercent}
+                hasApplied={hasApplied}
+                viewHref={`/candidate/jobs/${job.id}`}
+              />
             );
           })}
         </div>

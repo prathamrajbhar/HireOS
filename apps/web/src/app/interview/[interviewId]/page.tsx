@@ -37,34 +37,36 @@ export default function LiveInterviewRoom({ params }: { params: Promise<{ interv
     },
   });
 
+  if (stage === 'check') {
+    return (
+      <InterviewCheckScreen
+        company={app.orgName}
+        role={app.jobTitle}
+        camActive={camActive}
+        onJoin={startSession}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-center p-6">
-      {stage === 'check' ? (
-        <div className="max-w-md mx-auto text-slate-800">
-          <InterviewCheckScreen
-            company={app.orgName}
-            role={app.jobTitle}
-            camActive={camActive}
-            onJoin={startSession}
-          />
-        </div>
-      ) : (
-        <InterviewActiveConsole
-          messages={messages}
-          phase={phase}
-          timeRemaining={timeRemaining}
-          micActive={micActive}
-          camActive={camActive}
-          isAnalyzing={isAnalyzing}
-          isSimulating={isSimulating}
-          isDarkTheme={true}
-          onSubmitAnswer={submitAnswer}
-          onSimulateSpeaking={simulateSpeaking}
-          onEndSession={wrapUp}
-          onToggleMic={toggleMic}
-          onToggleCam={toggleCam}
-        />
-      )}
+    <div className="h-screen w-screen bg-slate-950 text-white flex flex-col justify-between overflow-hidden p-2">
+      <InterviewActiveConsole
+        messages={messages}
+        phase={phase}
+        timeRemaining={timeRemaining}
+        micActive={micActive}
+        camActive={camActive}
+        isAnalyzing={isAnalyzing}
+        isSimulating={isSimulating}
+        isDarkTheme={true}
+        onSubmitAnswer={submitAnswer}
+        onSimulateSpeaking={simulateSpeaking}
+        onEndSession={wrapUp}
+        onToggleMic={toggleMic}
+        onToggleCam={toggleCam}
+        company={app.orgName}
+        role={app.jobTitle}
+      />
     </div>
   );
 }

@@ -1,43 +1,55 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   BarChart3,
   TrendingUp,
   Scale,
-  Clock
+  Clock,
+  DollarSign,
+  Download,
+  ArrowUpRight,
+  CheckCircle2,
+  AlertCircle,
+  Users,
+  Award,
+  ShieldCheck,
+  Sparkles,
 } from '@/lib/lucide-google-icons';
+import { mockJobs } from '@/lib/mockData';
 
 export default function HrAnalyticsDashboard() {
+  const [timeframe, setTimeframe] = useState<'30d' | '90d' | 'ytd'>('30d');
+  const [department, setDepartment] = useState<string>('all');
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
 
+  // Simple funnel steps
   const funnelSteps = [
-    { name: 'Sourced Candidates', count: 54, pct: 100 },
-    { name: 'AI Screened', count: 32, pct: 59 },
-    { name: 'Interviews Completed', count: 18, pct: 33 },
-    { name: 'Hiring Decisions', count: 8, pct: 14 }
+    { name: 'Total Applicants', count: 142, pct: 100 },
+    { name: 'Passed Resume Screen', count: 98, pct: 69 },
+    { name: 'Passed MCQ & Coding Test', count: 54, pct: 38 },
+    { name: 'Completed AI Voice Interview', count: 28, pct: 20 },
+    { name: 'Offers Sent', count: 18, pct: 13 },
   ];
 
-  // Data for Vetting throughput trends
+  // Monthly candidate numbers
   const trendData = [
-    { month: 'Jan', count: 24, rate: 68 },
-    { month: 'Feb', count: 45, rate: 72 },
-    { month: 'Mar', count: 38, rate: 70 },
-    { month: 'Apr', count: 70, rate: 78 },
-    { month: 'May', count: 56, rate: 75 },
-    { month: 'Jun', count: 85, rate: 81 },
-    { month: 'Jul', count: 98, rate: 85 },
+    { month: 'Jan', count: 32, hires: 4 },
+    { month: 'Feb', count: 48, hires: 6 },
+    { month: 'Mar', count: 42, hires: 5 },
+    { month: 'Apr', count: 74, hires: 9 },
+    { month: 'May', count: 62, hires: 7 },
+    { month: 'Jun', count: 88, hires: 12 },
+    { month: 'Jul', count: 104, hires: 15 },
   ];
 
-  // SVG Coordinates calculation for 500x200 viewport
-  // X: 40 to 460
-  // Y: 20 to 160 (mapped from value 0 to 100)
   const getSvgCoordinates = () => {
-    const width = 420; // 460 - 40
-    const height = 140; // 160 - 20
+    const width = 420;
+    const height = 130;
     const points = trendData.map((d, i) => {
-      const x = 40 + (i * (width / (trendData.length - 1)));
-      const y = 160 - ((d.count / 100) * height);
+      const x = 45 + i * (width / (trendData.length - 1));
+      const y = 160 - (d.count / 120) * height;
       return { x, y, ...d };
     });
 
@@ -49,103 +61,262 @@ export default function HrAnalyticsDashboard() {
 
   const { points, linePath, areaPath } = getSvgCoordinates();
 
+  const handleExportCSV = () => {
+    const csvContent =
+      'Stage,Candidate Count,Percentage\n' +
+      funnelSteps.map((s) => `"${s.name}",${s.count},${s.pct}%`).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `HireOS_Hiring_Analytics_${timeframe}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 pb-12 font-sans">
+      {/* Page Header & Filter Controls */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-4">
+        <div>
+          <span className="text-[10px] font-extrabold text-brand-600 dark:text-orange-400 uppercase tracking-widest block mb-1">
+            HR Console
+          </span>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight font-display">
+            Hiring Analytics &amp; Reports
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
+            Track hiring speed, applicant results, candidate ratings, and drop-off points.
+          </p>
+        </div>
 
-      {/* Page Header */}
-      <div className="border-b border-slate-200/60 dark:border-slate-800 pb-4">
-        <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest block mb-1">
-          Intelligence Console
-        </span>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Hiring Analytics</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
-          Review recruiting volume conversion funnels, monthly interview completion trends, and bias check aggregate reports.
-        </p>
+        {/* Toolbar Filters */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Timeframe Pills */}
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 select-none">
+            <button
+              type="button"
+              onClick={() => setTimeframe('30d')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                timeframe === '30d'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              30 Days
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimeframe('90d')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                timeframe === '90d'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              90 Days
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimeframe('ytd')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                timeframe === 'ytd'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Year to Date
+            </button>
+          </div>
+
+          {/* Department Filter Dropdown */}
+          <select
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+          >
+            <option value="all">All Departments</option>
+            <option value="engineering">Engineering</option>
+            <option value="product">Product Management</option>
+            <option value="design">UI/UX Design</option>
+          </select>
+
+          {/* Export CSV button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all shadow-sm cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>Export Report</span>
+          </button>
+        </div>
       </div>
 
-      {/* Overview Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-
-        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 shadow-xl backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
-          <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-inner">
-            <Clock className="h-5 w-5" />
+      {/* Top 4 KPI Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Time to Hire */}
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-5 shadow-md backdrop-blur-md glass-panel flex items-center justify-between hover:scale-[1.01] transition-all">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              Average Time to Hire
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-display block">42 Hours</span>
+            <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+              <TrendingUp className="h-3 w-3" /> 72% faster than 14-day average
+            </span>
           </div>
-          <div>
-            <span className="block text-xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">42 Hours</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-1">Avg Time-to-Hire</span>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 shadow-xl backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
-          <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner">
-            <Scale className="h-5 w-5" />
-          </div>
-          <div>
-            <span className="block text-xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">98.5%</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-1">Bias Norm Compliance</span>
+          <div className="h-11 w-11 rounded-2xl bg-orange-50 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-900/60 flex items-center justify-center text-orange-600 dark:text-orange-400 flex-shrink-0">
+            <Clock className="h-5.5 w-5.5" />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 shadow-xl backdrop-blur-md glass-panel flex items-center gap-4 hover:scale-[1.01] transition-transform">
-          <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner">
-            <TrendingUp className="h-5 w-5" />
+        {/* Card 2: Pass Rate */}
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-5 shadow-md backdrop-blur-md glass-panel flex items-center justify-between hover:scale-[1.01] transition-all">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              Candidates Passing AI Test
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-display block">64.2%</span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">
+              48 out of 74 candidates passed
+            </span>
           </div>
-          <div>
-            <span className="block text-xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">74%</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider block mt-1">Hiring Conversion Gain</span>
+          <div className="h-11 w-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+            <Award className="h-5.5 w-5.5" />
           </div>
         </div>
 
+        {/* Card 3: Fairness Check */}
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-5 shadow-md backdrop-blur-md glass-panel flex items-center justify-between hover:scale-[1.01] transition-all">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              Fairness &amp; Bias Check
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-display block">99.2%</span>
+            <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+              <ShieldCheck className="h-3 w-3" /> 100% Fair Evaluation
+            </span>
+          </div>
+          <div className="h-11 w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+            <Scale className="h-5.5 w-5.5" />
+          </div>
+        </div>
+
+        {/* Card 4: Cost Savings */}
+        <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-5 shadow-md backdrop-blur-md glass-panel flex items-center justify-between hover:scale-[1.01] transition-all">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">
+              Cost Saved Per Hire
+            </span>
+            <span className="text-2xl font-black text-slate-900 dark:text-slate-100 font-display block">$3,420</span>
+            <span className="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 block">
+              24 hours saved per candidate
+            </span>
+          </div>
+          <div className="h-11 w-11 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-900/60 flex items-center justify-center text-purple-600 dark:text-purple-400 flex-shrink-0">
+            <DollarSign className="h-5.5 w-5.5" />
+          </div>
+        </div>
       </div>
 
-      {/* Main Charts Content */}
+      {/* Main Grid Section (8 Cols / 4 Cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-
-        {/* Left Column: Funnel & Line Chart */}
+        {/* Left Column (2 Cols) */}
         <div className="lg:col-span-2 space-y-6">
-
-          {/* SVG Trend Line Chart */}
-          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 md:p-8 shadow-md backdrop-blur-md glass-panel space-y-6">
+          {/* Chart 1: Hiring Stage Breakdown */}
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 md:p-7 shadow-md backdrop-blur-md glass-panel space-y-5">
             <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                <BarChart3 className="h-4.5 w-4.5 text-purple-600 dark:text-purple-400" />
-                Hiring Activity Trend
-              </h3>
-              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-150 dark:border-emerald-900/60 px-2 py-0.5 rounded-md flex items-center gap-0.5">
-                <TrendingUp className="h-3 w-3" />
-                +25% MoM
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-display">
+                  <BarChart3 className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />
+                  Hiring Stage Breakdown
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  Number of candidates remaining at each interview stage.
+                </p>
+              </div>
+              <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-900">
+                12.6% Final Pass Rate
               </span>
             </div>
 
-            {/* SVG Plot */}
-            <div className="relative">
+            <div className="space-y-4">
+              {funnelSteps.map((step, idx) => (
+                <div key={idx} className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs font-extrabold text-slate-900 dark:text-slate-100">
+                    <span className="flex items-center gap-2">
+                      <span className="h-5 w-5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] flex items-center justify-center text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        {idx + 1}
+                      </span>
+                      {step.name}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-slate-500 dark:text-slate-400 font-bold">{step.count} candidates</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{step.pct}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-200/60 dark:bg-slate-800/60 rounded-full h-3 overflow-hidden p-0.5">
+                    <div
+                      className="bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-orange-500 dark:to-indigo-500 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${step.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Chart 2: Monthly Applicants Evaluated */}
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 md:p-7 shadow-md backdrop-blur-md glass-panel space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-display">
+                <TrendingUp className="h-4.5 w-4.5 text-purple-600 dark:text-purple-400" />
+                Monthly Applicants Evaluated
+              </h3>
+              <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 px-2.5 py-1 rounded-full flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                +25% Growth
+              </span>
+            </div>
+
+            {/* SVG Interactive Line Plot */}
+            <div className="relative pt-2">
               <svg className="w-full h-auto" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Grids */}
-                <line x1="40" y1="20" x2="460" y2="20" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="55" x2="460" y2="55" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="90" x2="460" y2="90" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
-                <line x1="40" y1="125" x2="460" y2="125" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                {/* Gridlines */}
+                <line x1="40" y1="20" x2="460" y2="20" stroke="currentColor" className="text-slate-200/60 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="55" x2="460" y2="55" stroke="currentColor" className="text-slate-200/60 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="90" x2="460" y2="90" stroke="currentColor" className="text-slate-200/60 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
+                <line x1="40" y1="125" x2="460" y2="125" stroke="currentColor" className="text-slate-200/60 dark:text-slate-800" strokeWidth="1" strokeDasharray="4" />
                 <line x1="40" y1="160" x2="460" y2="160" stroke="currentColor" className="text-slate-300 dark:text-slate-700" strokeWidth="1" />
 
                 {/* Y Axis Labels */}
-                <text x="15" y="24" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">100</text>
-                <text x="15" y="94" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">50</text>
+                <text x="15" y="24" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">120</text>
+                <text x="15" y="94" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">60</text>
                 <text x="20" y="164" className="fill-slate-400 dark:fill-slate-500 text-[8px] font-bold font-mono">0</text>
 
                 {/* Area Gradient Fill */}
                 <path d={areaPath} fill="url(#purpleAreaGrad)" />
 
                 {/* Line Path */}
-                <path d={linePath} stroke="url(#purpleLineGrad)" strokeWidth="3" strokeLinecap="round" />
+                <path d={linePath} stroke="url(#purpleLineGrad)" strokeWidth="3.5" strokeLinecap="round" />
 
-                {/* Interactive Points */}
+                {/* Interactive Dots */}
                 {points.map((p, idx) => (
-                  <g key={idx} className="cursor-pointer group" onMouseEnter={() => setActiveTooltip(idx)} onMouseLeave={() => setActiveTooltip(null)}>
+                  <g
+                    key={idx}
+                    className="cursor-pointer group"
+                    onMouseEnter={() => setActiveTooltip(idx)}
+                    onMouseLeave={() => setActiveTooltip(null)}
+                  >
                     <circle
                       cx={p.x}
                       cy={p.y}
                       r={activeTooltip === idx ? '6' : '4'}
-                      className={activeTooltip === idx ? 'fill-purple-600 dark:fill-purple-400' : 'fill-purple-500 dark:fill-purple-400'}
+                      className={activeTooltip === idx ? 'fill-brand-600 dark:fill-orange-400' : 'fill-purple-600 dark:fill-purple-400'}
                       stroke="currentColor"
                       strokeWidth="2"
                     />
@@ -157,8 +328,8 @@ export default function HrAnalyticsDashboard() {
                   <text
                     key={idx}
                     x={p.x}
-                    y="180"
-                    className={activeTooltip === idx ? 'fill-purple-600 dark:fill-purple-400 font-bold text-[9px]' : 'fill-slate-500 dark:fill-slate-400 font-bold text-[9px]'}
+                    y="182"
+                    className={activeTooltip === idx ? 'fill-brand-600 dark:fill-orange-400 font-extrabold text-[9px]' : 'fill-slate-500 dark:fill-slate-400 font-bold text-[9px]'}
                     textAnchor="middle"
                   >
                     {p.month}
@@ -172,146 +343,173 @@ export default function HrAnalyticsDashboard() {
                     <stop offset="100%" stopColor="#ea580c" />
                   </linearGradient>
                   <linearGradient id="purpleAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#9333ea" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#9333ea" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#ea580c" stopOpacity="0" />
                   </linearGradient>
                 </defs>
               </svg>
 
-              {/* Tooltip Hover Overlay */}
+              {/* Tooltip Hover Card */}
               {activeTooltip !== null && (
                 <div
-                  className="absolute bg-slate-900 dark:bg-slate-800 text-white rounded-xl p-2.5 shadow-xl text-[10px] pointer-events-none space-y-0.5 border border-slate-800 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-100"
+                  className="absolute bg-slate-900 text-white rounded-xl p-2.5 shadow-xl text-[10px] pointer-events-none space-y-0.5 border border-slate-700 animate-in fade-in zoom-in-95 duration-100 z-10"
                   style={{
                     left: `${(points[activeTooltip].x / 500) * 100}%`,
-                    top: `${(points[activeTooltip].y / 200) * 100 - 30}%`,
-                    transform: 'translate(-50%, -50%)'
+                    top: `${(points[activeTooltip].y / 200) * 100 - 25}%`,
+                    transform: 'translate(-50%, -50%)',
                   }}
                 >
                   <span className="block font-black text-slate-400 uppercase tracking-wider leading-none">
-                    {trendData[activeTooltip].month} Session
+                    {trendData[activeTooltip].month} Results
                   </span>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="font-extrabold text-white">Throughput: {trendData[activeTooltip].count}</span>
-                    <span className="text-emerald-400 font-bold">({trendData[activeTooltip].rate}% rate)</span>
+                    <span className="font-extrabold text-white">Evaluated: {trendData[activeTooltip].count}</span>
+                    <span className="text-emerald-400 font-extrabold">({trendData[activeTooltip].hires} Hired)</span>
                   </div>
                 </div>
               )}
             </div>
           </div>
-
-          {/* Conversion Funnel */}
-          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 md:p-8 shadow-md backdrop-blur-md glass-panel space-y-6">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 border-b border-slate-200/60 dark:border-slate-800 pb-2.5">
-              Hiring Conversion Funnel
-            </h3>
-
-            <div className="space-y-4">
-              {funnelSteps.map((step, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-200">
-                    <span>{step.name}</span>
-                    <span className="text-slate-400 dark:text-slate-400 font-extrabold">{step.count} ({step.pct}%)</span>
-                  </div>
-                  <div className="w-full bg-slate-200/50 dark:bg-slate-800/60 rounded-full h-3">
-                    <div
-                      className="bg-gradient-to-r from-purple-500 to-indigo-600 h-3 rounded-full transition-all duration-500 shadow-sm"
-                      style={{ width: `${step.pct}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
 
-        {/* Right Column: Diversity & Distribution */}
+        {/* Right Column: Dropoff Analysis & Ratings (1 Col) */}
         <div className="space-y-6">
-
-          {/* Diversity Check Index */}
-          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
+          {/* Card 1: Where Candidates Drop Off */}
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
             <div className="border-b border-slate-200/60 dark:border-slate-800 pb-2.5">
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">Diversity Check Index</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">Demographics audit</p>
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display flex items-center gap-2">
+                <AlertCircle className="h-4.5 w-4.5 text-amber-500" />
+                Where Candidates Drop Off
+              </h3>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                Main reasons candidates do not advance to the next step.
+              </p>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-              Anonymized metrics report variance comparison ratios between different genders and regional schools.
-            </p>
 
-            <div className="space-y-4 pt-2">
-              <div>
-                <div className="flex justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                  <span>Gender Variance Score</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">0.02% variance</span>
+            <div className="space-y-3.5 text-xs font-semibold">
+              <div className="p-3 rounded-2xl bg-amber-50/60 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 space-y-1">
+                <div className="flex justify-between items-center text-amber-800 dark:text-amber-300 font-extrabold">
+                  <span>Hard Coding Test</span>
+                  <span>24% Left</span>
                 </div>
-                <div className="w-full bg-slate-200/50 dark:bg-slate-800/60 rounded-full h-1.5">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full" style={{ width: '99%' }}></div>
-                </div>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                  Candidates struggled on difficult coding questions.
+                </p>
               </div>
-              <div>
-                <div className="flex justify-between text-[11px] font-semibold text-slate-700 dark:text-slate-200 mb-1">
-                  <span>School Origin Weighting</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">0.05% variance</span>
+
+              <div className="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/60 space-y-1">
+                <div className="flex justify-between items-center text-indigo-800 dark:text-indigo-300 font-extrabold">
+                  <span>Interview Booking Delays</span>
+                  <span>12% Left</span>
                 </div>
-                <div className="w-full bg-slate-200/50 dark:bg-slate-800/60 rounded-full h-1.5">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full" style={{ width: '98%' }}></div>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                  Candidates took longer than 48 hours to select an interview time.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-rose-50/60 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-900/60 space-y-1">
+                <div className="flex justify-between items-center text-rose-800 dark:text-rose-300 font-extrabold">
+                  <span>Scored Below Passing Mark</span>
+                  <span>15% Left</span>
                 </div>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                  Candidates scored below the required 80% passing score.
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Vetting Distribution Donuts */}
-          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 border-b border-slate-200/60 dark:border-slate-800 pb-2.5">
-              Interviews by Domain
+          {/* Card 2: AI Accuracy & Candidate Rating */}
+          <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 border-b border-slate-200/60 dark:border-slate-800 pb-2.5 font-display flex items-center gap-2">
+              <Sparkles className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />
+              AI Accuracy &amp; Candidate Rating
             </h3>
 
-            <div className="flex items-center gap-6 py-2">
-              {/* SVG Donut */}
-              <div className="relative h-20 w-20 flex-shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="15.915" fill="none" className="stroke-slate-200 dark:stroke-slate-800" strokeWidth="4" />
-                  {/* segment 1: Frontend (45%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#9333ea" strokeWidth="4" strokeDasharray="45 100" strokeDashoffset="0" />
-                  {/* segment 2: Backend (35%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#6366f1" strokeWidth="4" strokeDasharray="35 100" strokeDashoffset="-45" />
-                  {/* segment 3: PM (20%) */}
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#10b981" strokeWidth="4" strokeDasharray="20 100" strokeDashoffset="-80" />
-                </svg>
+            <div className="space-y-4 text-xs font-semibold">
+              <div>
+                <div className="flex justify-between text-slate-800 dark:text-slate-200 mb-1 font-extrabold">
+                  <span>Candidate Experience Rating</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">4.8 / 5.0 Rating</span>
+                </div>
+                <div className="w-full bg-slate-200/60 dark:bg-slate-800/60 rounded-full h-2 overflow-hidden">
+                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: '96%' }} />
+                </div>
               </div>
 
-              {/* Legends */}
-              <div className="space-y-2 min-w-0 flex-grow">
-                <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                    <span className="h-2 w-2 rounded-full bg-purple-500" />
-                    Frontend
-                  </span>
-                  <span className="text-slate-800 dark:text-slate-100">45%</span>
+              <div>
+                <div className="flex justify-between text-slate-800 dark:text-slate-200 mb-1 font-extrabold">
+                  <span>AI Evaluation Accuracy</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">98.4% Accuracy</span>
                 </div>
-                <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                    <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                    Backend
-                  </span>
-                  <span className="text-slate-800 dark:text-slate-100">35%</span>
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    Product
-                  </span>
-                  <span className="text-slate-800 dark:text-slate-100">20%</span>
+                <div className="w-full bg-slate-200/60 dark:bg-slate-800/60 rounded-full h-2 overflow-hidden">
+                  <div className="bg-indigo-500 h-full rounded-full" style={{ width: '98%' }} />
                 </div>
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
 
+      {/* Bottom Section: Active Job Listings Table */}
+      <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 md:p-7 shadow-md backdrop-blur-md glass-panel space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display flex items-center gap-2">
+              <Users className="h-4.5 w-4.5 text-brand-600 dark:text-orange-400" />
+              Active Job Listings &amp; Applicant Count
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+              Live overview of candidates across active open roles.
+            </p>
+          </div>
+
+          <Link
+            href="/hr/jobs"
+            className="text-brand-600 dark:text-orange-400 hover:underline text-xs font-extrabold flex items-center gap-0.5 cursor-pointer"
+          >
+            <span>View All Jobs</span>
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200/60 dark:border-slate-800 text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">
+                <th className="py-3 px-4">Job Title</th>
+                <th className="py-3 px-4">Location</th>
+                <th className="py-3 px-4">Total Applicants</th>
+                <th className="py-3 px-4">Pass Rate</th>
+                <th className="py-3 px-4">Average Candidate Score</th>
+                <th className="py-3 px-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200">
+              {mockJobs.slice(0, 5).map((j) => (
+                <tr key={j.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <td className="py-3.5 px-4">
+                    <div className="font-extrabold text-slate-900 dark:text-slate-100 font-display">{j.title}</div>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{j.orgName}</span>
+                  </td>
+                  <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400">{j.location}</td>
+                  <td className="py-3.5 px-4 font-bold">{j.applicantsCount} candidates</td>
+                  <td className="py-3.5 px-4 text-emerald-600 dark:text-emerald-400 font-extrabold">
+                    {Math.min(85, Math.max(50, j.applicantsCount * 4))}%
+                  </td>
+                  <td className="py-3.5 px-4 font-bold">{j.thresholds.minScore + 4}%</td>
+                  <td className="py-3.5 px-4 text-right">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 px-2.5 py-1 rounded-full">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Hiring Active
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

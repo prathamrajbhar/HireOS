@@ -118,7 +118,7 @@ export default function HrLayout({
               >
                 <Bell className="h-4.5 w-4.5" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-purple-500 animate-pulse"></span>
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
                 )}
               </button>
 
@@ -130,7 +130,7 @@ export default function HrLayout({
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-black text-slate-800 dark:text-slate-200">Notifications</span>
                         {unreadCount > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-[9px] font-black text-purple-600 dark:text-purple-400 uppercase border border-purple-100 dark:border-purple-900/60">
+                          <span className="px-1.5 py-0.5 rounded-full bg-orange-50 dark:bg-orange-950/60 text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase border border-orange-100 dark:border-orange-900/60">
                             {unreadCount} New
                           </span>
                         )}
@@ -138,7 +138,7 @@ export default function HrLayout({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={markAllAsRead}
-                          className="text-[9px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                          className="text-[9px] font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
                         >
                           Mark read
                         </button>
@@ -160,10 +160,10 @@ export default function HrLayout({
                             onClick={() => toggleRead(n.id)}
                             className={`p-3 rounded-2xl border transition-all text-[11px] cursor-pointer flex gap-2 items-start ${n.read
                                 ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-semibold'
-                                : 'bg-purple-50 dark:bg-purple-950/40 border-purple-100 dark:border-purple-900/50 text-slate-700 dark:text-slate-200 font-extrabold shadow-sm'
+                                : 'bg-orange-50 dark:bg-orange-950/40 border-orange-100 dark:border-orange-900/50 text-slate-700 dark:text-slate-200 font-extrabold shadow-sm'
                               }`}
                           >
-                            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 ${n.read ? 'bg-slate-300 dark:bg-slate-700' : 'bg-purple-500'}`} />
+                            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 mt-1.5 ${n.read ? 'bg-slate-300 dark:bg-slate-700' : 'bg-orange-500'}`} />
                             <div className="min-w-0 flex-1">
                               <p className="leading-relaxed break-words">{n.text}</p>
                               <span className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold block mt-1">{n.time}</span>
@@ -190,7 +190,7 @@ export default function HrLayout({
                 alt="Recruiter Avatar"
                 width={32}
                 height={32}
-                className="h-8 w-8 rounded-full border border-purple-100 dark:border-purple-900/60 shadow-sm object-cover"
+                className="h-8 w-8 rounded-full border border-orange-100 dark:border-orange-900/60 shadow-sm object-cover"
                 unoptimized
               />
             </div>

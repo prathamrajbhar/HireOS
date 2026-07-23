@@ -1,73 +1,190 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { Play } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CompanyLogo } from '@/components/ui';
+import {
+  Video,
+  Mic,
+  Maximize2,
+  Wifi,
+  CheckCircle2,
+} from '@/lib/lucide-google-icons';
 
 interface InterviewCheckScreenProps {
   company: string;
   role: string;
-  camActive: boolean;
+  camActive?: boolean;
   onJoin: () => void;
 }
 
 export default function InterviewCheckScreen({
   company,
   role,
-  camActive,
   onJoin,
 }: InterviewCheckScreenProps) {
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [progress, setProgress] = useState(0);
   const [consent, setConsent] = useState(true);
 
+  // Automated step progress sequence
+  useEffect(() => {
+    if (step === 1) {
+      setProgress(0);
+      const int = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(int);
+            setTimeout(() => setStep(2), 300);
+            return 100;
+          }
+          return prev + 20;
+        });
+      }, 100);
+      return () => clearInterval(int);
+    }
+
+    if (step === 2) {
+      setProgress(0);
+      const int = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(int);
+            setTimeout(() => setStep(3), 300);
+            return 100;
+          }
+          return prev + 20;
+        });
+      }, 100);
+      return () => clearInterval(int);
+    }
+
+    if (step === 3) {
+      setProgress(0);
+      const int = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(int);
+            setTimeout(() => setStep(4), 300);
+            return 100;
+          }
+          return prev + 25;
+        });
+      }, 100);
+      return () => clearInterval(int);
+    }
+  }, [step]);
+
+  const handleLaunch = () => {
+    if (!consent) return;
+
+    try {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } catch (e) {}
+
+    onJoin();
+  };
+
   return (
-    <div className="glass-card max-w-md p-8 space-y-6 text-center animate-in fade-in duration-300 w-full mx-auto">
-      <div className="h-16 w-16 relative items-center justify-center rounded-full overflow-hidden mx-auto flex flex-shrink-0 select-none">
-        <Image
-          src="/logo.png"
-          alt="NextRound Logo"
-          fill
-          className="object-cover scale-[1.3]"
-        />
-      </div>
-      <div>
-        <h2 className="text-xl font-black text-slate-900">Hardware & Consent Check</h2>
-        <p className="text-xs text-slate-500 leading-relaxed mt-1 font-semibold">
-          Calibrating assessment portal for <span className="text-indigo-650 font-bold">{company}</span> ({role}).
-        </p>
-      </div>
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-6 animate-in fade-in duration-200">
+      {/* Steps 1, 2, 3: Clean Icon + Text Only (Zero Fancy Backgrounds or Containers) */}
+      {step < 4 && (
+        <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-xs mx-auto animate-in zoom-in-95 duration-150">
+          {/* Step 1: Camera */}
+          {step === 1 && (
+            <>
+              <div className="h-12 w-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400">
+                <Video className="h-6 w-6 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white font-display">Checking camera...</h3>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">Verifying video input</p>
+              </div>
+            </>
+          )}
 
-      <div className="relative h-44 bg-slate-100 rounded-2xl border border-slate-200/85 overflow-hidden flex items-center justify-center text-slate-400 text-xs shadow-inner">
-        {camActive ? (
-          <div className="w-full h-full bg-slate-250/20 flex items-center justify-center font-bold text-slate-600">
-            Webcam Active (Simulator)
+          {/* Step 2: Microphone */}
+          {step === 2 && (
+            <>
+              <div className="h-12 w-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400">
+                <Mic className="h-6 w-6 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white font-display">Checking microphone...</h3>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">Testing audio level</p>
+              </div>
+            </>
+          )}
+
+          {/* Step 3: System */}
+          {step === 3 && (
+            <>
+              <div className="h-12 w-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400">
+                <Wifi className="h-6 w-6 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white font-display">Verifying system...</h3>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">Connecting AI engine</p>
+              </div>
+            </>
+          )}
+
+          {/* Minimal 2px Progress Line */}
+          <div className="w-48 bg-slate-900 rounded-full h-1 overflow-hidden mt-2">
+            <div
+              className="bg-emerald-500 h-full rounded-full transition-all duration-100"
+              style={{ width: `${progress}%` }}
+            />
           </div>
-        ) : (
-          <span className="font-semibold text-slate-450">Camera Deactivated</span>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className="text-left space-y-2 border-t border-slate-100 pt-4">
-        <label className="flex items-start gap-2.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 rounded border-slate-350 bg-white text-emerald-600 focus:ring-0 cursor-pointer"
-          />
-          <span className="text-[10px] text-slate-500 leading-relaxed font-bold">
-            I consent to sharing video proctoring flags (MediaPipe gaze track detection) with the evaluator.
-          </span>
-        </label>
-      </div>
+      {/* Step 4: Compact Clean Popup Modal */}
+      {step === 4 && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in zoom-in-95 duration-150">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-5 text-center">
+            {/* Header */}
+            <div className="flex flex-col items-center gap-2">
+              <CompanyLogo name={company} size="lg" />
+              <div>
+                <h2 className="text-lg font-extrabold text-white font-display tracking-tight">{company}</h2>
+                <p className="text-xs text-slate-400 font-medium">{role}</p>
+              </div>
+            </div>
 
-      <button
-        onClick={onJoin}
-        disabled={!consent}
-        className="w-full flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 py-3 font-extrabold text-white shadow-md shadow-emerald-100 hover:shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer text-xs uppercase disabled:opacity-50 hover:scale-[1.01]"
-      >
-        <Play className="h-4 w-4" />
-        Join Vetting Room
-      </button>
+            {/* Simple Readiness Badge */}
+            <div className="py-2 px-3 rounded-xl bg-slate-950 border border-slate-850 flex items-center justify-center gap-2 text-xs font-bold text-emerald-400">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>Camera, Mic &amp; System Ready</span>
+            </div>
+
+            {/* Consent & Launch Action */}
+            <div className="space-y-3 pt-1">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-left">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="rounded border-slate-700 bg-slate-950 text-emerald-500 cursor-pointer h-4 w-4"
+                />
+                <span className="text-xs text-slate-300 font-medium">
+                  I agree to full-screen proctored session.
+                </span>
+              </label>
+
+              <button
+                onClick={handleLaunch}
+                disabled={!consent}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3 px-4 text-xs transition-all shadow-md disabled:opacity-50 cursor-pointer"
+              >
+                <Maximize2 className="h-4 w-4" />
+                <span>Start Interview (Fullscreen)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -69,7 +69,7 @@ export default function SignupPage() {
             }`}
           >
             <User className="h-3.5 w-3.5" />
-            I&apos;m looking for a job
+            I&apos;m a Candidate
           </button>
           <button
             type="button"
@@ -81,7 +81,7 @@ export default function SignupPage() {
             }`}
           >
             <Building className="h-3.5 w-3.5" />
-            I&apos;m hiring candidates
+            I&apos;m an Employer
           </button>
         </div>
 

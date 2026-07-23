@@ -340,10 +340,40 @@ export const mockApplications: Application[] = [
     stage: 'Interview',
     appliedDate: '2026-07-03',
     resumeUrl: 'rohan_deshmukh_resume.pdf',
-    skills: ['React', 'TypeScript', 'Node.js', 'Vite', 'State Management'],
+    skills: ['React', 'TypeScript', 'Node.js', 'Vite', 'State Management', 'System Architecture'],
     targetRoles: ['Frontend Developer', 'Software Engineer'],
     scheduledSlots: ['2026-07-05 10:00 AM', '2026-07-05 02:00 PM', '2026-07-06 11:30 AM'],
-    confirmedSlot: '2026-07-05 10:00 AM'
+    confirmedSlot: '2026-07-05 10:00 AM',
+    scores: {
+      composite: 86,
+      technical: 88,
+      communication: 82,
+      problemSolving: 85,
+      experience: 89,
+      confidence: 90,
+    },
+    biasReport: {
+      overallScore: 97,
+      flaggedPhrases: [],
+      genderBiasCheck: 'Passed. Evaluated purely on frontend architectural patterns and system design performance.',
+      originBiasCheck: 'Passed. Normalized scoring for regional universities vs tier-1 colleges.',
+      explanation: 'The Screening and Evaluation Agents evaluated the technical qualifications without identifying markers. Recommendation is highly objective.',
+    },
+    reasoning: 'Demonstrated competent understanding of senior software engineering architecture. Clean execution paths, solid Big-O analysis, and virtualized list implementation.',
+    transcript: [
+      {
+        question: 'How do you handle virtualization for long scroll lists containing thousands of items?',
+        answer: 'I use windowing libraries like react-window to compute dynamic row height indices and maintain 60fps scrolling performance.',
+        score: 92,
+        feedback: 'Excellent explanation of virtualized DOM windowing and scroll throttling.',
+      },
+    ],
+    audioUrl: '/mock-audio.mp3',
+    engagementSignal: {
+      eyeContact: 96,
+      speakingRate: 'Normal (140 WPM)',
+      confidenceScore: 90,
+    },
   },
   {
     id: 'app-504',
@@ -358,7 +388,37 @@ export const mockApplications: Application[] = [
     appliedDate: '2026-07-03',
     resumeUrl: 'priya_patel_cv.pdf',
     skills: ['Next.js', 'React Query', 'Tailwind CSS', 'TypeScript', 'GraphQL', 'AWS'],
-    targetRoles: ['Senior Frontend Engineer']
+    targetRoles: ['Senior Frontend Engineer'],
+    scores: {
+      composite: 84,
+      technical: 86,
+      communication: 80,
+      problemSolving: 84,
+      experience: 86,
+      confidence: 88,
+    },
+    biasReport: {
+      overallScore: 98,
+      flaggedPhrases: [],
+      genderBiasCheck: 'Passed.',
+      originBiasCheck: 'Passed.',
+      explanation: 'Analysis verified evaluation tags are free of geographic bias filters.',
+    },
+    reasoning: 'Strong proficiency with Next.js server actions, React Query caching policies, and atomic CSS design systems.',
+    transcript: [
+      {
+        question: 'How do you manage client-side state caching across route changes?',
+        answer: 'I leverage React Query with stale-while-revalidate policies to eliminate redundant network requests.',
+        score: 88,
+        feedback: 'Good grasp of state management and cache key invalidation.',
+      },
+    ],
+    audioUrl: '/mock-audio-2.mp3',
+    engagementSignal: {
+      eyeContact: 94,
+      speakingRate: 'Normal (138 WPM)',
+      confidenceScore: 88,
+    },
   },
   {
     id: 'app-505',

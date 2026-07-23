@@ -20,14 +20,14 @@ export default function HrJobsList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Open Job Postings</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Job Openings</h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
-            Create job listings and track interview pipelines.
+            Manage job listings, custom evaluation rubrics, and candidate pipelines.
           </p>
         </div>
         <Link
           href="/hr/jobs/new"
-          className="inline-flex items-center gap-1.5 rounded-full bg-purple-600 dark:bg-purple-600 hover:bg-purple-700 dark:hover:bg-purple-700 px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Create Job Post
@@ -43,7 +43,7 @@ export default function HrJobsList() {
               key={item}
               onClick={() => setFilter(item)}
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer capitalize ${
-                filter === item ? 'bg-purple-600 text-white shadow-sm' : 'hover:text-slate-900 dark:hover:text-white'
+                filter === item ? 'bg-brand-600 dark:bg-orange-600 text-white shadow-sm' : 'hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {item}

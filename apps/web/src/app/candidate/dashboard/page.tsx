@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { mockApplications, mockJobs } from '@/lib/mockData';
+import { JobCard } from '@/components/ui';
 import { Briefcase, Calendar, ArrowRight, Mic, Award } from '@/lib/lucide-google-icons';
 
 export default function CandidateDashboard() {
@@ -118,39 +119,22 @@ export default function CandidateDashboard() {
           <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100">Jobs for You</h2>
           <div className="space-y-4">
             {recommendations.map((job) => (
-              <div
+              <JobCard
                 key={job.id}
-                className="glass-card glass-card-indigo p-5 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-extrabold text-lg shadow-sm overflow-hidden p-1 flex-shrink-0">
-                      {job.orgLogo.startsWith('http') || job.orgLogo.startsWith('/') ? (
-                        <img src={job.orgLogo} alt={job.orgName} className="h-full w-full object-contain" />
-                      ) : (
-                        job.orgLogo
-                      )}
-                    </span>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100">{job.title}</h4>
-                      <span className="text-[10px] font-bold text-brand-600 dark:text-orange-400">{job.orgName}</span>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                    {job.description}
-                  </p>
-                </div>
-                <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 dark:border-slate-700/60 pt-3">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold">{job.location}</span>
-                  <Link
-                    href={`/candidate/jobs/${job.id}`}
-                    className="text-xs font-bold text-brand-600 dark:text-orange-400 hover:underline inline-flex items-center gap-0.5"
-                  >
-                    Details
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </div>
+                id={job.id}
+                orgName={job.orgName}
+                orgLogo={job.orgLogo}
+                title={job.title}
+                description={job.description}
+                location={job.location}
+                salary={job.salary}
+                experienceLevel={job.experienceLevel}
+                postedDate={job.postedDate}
+                status={job.status}
+                matchScore={job.id === 'job-102' ? 89 : 74}
+                viewHref={`/candidate/jobs/${job.id}`}
+                compact
+              />
             ))}
           </div>
         </div>

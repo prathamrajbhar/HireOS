@@ -57,9 +57,9 @@ export default function LoginPage() {
               Next<span className="text-brand-600">Round</span>
             </span>
           </Link>
-          <h2 className="mt-6 text-xl font-extrabold text-slate-900 tracking-tight">Sign In to Your Workspace</h2>
+          <h2 className="mt-6 text-xl font-extrabold text-slate-900 tracking-tight">Sign in to your account</h2>
           <p className="mt-1.5 text-xs text-slate-500 font-semibold">
-            Use candidate or recruiter demo credentials to test.
+            Access your hiring dashboard or candidate portal.
           </p>
         </div>
 

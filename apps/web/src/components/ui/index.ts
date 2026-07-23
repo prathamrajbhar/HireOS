@@ -43,3 +43,9 @@ export { ClusterPlot } from './ClusterPlot';
 export type { ClusterPlotProps, ClusterPoint } from './ClusterPlot';
 
 export { ThemeToggle } from './ThemeToggle';
+
+export { CompanyLogo } from './CompanyLogo';
+
+export { JobCard } from './JobCard';
+export type { JobCardProps } from './JobCard';
+

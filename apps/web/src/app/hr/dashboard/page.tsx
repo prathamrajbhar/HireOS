@@ -92,7 +92,7 @@ export default function HrDashboard() {
         </div>
 
         <div className="glass-card p-5 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-100 dark:border-purple-900/60 flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-orange-50 dark:bg-orange-950/50 border border-orange-100 dark:border-orange-900/60 flex items-center justify-center text-orange-600 dark:text-orange-400 shadow-sm">
             <Users className="h-5 w-5" />
           </div>
           <div>
