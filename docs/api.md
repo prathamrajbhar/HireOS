@@ -1,152 +1,199 @@
-# NextRound — API Reference
+# NextRound — REST API Specification
 
-REST API served by `apps/api` (Express.js). All endpoints are prefixed with `/api/v1`. All authenticated endpoints require `Authorization: Bearer <jwt>` (sent automatically via httpOnly cookie from the frontend). Org-scoped endpoints derive `org_id` from the JWT, never from the request body/params.
+REST API served by `apps/api` (Express.js 5.2.1). All endpoints are prefixed with `/api/v1`. Authenticated requests require a valid JWT passed via httpOnly cookie or `Authorization: Bearer <token>` header. All HR routes derive `org_id` strictly from the server-side verified JWT payload.
 
-Response envelope for all endpoints:
+---
+
+## Standard JSON Response Envelope
+
 ```json
-{ "success": true, "data": { ... }, "error": null }
-{ "success": false, "data": null, "error": { "code": "STRING", "message": "..." } }
+// Success Response
+{
+  "success": true,
+  "data": { ... },
+  "error": null
+}
+
+// Error Response
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "STRING_ERROR_CODE",
+    "message": "Human readable message",
+    "details": null
+  }
+}
 ```
 
 ---
 
-## 1. Auth
+## 1. Authentication (`/auth`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/auth/signup` | none | Create a `User`. Body: `{ email, password, role, companyName? }`. If `role=hr`, also creates `Organization`. |
-| POST | `/auth/login` | none | Verify credentials, issue access + refresh JWT (set as httpOnly cookies). |
-| POST | `/auth/refresh` | refresh token | Rotate access token. |
-| POST | `/auth/logout` | any | Revoke refresh token, clear cookies. |
-| POST | `/auth/forgot-password` | none | Send reset email. |
-| POST | `/auth/reset-password` | reset token | Body: `{ token, newPassword }`. |
-| GET | `/auth/me` | any | Return current user + role + org_id. |
+| POST | `/auth/signup` | Public | Register user account. Body: `{ email, password, role, companyName? }`. Creates `Organization` if `role=hr`. |
+| POST | `/auth/login` | Public | Authenticate credentials. Returns user payload and sets httpOnly JWT cookies. |
+| POST | `/auth/refresh` | Refresh Cookie | Rotates short-lived access JWT token. |
+| POST | `/auth/logout` | Authenticated | Revokes refresh token session and clears auth cookies. |
+| POST | `/auth/forgot-password` | Public | Dispatches password reset email token. |
+| POST | `/auth/reset-password` | Token Payload | Body: `{ token, newPassword }`. Resets user password hash. |
+| GET | `/auth/me` | Authenticated | Returns current authenticated user record, role, and org scope. |
 
-## 2. Organizations (HR)
+---
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/organizations/me` | hr | Get current org profile + settings. |
-| PATCH | `/organizations/me` | hr (admin role) | Update name, logo, industry. |
-| GET | `/organizations/me/members` | hr | List team members. |
-| POST | `/organizations/me/members/invite` | hr (admin role) | Body: `{ email, role }`. |
-| PATCH | `/organizations/me/members/:userId` | hr (admin role) | Change role or remove. |
-| GET | `/organizations/me/settings` | hr | Email templates, thresholds, interview availability hours, auto-offer default. |
-| PATCH | `/organizations/me/settings` | hr (admin role) | Update settings above. |
-
-## 3. Jobs
+## 2. Organization Management (`/organizations`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| GET | `/jobs` | public | List published jobs. Query: `search, location, company, experienceLevel, page`. |
-| GET | `/jobs/:jobId` | public | Job detail (published only for public callers). |
-| GET | `/jobs/org` | hr | List all jobs for the caller's org (any status). |
-| POST | `/jobs` | hr | Create job (draft). Body: `{ title, descriptionRaw }`. |
-| POST | `/jobs/:jobId/ai-assist` | hr | Enqueues JD Parser Agent — extracts skills/rubric. Returns job id for polling. |
-| PATCH | `/jobs/:jobId` | hr, org-scoped | Update JD, rubric, thresholds, config toggles. |
-| POST | `/jobs/:jobId/publish` | hr, org-scoped | Set status `active`, triggers Sourcing Agent enqueue. |
-| POST | `/jobs/:jobId/pause` | hr, org-scoped | Pause pipeline (no new stage advances). |
-| POST | `/jobs/:jobId/close` | hr, org-scoped | Set status `closed`. |
-| DELETE | `/jobs/:jobId` | hr, org-scoped | Soft delete (draft only). |
-| GET | `/jobs/:jobId/pipeline` | hr, org-scoped | Kanban data: stage counts + candidate cards + recent `AgentLog` entries. |
+| GET | `/organizations/me` | HR | Fetch caller's organization details, logo, and active settings. |
+| PATCH | `/organizations/me` | HR (Admin) | Update organization name, industry, and logo URL. |
+| GET | `/organizations/me/members` | HR | List workspace team members and assigned roles. |
+| POST | `/organizations/me/members/invite` | HR (Admin) | Send email invitation to team member. Body: `{ email, role }`. |
+| PATCH | `/organizations/me/members/:userId` | HR (Admin) | Modify team member role (`admin` or `viewer`) or revoke access. |
+| GET | `/organizations/me/settings` | HR | Fetch availability hours, email templates, auto-offer defaults, and threshold defaults. |
+| PATCH | `/organizations/me/settings` | HR (Admin) | Update workspace settings. |
 
-## 4. Applications
+---
+
+## 3. Job Management (`/jobs`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/applications` | candidate | Body: `{ jobId }`. Creates `Application`, enqueues Screening Agent. |
-| GET | `/applications/me` | candidate | List caller's applications with status. |
-| GET | `/applications/:applicationId` | candidate (own) or hr (org-scoped via job) | Application detail + evaluation summary. |
-| GET | `/jobs/:jobId/applications` | hr, org-scoped | List/filter/sort applications for a job (table view). |
-| PATCH | `/applications/:applicationId/status` | hr, org-scoped | Manual stage override (if enabled). |
-| POST | `/applications/:applicationId/schedule` | candidate (own) | Body: `{ slotId }` — confirms one of the proposed interview slots. |
-| POST | `/applications/:applicationId/reschedule` | candidate (own) | Requests new slots; enqueues Scheduler Agent again. |
+| GET | `/jobs` | Public | Browse published jobs. Query params: `search`, `location`, `company`, `salaryMin`, `page`. |
+| GET | `/jobs/:jobId` | Public | Fetch job detail by ID. |
+| GET | `/jobs/org` | HR | List all organization jobs across `draft`, `active`, and `closed` statuses. |
+| POST | `/jobs` | HR | Create draft job. Body: `{ title, description }`. |
+| POST | `/jobs/:jobId/ai-assist` | HR | Enqueues JD Parser Agent in BullMQ to extract skills and generate rubric. |
+| PATCH | `/jobs/:jobId` | HR (Org Scoped) | Update job title, description, rubric weights, thresholds, and pipeline toggles. |
+| POST | `/jobs/:jobId/publish` | HR (Org Scoped) | Transitions status to `active` and enqueues Sourcing Agent. |
+| POST | `/jobs/:jobId/pause` | HR (Org Scoped) | Temporarily pauses pipeline advancement. |
+| POST | `/jobs/:jobId/close` | HR (Org Scoped) | Marks job status as `closed`. |
+| GET | `/jobs/:jobId/pipeline` | HR (Org Scoped) | Kanban pipeline payload: column counts, candidate cards, and recent `AgentLog` stream. |
 
-## 5. Candidate profile
+---
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/candidates/me` | candidate | Get own profile. |
-| POST | `/candidates/me/resume` | candidate | Multipart upload; triggers resume parse job. |
-| PATCH | `/candidates/me` | candidate | Update skills, target roles, contact info, linkedinUrl, githubUrl. |
-| DELETE | `/candidates/me` | candidate | GDPR-style deletion request — soft-deletes profile, queues data purge. |
-
-## 6. Interviews
+## 4. Candidate Applications (`/applications`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| GET | `/interviews/:interviewId` | candidate (own) or hr (org-scoped) | Interview metadata + status. |
-| POST | `/interviews/:interviewId/consent` | candidate (own) | Body: `{ videoConsent: boolean }`. Must be called before session start. |
-| POST | `/interviews/:interviewId/session-token` | candidate (own) | Issues short-lived WebRTC/voice session token for the interview room. |
-| POST | `/interviews/:interviewId/complete` | internal (called by ai-service via callback) | Body: `{ transcript, audioUrl, proctorFlags, engagementSignal }`. |
-| GET | `/interviews/:interviewId/transcript` | candidate (own) or hr (org-scoped) | Full transcript + audio URL for replay. |
+| POST | `/applications` | Candidate | Apply to job. Body: `{ jobId }`. Creates `Application` and enqueues Screening Agent. |
+| GET | `/applications/me` | Candidate | List caller's submitted job applications and stage status. |
+| GET | `/applications/:applicationId` | Candidate (Own) / HR | Fetch application detail and evaluation score breakdown. |
+| GET | `/jobs/:jobId/applications` | HR (Org Scoped) | Tabular candidate application list for a specific job. |
+| PATCH | `/applications/:applicationId/status` | HR (Org Scoped) | Manual stage override (e.g. advance or reject candidate). |
+| POST | `/applications/:applicationId/schedule` | Candidate (Own) | Confirms selected interview slot. Body: `{ slotId }`. |
+| POST | `/applications/:applicationId/reschedule` | Candidate (Own) | Requests new interview slots; enqueues Scheduler Agent. |
 
-## 7. Evaluations & decisions
+---
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/evaluations/:applicationId` | candidate (own, limited fields) or hr (org-scoped, full) | Composite score, dimension breakdown, bias report, reasoning. |
-| GET | `/evaluations/:applicationId/bias-report` | hr, org-scoped | Full bias audit document. |
-| POST | `/evaluations/:applicationId/decision/approve` | hr, org-scoped | Used when `Job.auto_offer = false` — sends the drafted email, marks `decided`. |
-| POST | `/evaluations/:applicationId/decision/override` | hr, org-scoped | Body: `{ decision, reasoningNote }` — HR changes the outcome before sending. |
-
-## 8. Mock interviews
+## 5. Candidate Profile (`/candidates`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| POST | `/mock-sessions` | candidate | Body: `{ targetCompany, targetRole, difficulty }`. Enqueues on low-priority mock queue. |
-| GET | `/mock-sessions/:sessionId` | candidate (own) | Session status + join token once ready. |
-| POST | `/mock-sessions/:sessionId/complete` | internal (ai-service callback) | Body: `{ transcript, score, feedback }`. |
-| GET | `/mock-sessions/:sessionId/feedback` | candidate (own) | Score breakdown + coaching narrative + annotated transcript. |
-| GET | `/mock-sessions/history` | candidate | List past sessions + score/weak-dimension trend data. |
+| GET | `/candidates/me` | Candidate | Fetch candidate profile. |
+| POST | `/candidates/me/resume` | Candidate | Multipart PDF/DOCX resume upload. Triggers background parse job. |
+| PATCH | `/candidates/me` | Candidate | Update skills, portfolio links (GitHub, LinkedIn), target compensation, work authorization. |
+| DELETE | `/candidates/me` | Candidate | GDPR deletion request. Soft-deletes profile and queues data purge. |
 
-## 9. Company prep content
+---
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/prep-content` | candidate | List/search by company or role archetype. |
-| GET | `/prep-content/:companyId/:roleArchetype` | candidate | Question bank + culture notes. |
-| POST | `/prep-content/generate` | internal (triggered or scheduled) | Enqueues Prep Content Agent for a company/role pair not yet covered. |
-
-## 10. Analytics
+## 6. Voice & WebRTC Interviews (`/interviews`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| GET | `/analytics/org` | hr, org-scoped | Query: `range`. Funnel, time-to-hire, score trends, bias trend, diversity metrics. |
-| GET | `/analytics/org/report.pdf` | hr, org-scoped | Generates/downloads the weekly PDF report. |
-| PATCH | `/analytics/org/digest-settings` | hr (admin role) | Enable/disable + configure email digest. |
-## 11. AI service callback endpoints (internal)
+| GET | `/interviews/:interviewId` | Candidate / HR | Fetch interview status and configuration. |
+| POST | `/interviews/:interviewId/consent` | Candidate (Own) | Record video/CV analysis consent before session launch. Body: `{ videoConsent: boolean }`. |
+| POST | `/interviews/:interviewId/session-token` | Candidate (Own) | Issues short-lived WebRTC and voice session credentials for room entry. |
+| GET | `/interviews/:interviewId/transcript` | Candidate / HR | Returns full interview transcript with timestamp annotations and audio recording URL. |
 
-Called only by `apps/ai-service`, authenticated via a service-to-service secret (not user JWT). Not exposed to the frontend.
+---
+
+## 7. Multi-Modal Assessments (`/applications/:id/*`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/applications/:id/assessment` | Candidate (Own) | Fetch aptitude test questions and timer status. |
+| POST | `/applications/:id/assessment` | Candidate (Own) | Submit aptitude test category answers. Enqueues assessment worker. |
+| GET | `/applications/:id/take-home` | Candidate (Own) | Fetch coding assessment problem specs, starters, and test cases. |
+| POST | `/applications/:id/take-home` | Candidate (Own) | Submit code solution. Body: `{ language, code }`. Enqueues coding execution worker. |
+| GET | `/applications/:id/video-screening` | Candidate (Own) | Fetch video screening prompts and recording rules. |
+| POST | `/applications/:id/video-screening` | Candidate (Own) | Upload recorded video prompt response. |
+
+---
+
+## 8. Offers & Onboarding (`/applications/:id/*`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/applications/:id/offer` | Candidate (Own) / HR | Fetch digital offer letter details (salary, equity, start date, status). |
+| POST | `/applications/:id/offer/accept` | Candidate (Own) | Accept offer letter. Body: `{ signatureSvg }`. Updates status to `offered_accepted`. |
+| POST | `/applications/:id/offer/decline` | Candidate (Own) | Decline offer letter with optional feedback note. |
+| GET | `/applications/:id/onboarding` | Candidate (Own) / HR | Fetch onboarding task checklist and submission requirements. |
+| POST | `/applications/:id/onboarding/tasks/:taskId` | Candidate (Own) | Upload document or submit task response. |
+
+---
+
+## 9. HR Talent Pool (`/organizations/me/talent-pool`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/organizations/me/talent-pool` | HR (Org Scoped) | Query passive candidate pool. Query params: `q`, `skills`, `minExp`. |
+| POST | `/organizations/me/talent-pool/bookmark` | HR (Org Scoped) | Bookmark candidate profile to org talent pool. Body: `{ candidateId }`. |
+| POST | `/organizations/me/talent-pool/outreach` | HR (Org Scoped) | Trigger automated email outreach sequence to candidate. Body: `{ candidateId, jobId }`. |
+
+---
+
+## 10. Evaluations & Decisions (`/evaluations`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/evaluations/:applicationId` | Candidate / HR | Composite evaluation score breakdown, dimension scores, and decision rationale. |
+| GET | `/evaluations/:applicationId/bias-report` | HR (Org Scoped) | Detailed demographic bias audit report payload. |
+| POST | `/evaluations/:applicationId/decision/approve` | HR (Org Scoped) | Manually approve held decision and trigger offer dispatch. |
+| POST | `/evaluations/:applicationId/decision/override` | HR (Org Scoped) | Override AI decision outcome. Body: `{ decision, reasoningNote }`. |
+
+---
+
+## 11. Analytics (`/analytics`)
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/analytics/org` | HR (Org Scoped) | Query funnel stats, time-to-hire, score distribution, and bias score trends. Query: `range`. |
+| GET | `/analytics/org/report.pdf` | HR (Org Scoped) | Generates and downloads weekly executive PDF report. |
+
+---
+
+## 12. Internal Callback APIs (`/api/v1/internal/*`)
+
+Secured endpoints callable exclusively by Python AI service workers via `X-Internal-Service-Secret`.
 
 | Method | Path | Description |
 |---|---|---|
-| PATCH | `/internal/applications/:applicationId/screening-result` | Screening Agent writes resume score + gap analysis. |
-| PATCH | `/internal/applications/:applicationId/sourcing-result` | Sourcing Agent writes ranked pool reference. |
-| POST | `/internal/interviews/:interviewId/schedule-slots` | Scheduler Agent writes 3 proposed slots. |
-| PATCH | `/internal/interviews/:interviewId/complete` | Same as public complete endpoint, internal path. |
-| PATCH | `/internal/evaluations/:applicationId` | Evaluator + Bias Audit Agent writes composite score + bias report. |
-| PATCH | `/internal/evaluations/:applicationId/decision` | Decision Agent writes decision + drafted email (send behavior gated by `auto_offer`, see `architecture.md` Section 11). |
-| POST | `/internal/analytics/:orgId/weekly-report` | Analytics Agent writes generated report data. |
-| PATCH | `/internal/mock-sessions/:sessionId/complete` | Mock Interview Agent writes score + feedback. |
-| POST | `/internal/prep-content` | Prep Content Agent writes generated content. |
-| POST | `/internal/agent-logs` | Any agent writes a structured log entry (used for the live activity feed). |
+| PATCH | `/internal/applications/:id/screening-result` | Write resume score, gap analysis, and pgvector match score. |
+| PATCH | `/internal/applications/:id/sourcing-result` | Write ranked candidate sourcing pool reference. |
+| POST | `/internal/interviews/:id/schedule-slots` | Save 3 proposed interview slots generated by Scheduler Agent. |
+| PATCH | `/internal/interviews/:id/complete` | Save final transcript, audio URL, proctor flags, and engagement telemetry. |
+| PATCH | `/internal/applications/:id/assessment-result` | Save aptitude test category score breakdown. |
+| PATCH | `/internal/applications/:id/coding-result` | Save code test pass rate, execution timing, and complexity score. |
+| PATCH | `/internal/evaluations/:id` | Save composite evaluation score, confidence level, and bias report JSON. |
+| PATCH | `/internal/evaluations/:id/decision` | Write final decision outcome and drafted offer/rejection email body. |
+| POST | `/internal/analytics/:orgId/weekly-report` | Save aggregated weekly hiring metrics. |
+| PATCH | `/internal/mock-sessions/:sessionId/complete` | Save practice session transcript, score, and coaching feedback narrative. |
+| POST | `/internal/prep-content` | Save AI-generated company prep question bank. |
+| POST | `/internal/agent-logs` | Persist structured streaming agent execution log entry. |
 
-## 12. Error codes (common)
+---
 
-| Code | Meaning |
-|---|---|
-| `AUTH_INVALID_CREDENTIALS` | Login failed |
-| `AUTH_TOKEN_EXPIRED` | Access token expired, refresh required |
-| `ORG_SCOPE_VIOLATION` | Request touches a resource outside the caller's org |
-| `VALIDATION_ERROR` | Request body failed schema validation |
-| `RESUME_PARSE_FAILED` | Resume parsing failed after fallback |
-| `INTERVIEW_CONSENT_REQUIRED` | Attempted to start video before consent recorded |
-| `QUEUE_JOB_FAILED` | Agent job failed after max retries |
-| `RATE_LIMITED` | Org exceeded free-tier AI usage throttle |
+## 13. Error Code Reference
 
-## 14. Rate limiting & usage throttling
-
-- Applies per-org on AI-triggering endpoints (`ai-assist`, applications creation, interview session tokens) to protect shared free-tier Gemini/Groq quota across the platform.
-- Candidate-facing mock session creation is throttled per-candidate (not per-org) to prevent abuse of the free practice feature.
-- Limits configurable centrally, not hardcoded — read from a config table so they can change without a redeploy.
+| Error Code | HTTP Status | Description |
+|---|---|---|
+| `AUTH_INVALID_CREDENTIALS` | 401 | Email or password incorrect. |
+| `AUTH_TOKEN_EXPIRED` | 401 | JWT access token expired; refresh required. |
+| `ORG_SCOPE_VIOLATION` | 403 | Attempted to access a resource outside the caller's organization. |
+| `VALIDATION_ERROR` | 400 | Request payload failed Zod schema validation. |
+| `RESUME_PARSE_FAILED` | 422 | Resume file parsing failed after raw text extraction fallbacks. |
+| `INTERVIEW_CONSENT_REQUIRED` | 403 | Attempted session entry prior to video/CV consent submission. |
+| `QUEUE_JOB_FAILED` | 500 | Background AI worker job failed max retries. |
+| `RATE_LIMITED` | 429 | Rate limit or quota throttle exceeded. |

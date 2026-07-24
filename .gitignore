@@ -54,3 +54,7 @@ Thumbs.db
 # Testing
 coverage/
 .nyc_output/
+
+# Internal reviewer prep
+docs/reviewer-prep.md
+

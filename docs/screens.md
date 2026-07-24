@@ -1,421 +1,211 @@
-# NextRound — Screens
+# NextRound — Complete Screen Inventory
 
-Full screen inventory for the platform, grouped by surface: Public, Auth, HR Portal, Candidate Portal, and Interview (shared). Each screen lists purpose, route, and the components it needs.
-
----
-
-## A. Public Surface (no login required)
-
-### A1. Landing Page
-**Route:** `/`
-**Purpose:** Explain the platform to both audiences (companies + candidates), drive signup for either side.
-
-Components:
-- Nav bar (logo, "For Companies" / "For Candidates" toggle links, Login, Sign Up CTA)
-- Hero section (headline, subtext, two CTA buttons: "Post a Job" / "Find a Job")
-- How-it-works strip (3–4 step visual: Apply → AI Interview → Get Decision, or Post Job → AI Screens → Get Shortlist, depending on audience toggle)
-- Trust/stats bar (e.g. avg. time-to-hire, bias-audit badge, number of companies)
-- Feature highlight cards (zero human steps, bias audit, mock interviews)
-- Footer (links: About, Pricing, Privacy, Terms, Contact)
-
-### A2. Public Job Listing Page
-**Route:** `/jobs`
-**Purpose:** Browse all open jobs across every company on the platform (also the main SEO/growth surface).
-
-Components:
-- Search bar (role/keyword)
-- Filter sidebar (location, experience level, company, salary band, remote/on-site)
-- Job card grid/list (title, company name + logo, location, salary band, posted date, "Apply" button)
-- Pagination or infinite scroll
-- Empty state (no jobs match filters)
-
-### A3. Job Detail Page
-**Route:** `/jobs/:jobId`
-**Purpose:** Full job description, entry point to apply.
-
-Components:
-- Job header (title, company logo/name, location, salary band, posted date)
-- Full JD body (rich text)
-- Rubric-derived "what we look for" summary (skills/experience tags, non-numeric — don't expose raw scoring weights)
-- Company mini-profile card (name, about blurb, link to other open jobs at this company)
-- Sticky "Apply Now" button (prompts login/signup if not authenticated)
-- Similar jobs section (bottom)
-
-### A4. About / Company Info Page
-**Route:** `/about`
-**Purpose:** Trust-building, standard marketing page.
-
-Components:
-- Mission/story section
-- Bias-audit explainer (how the platform ensures fairness — important trust signal given AI hiring)
-- Contact/footer links
-
-### A5. Pricing Page
-**Route:** `/pricing`
-**Purpose:** Even with no billing enforced yet, a placeholder page setting expectations.
-
-Components:
-- Plan cards (Free tier active, "Pro"/"Enterprise" marked "Coming soon")
-- FAQ accordion
+Exhaustive inventory of all platform user interfaces, grouped by surface, route, purpose, and UI components.
 
 ---
 
-## B. Authentication
+## Group A: Public Surface (Unauthenticated)
 
-### B1. Sign Up
-**Route:** `/signup`
-**Purpose:** Single entry, role selection branches into candidate or HR/company signup.
+### A1. Landing Page (`/`)
+- **Purpose**: Marketing entry point for both employers and job seekers.
+- **Components**: Navigation Bar, Hero Banner with dual CTA ("Post Job" / "Find Job"), How-it-Works Step Indicator, Platform Metrics Bar, Feature Cards, Footer.
 
-Components:
-- Role selector (tab or toggle: "I'm hiring" / "I'm looking for a job")
-- Form: name, email, password, confirm password
-- If "I'm hiring": additional field for company name (creates `Organization` on submit)
-- Terms/privacy checkbox
-- Submit button, loading state, inline validation errors
-- Link to Login
+### A2. Public Job Catalog (`/jobs`)
+- **Purpose**: Searchable job board listing open positions across all registered companies.
+- **Components**: Search Bar, Filter Drawer (location, experience, salary, remote), Job Card Grid, Pagination controls.
 
-### B2. Login
-**Route:** `/login`
-**Purpose:** Single login form for all roles; role/org context resolved server-side from JWT after auth.
+### A3. Public Job Detail Page (`/jobs/:jobId`)
+- **Purpose**: Detailed job description view with entry point to apply.
+- **Components**: Job Header, Rich Text JD Body, Rubric Skill Tags, Company Card, Sticky "Apply Now" button, Similar Jobs list.
 
-Components:
-- Email + password fields
-- "Forgot password" link
-- Submit button, error state (invalid credentials)
-- Link to Sign Up
+### A4. About Page (`/about`)
+- **Purpose**: Company vision, bias-free AI hiring methodology, and platform trust overview.
+- **Components**: Mission Banner, Bias Audit Explainer, Leadership Team section.
 
-### B3. Forgot / Reset Password
-**Route:** `/forgot-password`, `/reset-password/:token`
-**Purpose:** Standard credential recovery flow.
+### A5. Contact Page (`/contact`)
+- **Purpose**: Enterprise sales inquiries, demo scheduling requests, and support contact form.
+- **Components**: Inquiry Form, Direct Email links, Sales Calendar widget.
 
-Components:
-- Email input (request reset) → confirmation message screen
-- New password + confirm fields (reset form, token-validated)
-- Success state → redirect to Login
-
-### B4. Onboarding — Candidate
-**Route:** `/onboarding/candidate`
-**Purpose:** First-login flow to build the `CandidateProfile`.
-
-Components:
-- Step indicator (Step 1: Resume & Links, Step 2: Core Preferences & Stack, Step 3: Fit & Culture Questions)
-- **Step 1 Components:** Resume upload zone (PDF/DOCX), LinkedIn URL, and GitHub URL input fields.
-- **Step 2 Components:** Target roles multiselect autocomplete, Core tech stack tag input, Years of experience selector, Work mode toggle (Remote/Hybrid/On-site), Target location selection.
-- **Step 3 Components:** Minimum expected annual salary input, Notice period dropdown (Immediate, 1-2 weeks, 30 days, 60+ days), Work authorization selection, "Proud Project" textarea, Work value priority ranking.
-- "Skip for now" option (profile completion nudge shown later on dashboard)
-
-### B5. Onboarding — Company / HR
-**Route:** `/onboarding/company`
-**Purpose:** First-login flow to configure the new `Organization`.
-
-Components:
-- Company details form (name, logo upload, industry, size)
-- Invite team members (email input list, role dropdown per invite: admin/viewer)
-- Interview availability settings prompt (configure working timezone and available slots for Scheduler Agent)
-- "Post your first job" CTA at the end
+### A6. Pricing Page (`/pricing`)
+- **Purpose**: Tier breakdown (Free tier active, Pro/Enterprise preview).
+- **Components**: Tier Cards, Feature Comparison Table, FAQ Accordion.
 
 ---
 
-## C. HR Portal
+## Group B: Authentication & Onboarding
 
-### C1. HR Dashboard (Home)
-**Route:** `/hr/dashboard`
-**Purpose:** Landing screen after login — overview across all of the org's jobs.
+### B1. Sign Up (`/signup`)
+- **Purpose**: Account creation with role selection (HR Manager vs Candidate).
+- **Components**: Role Toggle, Registration Form (Name, Email, Password, Company Name for HR), Terms Checkbox.
 
-Components:
-- Top nav (org switcher if user belongs to multiple orgs, notifications bell, profile menu)
-- Side nav (Dashboard, Jobs, Candidates, Analytics, Settings)
-- Summary stat cards (active jobs, candidates in pipeline, interviews this week, offers sent)
-- Recent activity feed (live agent log snippets across jobs — "Screening Agent shortlisted 4 candidates for Backend Engineer")
-- Quick "Post a Job" CTA button
+### B2. Login (`/login`)
+- **Purpose**: Single sign-in form resolving role context server-side from JWT token.
+- **Components**: Email/Password fields, Remember Me checkbox, Password Reset link.
 
-### C2. Job List
-**Route:** `/hr/jobs`
-**Purpose:** All jobs posted by the org.
+### B3. Password Recovery (`/forgot-password`, `/reset-password`)
+- **Purpose**: Password reset email request and token validation form.
+- **Components**: Email Input, Token Verification Form, Password Reset Confirmation.
 
-Components:
-- Table/list (title, status badge [draft/active/closed], candidates in pipeline count, posted date, actions menu)
-- "New Job" button
-- Status filter tabs (All / Active / Draft / Closed)
-- Search/sort controls
+### B4. Candidate Onboarding (`/onboarding/candidate`)
+- **Purpose**: Multi-step setup wizard creating `CandidateProfile`.
+- **Components**: Step 1 (Resume & Portfolio Links), Step 2 (Tech Stack & Work Preferences), Step 3 (Expected Salary, Notice Period, Work Values).
 
-### C3. Job Creation / Edit
-**Route:** `/hr/jobs/new`, `/hr/jobs/:jobId/edit`
-**Purpose:** JD input and AI-assisted rubric generation, plus pipeline config.
-
-Components:
-- Rich text JD editor
-- "AI Assist" button (triggers suggestion panel for missing details — skills, salary band, etc.)
-- Auto-extracted fields panel (required skills, experience level, soft skills, salary band, culture keywords — editable chips/tags)
-- Rubric weight editor (sliders or number inputs per dimension, must sum to 100%)
-- Config toggle group: enable sourcing (on/off), min score to shortlist (slider), auto-offer (on/off), interview question count (stepper)
-- Save as Draft / Publish buttons
-
-### C4. Job Pipeline (Kanban)
-**Route:** `/hr/jobs/:jobId/pipeline`
-**Purpose:** Real-time visual view of one job's pipeline — the core "watch the AI work" screen.
-
-Components:
-- Kanban board, columns: Sourced → Screened → Interview → Decision
-- Candidate cards per column (name/avatar, score badge, dimension mini-bars, stage timestamp)
-- Live agent activity log panel (streaming, collapsible sidebar — "Interviewer Agent: interview with Jane Doe in progress")
-- Column count badges
-- Click card → opens Candidate Evaluation Detail (C6)
-- Job-level controls (pause pipeline, edit thresholds, close job)
-
-### C5. Candidate List (per job or org-wide)
-**Route:** `/hr/jobs/:jobId/candidates` or `/hr/candidates`
-**Purpose:** Table view alternative to kanban, better for scanning/sorting/filtering at scale.
-
-Components:
-- Filterable/sortable table (name, score, stage, bias flag indicator, applied date)
-- Bulk actions (export, bulk stage move — if manual override enabled)
-- Search bar
-- Column customization (show/hide dimension scores)
-
-### C6. Candidate Evaluation Detail
-**Route:** `/hr/candidates/:applicationId`
-**Purpose:** Full breakdown of one candidate's evaluation — the "trust the AI" screen.
-
-Components:
-- Candidate header (name, resume link, LinkedIn & GitHub profile links, source, applied date)
-- Composite score + confidence level (large, prominent)
-- Dimension score breakdown (bar chart or radial, per rubric category)
-- Gap analysis panel (what's missing vs requirement, from Screening Agent)
-- Bias audit report panel (written explanation, any flags highlighted)
-- Interview replay embed (link to C7)
-- Decision panel (outcome: Hire/Reject/Hold, reasoning log, "Override" button if manual review enabled)
-- Proctor/engagement flags panel, clearly labeled "supplementary signal, not used in scoring"
-
-### C7. Interview Replay
-**Route:** `/hr/candidates/:applicationId/interview`
-**Purpose:** Review the actual interview.
-
-Components:
-- Audio player with waveform/scrubber
-- Synced transcript panel (auto-scroll with playback, speaker labels)
-- Timestamp markers for flagged moments (evasive answer detected, proctor flag triggered)
-- Score-per-question annotation inline with transcript
-- Download transcript / audio buttons
-
-### C8. Analytics Dashboard
-**Route:** `/hr/analytics`
-**Purpose:** Weekly reporting, funnel visibility.
-
-Components:
-- Date range selector
-- Funnel chart (sourced → screened → interviewed → decided → hired, with drop-off %)
-- Time-to-hire chart (per role, trend over time)
-- Average score per stage chart
-- Bias score trend chart (over time, with anomaly markers)
-- Diversity metrics panel (aggregate, anonymized)
-- Engagement/CV signal trend chart (labeled as reporting-only)
-- "Export PDF" button
-- Email digest toggle/settings
-
-### C9. Org Settings
-**Route:** `/hr/settings`
-**Purpose:** Organization-level configuration.
-
-Components:
-- Tabs: General / Team / Integrations / Email Templates / Billing
-- **General:** org name, logo, industry
-- **Team:** member list table (name, role, status), invite form, role change/remove actions
-- **Integrations:** Gmail/SMTP status, reconnect buttons
-- **Email Templates:** editable templates for outreach/confirmation/offer/rejection emails, with variable placeholders
-- **Billing:** current plan display (Free), "Upgrade" button disabled/labeled "Coming soon"
-
-### C10. Notifications
-**Route:** `/hr/notifications` (or dropdown panel, not full page)
-**Purpose:** Surface pipeline events needing attention.
-
-Components:
-- List of events (new shortlist ready, decision held for review, interview completed, agent failure)
-- Mark-as-read, filter by type
-- Click-through to relevant candidate/job
+### B5. HR Company Onboarding (`/onboarding/company`)
+- **Purpose**: First-time company profile and workspace configuration.
+- **Components**: Org Profile Form, Team Member Invitations, Interview Availability Timezone Picker.
 
 ---
 
-## D. Candidate Portal
+## Group C: HR Portal (`/hr/*`)
 
-### D1. Candidate Dashboard (Home)
-**Route:** `/candidate/dashboard`
-**Purpose:** Landing screen after login — status of applications + prep activity.
+### C1. HR Dashboard (`/hr/dashboard`)
+- **Purpose**: Workspace overview displaying active hiring pipelines and summary statistics.
+- **Components**: Navigation Sidebar, Stat Cards (Active Jobs, In Pipeline, Interviews, Offers), Live Agent Activity Stream.
 
-Components:
-- Top nav (notifications, profile menu)
-- Side nav (Dashboard, Browse Jobs, My Applications, Mock Interviews, Company Prep, Profile)
-- Application status summary cards (in progress, interview scheduled, decided)
-- Recommended jobs strip (based on profile skills/target roles)
-- "Continue your prep" prompt (if incomplete mock sessions or low scores in a weak dimension)
+### C2. Job Management (`/hr/jobs`)
+- **Purpose**: Organization job listing table with status controls.
+- **Components**: Job Table, Status Filters (Active/Draft/Closed), "Create Job" button.
 
-### D2. Browse Jobs
-Same as A2 (`/jobs`), but authenticated version adds:
-- "Applied" badge on already-applied jobs
-- Personalized ranking/highlighting based on profile match
+### C3. Job Editor (`/hr/jobs/new`, `/hr/jobs/:jobId/edit`)
+- **Purpose**: AI-assisted job description composition and rubric weight editor.
+- **Components**: Rich Text Editor, AI Assist Suggestion Drawer, Rubric Weight Sliders, Threshold & Auto-Offer Toggles.
 
-### D3. My Applications
-**Route:** `/candidate/applications`
-**Purpose:** Track every application across every company.
+### C4. Pipeline Kanban (`/hr/jobs/:jobId/pipeline`)
+- **Purpose**: Visual pipeline board tracking candidates across Sourced, Screened, Interview, and Decided stages.
+- **Components**: Kanban Columns, Candidate Cards with Score Badges, Streaming Agent Log Drawer.
 
-Components:
-- List/table (job title, company, status badge [applied/screening/interview scheduled/interviewed/decided], applied date)
-- Status detail expand (what stage means, next expected action)
-- Click-through to application detail (D4)
+### C5. Candidate Table (`/hr/jobs/:jobId/candidates`)
+- **Purpose**: Filterable tabular candidate view supporting bulk actions.
+- **Components**: Candidate Data Table, Column Customizer, Stage Filters, Export CTA.
 
-### D4. Application Detail
-**Route:** `/candidate/applications/:applicationId`
-**Purpose:** Candidate-facing status + outcome for one application.
+### C6. Candidate Evaluation Detail (`/hr/candidates/:applicationId`)
+- **Purpose**: In-depth breakdown of candidate score, transcript, gap analysis, and bias audit report.
+- **Components**: Score Overview, Dimension Bar Charts, Gap Analysis Card, Bias Audit Report Panel, Interview Replay Link, Decision Card.
 
-Components:
-- Status timeline (Applied → Screened → Interview → Decision, current stage highlighted)
-- If interview scheduled: date/time, join link, prep reminder CTA
-- If decided: outcome message (offer details or rejection with feedback summary — reasoning shared in a candidate-appropriate tone, not raw bias-audit internals)
-- "Practice for this type of interview" CTA linking to Mock Interview Agent pre-filled with this company/role
+### C7. HR Talent Pool (`/hr/talent-pool`)
+- **Purpose**: Global candidate search console for passive sourcing.
+- **Components**: Search Input, Skill Tag Filters, Candidate Profile Drawer, Bookmark Action button, Outreach Sequence Trigger.
 
-### D5. Interview Scheduling (candidate-facing)
-**Route:** `/candidate/applications/:applicationId/schedule`
-**Purpose:** Pick a proposed interview slot.
+### C8. Interview Replay (`/hr/candidates/:applicationId/interview`)
+- **Purpose**: Audio replay and timestamped transcript inspection.
+- **Components**: Waveform Audio Player, Auto-scrolling Transcript, Proctor Flag Markers, Question-by-Question Scores.
 
-Components:
-- 3 proposed time-slot cards (from Scheduler Agent)
-- "None of these work" → request reschedule flow
-- Calendar export button (ICS download) after confirmation
+### C9. Analytics Dashboard (`/hr/analytics`)
+- **Purpose**: Weekly funnel analytics and bias audit metrics.
+- **Components**: Funnel Chart, Time-to-Hire Trend, Score Distribution, PDF Report Exporter.
 
-### D6. My Profile
-**Route:** `/candidate/profile`
-**Purpose:** Manage the reusable candidate profile.
+### C10. Org Settings (`/hr/settings`)
+- **Purpose**: Organization management, team roles, email templates, and availability hours.
+- **Components**: Settings Tabs (General, Team, Email Templates, Availability, Billing).
 
-Components:
-- Resume upload/replace (with re-parse trigger)
-- Skills editor (tag input)
-- LinkedIn and GitHub URL inputs
-- Target roles editor
-- Contact info fields
-- Profile completeness indicator
-- Data deletion request button (GDPR-style)
-
-### D7. Mock Interview — Setup
-**Route:** `/candidate/mock/new`
-**Purpose:** Configure a practice session.
-
-Components:
-- Target company input (autocomplete against companies on platform, or free text for others)
-- Target role selector
-- Difficulty/length selector
-- "Start Mock Interview" button
-
-### D8. Mock Interview — Session
-**Route:** `/candidate/mock/:sessionId`
-**Purpose:** Run the practice interview itself. Shares the interview UI shell with the real interview screen (E1) but visually marked as practice mode.
-
-Components: (see E1 for full interview component list)
-- "Practice Mode" banner/badge distinguishing it from a real interview
-- Same voice interface, timer, consent flow (optional CV in practice mode too)
-
-### D9. Mock Interview — Feedback
-**Route:** `/candidate/mock/:sessionId/feedback`
-**Purpose:** Instant feedback after a mock session — this is the core value of the mock feature.
-
-Components:
-- Overall score + per-dimension breakdown (bar chart)
-- Feedback narrative (LLM-generated, coaching tone — "what went well / what to improve")
-- Transcript with inline annotations at weak points
-- "Try again" / "Practice a different company" buttons
-- Link to relevant Company Prep content
-
-### D10. Mock Session History
-**Route:** `/candidate/mock/history`
-**Purpose:** Progress tracking across all practice attempts.
-
-Components:
-- List of past sessions (company/role, date, score)
-- Score trend chart over time
-- Weak-dimension trend chart (which rubric areas are improving/lagging)
-
-### D11. Company Prep Library
-**Route:** `/candidate/prep`
-**Purpose:** Browse prep content by company/role.
-
-Components:
-- Search/filter (by company, role archetype)
-- Prep content cards (company name/logo, role archetype, "View" button)
-
-### D12. Company Prep Detail
-**Route:** `/candidate/prep/:companyId/:roleArchetype`
-**Purpose:** Actual prep content for one company/role pairing.
-
-Components:
-- Likely-question bank (list, expandable answers/tips)
-- Culture notes section
-- "Practice this now" CTA → pre-fills Mock Interview Setup (D7)
+### C11. Notifications (`/hr/notifications`)
+- **Purpose**: Real-time alerts for shortlists, decision holds, and interview completions.
+- **Components**: Alert Feed, Filter Toggles, Click-through Navigation.
 
 ---
 
-## E. Interview Experience (shared — real + mock)
+## Group D: Candidate Portal (`/candidate/*`)
 
-### E1. Live Interview Room
-**Route:** `/interview/:interviewId` (real) or `/candidate/mock/:sessionId` (practice)
-**Purpose:** The core voice-interview UI, used for both real and practice sessions.
+### D1. Candidate Dashboard (`/candidate/dashboard`)
+- **Purpose**: Overview of active job applications, interview schedules, and recommended mock sessions.
+- **Components**: Application Status Cards, Action Required Banners, Recommended Jobs Strip.
 
-Components:
-- Pre-join screen: mic/camera check, consent toggle for video/CV analysis (with plain-language explanation of what's captured), "Join Interview" button
-- In-session layout: Split-screen layout. Right side displays candidate video tile (if enabled) with MediaPipe proctoring indicators. Left side displays the AI interviewer waveform/avatar and prints the AI interviewer's questions in real-time.
-- No candidate transcript: The candidate's spoken responses are captured and sent to the backend but are never displayed on the UI during the interview.
-- Timer/progress indicator (time box remaining)
-- Mute/camera toggle controls
-- Connection status indicator (handles latency fallback to text-only mode)
-- End-of-interview wrap-up screen ("Thanks, here's what happens next")
+### D2. Applications List (`/candidate/applications`)
+- **Purpose**: List of all submitted job applications across companies.
+- **Components**: Application Table, Status Badges (Applied, Assessment, Interview, Decided, Offered).
 
-### E2. Text-Only Interview Fallback
-**Route:** same as E1, alternate render mode
-**Purpose:** Fallback when voice latency/connection fails.
+### D3. Application Status Detail (`/candidate/applications/:applicationId`)
+- **Purpose**: Stage progress timeline for a specific application.
+- **Components**: Horizontal Timeline, Stage Status Card, Next Action CTA.
 
-Components:
-- Chat-style Q&A interface (AI question bubble, candidate text input)
-- Same timer/progress indicator
-- Notice banner explaining the fallback occurred
+### D4. Interview Scheduler (`/candidate/applications/:applicationId/schedule`)
+- **Purpose**: Selects one of 3 proposed interview slots.
+- **Components**: Slot Selector Cards, Reschedule Request Modal, Add to Calendar Button.
+
+### D5. Aptitude Test Console (`/candidate/applications/:applicationId/assessment`)
+- **Purpose**: Timed cognitive and technical assessment.
+- **Components**: Category Tabs, Question Container, Radio Option Selectors, Countdown Timer, Submit Modal.
+
+### D6. Coding Assessment Console (`/candidate/applications/:applicationId/take-home`)
+- **Purpose**: Interactive coding environment for software engineering applications.
+- **Components**: Problem Description Panel, Code Editor (Monaco/CodeMirror), Test Case Console, Run Tests / Submit buttons.
+
+### D7. Video Screening Console (`/candidate/applications/:applicationId/video-screening`)
+- **Purpose**: Asynchronous video prompt responses.
+- **Components**: Webcam Preview Box, Prompt Card, Recording Controls, Transcript Preview.
+
+### D8. Offer Letter Console (`/candidate/applications/:applicationId/offer`)
+- **Purpose**: Interactive offer letter review and acceptance.
+- **Components**: Offer Summary (Salary, Equity, Start Date), PDF Viewer, Digital Signature Canvas, Accept / Decline buttons.
+
+### D9. Onboarding Checklist (`/candidate/applications/:applicationId/onboarding`)
+- **Purpose**: Post-offer document submission portal.
+- **Components**: Task Checklist, Document Upload Cards, Emergency Contact Form.
+
+### D10. Candidate Profile (`/candidate/profile`)
+- **Purpose**: Manage universal profile details.
+- **Components**: Resume Uploader, Skill Chips Editor, Target Salary/Role Inputs, Profile Completeness Indicator.
+
+### D11. Mock Interview Setup (`/candidate/mock/new`)
+- **Purpose**: Practice interview session launcher.
+- **Components**: Target Company Autocomplete, Role Selector, Difficulty Dropdown, Start Button.
+
+### D12. Mock Interview Room (`/candidate/mock/:sessionId`)
+- **Purpose**: Practice mode voice interview console.
+- **Components**: Practice Mode Banner, Voice Status Orb, Subtitle Feed, Proctor Telemetry HUD.
+
+### D13. Mock Feedback (`/candidate/mock/:sessionId/feedback`)
+- **Purpose**: Instant coaching feedback report following practice.
+- **Components**: Score Cards, Strengths & Weaknesses Narrative, Annotated Transcript.
+
+### D14. Mock History (`/candidate/mock/history`)
+- **Purpose**: Historical practice session score trends.
+- **Components**: Session History Table, Score Progress Chart.
+
+### D15. Prep Library (`/candidate/prep`)
+- **Purpose**: Catalog of company-specific prep guides.
+- **Components**: Search Bar, Company Cards, Archetype Filters.
+
+### D16. Prep Detail (`/candidate/prep/:companyId/:roleArchetype`)
+- **Purpose**: Question banks and company culture guides.
+- **Components**: Question Bank Accordion, Culture Tips Panel, "Start Mock" CTA.
 
 ---
 
-## F. Shared / Cross-cutting Components
+## Group E: Shared Interview & Assessment Consoles
 
-These aren't standalone screens but reusable components referenced across multiple screens above:
+### E1. Live Voice Interview Console (`/interview/:interviewId`)
+- **Purpose**: Full-screen immersive AI voice interview room.
+- **Components**: Pre-join Check (Mic/Cam check + Video Consent Modal), Voice Status Orb (`Speaking`, `Listening`, `Analyzing`, `Idle`), Subtitles Overlay, Proctoring Telemetry HUD, Mute/End Call controls.
 
-- **Score Badge** — colored badge showing composite or dimension score (used in kanban cards, tables, evaluation detail)
-- **Bias Flag Indicator** — small icon/tooltip shown wherever a bias anomaly exists
-- **Agent Status Pill** — "sourcing / screening / interviewing / evaluating / decided" stage indicator
-- **Live Activity Toast/Feed Item** — streaming agent log line, reused in dashboard and pipeline views
-- **Consent Modal** — video/CV consent explanation, reused pre-interview (real and mock)
-- **Empty States** — no jobs, no candidates, no mock sessions yet, etc., consistent illustration + CTA pattern
-- **Toast Notifications** — success/error feedback across all forms and actions
-
-### F.1 UI Primitive Library (`src/components/ui/`)
-
-A hand-built primitive layer (Tailwind CSS v4 + custom CSS in `globals.css` — **no external component library**, e.g. no shadcn/ui) implements the shared components above concretely, so every screen composes from the same building blocks instead of re-implementing markup per screen:
-
-- **Button** — variants (`primary`, `secondary`, `outline`, `ghost`, `danger`, `success`), sizes, loading state, left/right icon slots
-- **Input** / **Textarea** — label, left icon slot, error + hint text, matches the existing `.glass-input` styling
-- **Select** — styled wrapper over the native `<select>` (kept native for accessibility/keyboard support)
-- **Card** / **CardHeader** / **CardTitle** / **CardDescription** / **CardFooter** — formalizes the repeated `.glass-panel`/`.glass-card` div pattern, with accent variants (indigo/emerald/purple)
-- **Badge** — implements the "Score Badge"/"Agent Status Pill" concept above, with a `statusToIntent()` helper mapping common status strings (active/rejected/pending/etc.) to a badge color
-- **Modal** — implements the "Consent Modal" concept and replaces per-screen hand-rolled modals; portal-mounted, Escape-to-close, backdrop click, focus-safe
-- **Tabs** / **TabsList** / **TabsTrigger** / **TabsContent** — accessible tab pattern used in Settings, Prep content, etc.
-- **Tooltip** — small hover/focus-triggered tooltip
-- **Skeleton** / **CardSkeleton** / **TableSkeleton** — loading placeholders used instead of blank-flash while (mock) data loads
-- **EmptyState** — implements the "Empty States" concept above with a consistent icon + message + CTA layout
-- **Toast system** (`src/contexts/ToastContext.tsx`) — implements "Toast Notifications" above; `<ToastProvider>` wraps the root layout, `useToast().toast({ title, variant })` triggers a toast from anywhere in the tree
-
-New screens should be built exclusively on these primitives. Existing hand-rolled screens are migrated to them opportunistically when touched for other reasons, not via a dedicated sweep.
+### E2. Text-Only Fallback Console
+- **Purpose**: Automatic fallback mode when voice network latency exceeds 3 seconds.
+- **Components**: Chat Bubble Interface, Text Input Field, Connection Status Alert Banner.
 
 ---
 
-## G. Screen-to-role matrix
+## Group F: UI Primitives Library (`src/components/ui/`)
 
-| Screen group | HR | Candidate | Public |
+1. **Button**: Variants (`primary`, `secondary`, `outline`, `ghost`, `danger`, `success`), sizes (`sm`, `md`, `lg`), loading spinner states.
+2. **Input / Textarea**: Label, left/right icon slots, error text, glassmorphism styling.
+3. **Select**: Custom-styled accessible select wrapper.
+4. **Card**: Modular container (`CardHeader`, `CardTitle`, `CardDescription`, `CardFooter`).
+5. **Badge**: Status badges with intent mapping (`active`, `pending`, `rejected`, `offered`).
+6. **Modal**: Accessible portal-mounted modal dialog with backdrop click and ESC listener.
+7. **Tabs**: Tab switcher (`TabsList`, `TabsTrigger`, `TabsContent`).
+8. **Tooltip**: Hover/focus popover tooltip.
+9. **Skeleton**: Skeleton loaders (`CardSkeleton`, `TableSkeleton`).
+10. **EmptyState**: Empty state placeholder with icon, message, and CTA.
+11. **Toast System**: Global toast notification context provider (`useToast`).
+
+---
+
+## Group G: Screen-to-Role Access Control Matrix
+
+| Screen Group | Public | Candidate | HR Admin |
 |---|---|---|---|
-| A. Public | ✓ (unauthenticated) | ✓ | ✓ |
-| B. Auth | ✓ | ✓ | ✓ |
-| C. HR Portal | ✓ | ✗ | ✗ |
-| D. Candidate Portal | ✗ | ✓ | ✗ |
-| E. Interview | ✗ (view via C7 replay only) | ✓ (live) | ✗ |
+| Group A (Public) | Allowed | Allowed | Allowed |
+| Group B (Auth) | Allowed | Allowed | Allowed |
+| Group C (HR Portal) | Forbidden | Forbidden | Allowed (Org Scoped) |
+| Group D (Candidate Portal) | Forbidden | Allowed (Own Data) | Forbidden |
+| Group E (Live Consoles) | Forbidden | Allowed (Session Scoped) | Forbidden (Replay Only) |
