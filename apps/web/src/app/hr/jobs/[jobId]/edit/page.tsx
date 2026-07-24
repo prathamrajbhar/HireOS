@@ -35,7 +35,7 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
   const [enableSourcing, setEnableSourcing] = useState(true);
   const [voiceProfile, setVoiceProfile] = useState('Serena (Warm/Professional)');
 
-  const [stages, setStages] = useState<('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[]>([]);
+  const [stages, setStages] = useState<('screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision')[]>([]);
   const [assessmentConfig, setAssessmentConfig] = useState({
     mcqCount: 5,
     codingProblemId: 'virtualized-list',
@@ -58,7 +58,7 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
       setExpWeight(found.rubric.experience || 25);
       setMinScore(found.thresholds.minScore);
       setAutoOffer(found.thresholds.autoOffer || false);
-      setStages(found.stages || ['screening', 'assessment', 'voice_screen', 'decision']);
+      setStages(found.stages || ['screening', 'assessment', 'voice_screen', 'hr_round', 'decision']);
       setAssessmentConfig(found.assessmentConfig || {
         mcqCount: 5,
         codingProblemId: 'virtualized-list',

@@ -42,12 +42,13 @@ NextRound operates as a two-sided AI talent marketplace:
 - Registers organization and manages team member access levels.
 - Posts job listings, utilizes AI JD parsing, and sets rubric weightings.
 - Views real-time pipeline Kanban, candidate evaluation detail cards, and interview replays.
+- Conducts live 1:1 Human HR Round video calls with candidates after all AI assessments pass threshold, manually marking Pass/Fail.
 - Configures auto-offer toggles, platform availability slots, and custom email templates.
 
 ### B. Job Candidate (Platform User)
 - Builds a platform-wide candidate profile (resume, skills, target compensation, work authorization).
 - Applies to jobs across multiple companies without re-entering application details.
-- Completes automated scheduling, voice interviews, coding sandboxes, and aptitude assessments.
+- Completes automated scheduling, voice interviews, coding sandboxes, aptitude assessments, and final Human HR Round video call.
 - Receives automated decisions, digital offer letters with signature pads, or feedback-rich rejection emails.
 - Utilizes Mock Interview Console and Company Prep Libraries for skill development.
 
@@ -79,7 +80,7 @@ User: id, email, password_hash, role (hr | candidate), org_id (nullable), create
 Organization: id, name, logo_url, industry, size, settings (json), created_at
 Job: id, org_id, title, description, rubric (json), thresholds (json), status (draft|active|closed), created_at
 CandidateProfile: id, user_id, resume_url, linkedin_url, github_url, skills (json), target_roles (json), expected_salary, notice_period, work_authorization, proud_project, work_values (json), created_at
-Application: id, candidate_id, job_id, status (applied|screening|interview_scheduled|interviewed|decided|offered|accepted), applied_at
+Application: id, candidate_id, job_id, status (applied|screening|interview_scheduled|interviewed|hr_round|decided|offered|accepted), hr_round_status (pending|scheduled|passed|failed), hr_round_scheduled_at, hr_round_completed_at, applied_at
 Evaluation: id, application_id, stage, resume_score, interview_score, composite_score, bias_flag, bias_report (json), decision (hire|reject|hold), reasoning
 Interview: id, application_id, scheduled_at, transcript (json), audio_url, proctor_flags (json), engagement_signal (json), video_consent (bool), status
 Assessment: id, application_id, test_type (aptitude|coding|video), questions (json), responses (json), score, status

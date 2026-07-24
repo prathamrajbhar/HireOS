@@ -102,6 +102,10 @@ Exhaustive inventory of all platform user interfaces, grouped by surface, route,
 - **Purpose**: Real-time alerts for shortlists, decision holds, and interview completions.
 - **Components**: Alert Feed, Filter Toggles, Click-through Navigation.
 
+### C12. HR Video Call Console (`/hr/interview/:applicationId`)
+- **Purpose**: Live 1:1 WebRTC video call room for HR to conduct the final human assessment round with candidate.
+- **Components**: Candidate Video Feed, HR Camera Self-Preview, Audio Mic Toggle, Video Camera Toggle, End Call Button, Candidate Resume & AI Score Summary Drawer, Post-Call "Mark as Pass" and "Mark as Fail" Action Buttons.
+
 ---
 
 ## Group D: Candidate Portal (`/candidate/*`)
@@ -112,7 +116,7 @@ Exhaustive inventory of all platform user interfaces, grouped by surface, route,
 
 ### D2. Applications List (`/candidate/applications`)
 - **Purpose**: List of all submitted job applications across companies.
-- **Components**: Application Table, Status Badges (Applied, Assessment, Interview, Decided, Offered).
+- **Components**: Application Table, Status Badges (Applied, Assessment, Interview, HR Round, Decided, Offered).
 
 ### D3. Application Status Detail (`/candidate/applications/:applicationId`)
 - **Purpose**: Stage progress timeline for a specific application.
@@ -133,6 +137,10 @@ Exhaustive inventory of all platform user interfaces, grouped by surface, route,
 ### D7. Video Screening Console (`/candidate/applications/:applicationId/video-screening`)
 - **Purpose**: Asynchronous video prompt responses.
 - **Components**: Webcam Preview Box, Prompt Card, Recording Controls, Transcript Preview.
+
+### D7.5. Candidate HR Round Room (`/candidate/hr-round/:applicationId`)
+- **Purpose**: Pre-call waiting room and live 1:1 WebRTC video call console with HR representative.
+- **Components**: Hardware Pre-Check Modal (camera preview, mic volume meter), Call Scheduled Time Indicator, "Join Call" Button, Live WebRTC Video Viewport, Call Controls (Mute Mic, Video Toggle, Leave Call).
 
 ### D8. Offer Letter Console (`/candidate/applications/:applicationId/offer`)
 - **Purpose**: Interactive offer letter review and acceptance.

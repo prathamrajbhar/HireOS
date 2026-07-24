@@ -62,7 +62,7 @@ export default function CandidateApplicationDetailPage({ params }: { params: Pro
         assessments[0].status === 'completed'
           ? `Completed — Score: ${assessments[0].overallScore || 91}%`
           : 'Continue your timed assessment',
-      href: `/candidate/applications/${app.id}/assessment`,
+      href: `/candidate/mock/session-${app.id}?applicationId=${app.id}&track=aptitude`,
       tone: 'indigo' as const,
       badge: assessments[0].status === 'completed' ? 'Completed' : 'Pending',
     },
@@ -126,8 +126,10 @@ export default function CandidateApplicationDetailPage({ params }: { params: Pro
   const stages = [
     { name: 'Applied', desc: 'Application received and resume queue matching active.', date: app.appliedDate, done: true },
     { name: 'Screened', desc: 'AI Screening Agent completed parsing and qualification matching.', date: '2026-06-30', done: app.status !== 'screening' },
-    { name: 'Interview', desc: 'Completed voice conversational session with Interviewer Agent.', date: '2026-07-02', done: app.status === 'interviewed' || app.status === 'decided' },
-    { name: 'Decision', desc: 'Final structured scoring compiled. Outcome determined.', date: '2026-07-05', done: app.status === 'decided' },
+    { name: 'Assessment', desc: 'Completed Aptitude Test & Coding Assessment module.', date: '2026-07-01', done: app.status !== 'screening' && app.status !== 'sourced' },
+    { name: 'Interview', desc: 'Completed voice conversational session with Interviewer Agent.', date: '2026-07-02', done: app.status === 'interviewed' || app.status === 'hr_round' || app.status === 'decided' },
+    { name: 'HR Round', desc: 'Live 1:1 human video call evaluation with HR representative.', date: app.hrRoundScheduledAt || '2026-07-24', done: app.hrRoundStatus === 'PASSED' || app.status === 'decided' },
+    { name: 'Decision', desc: 'Final structured scoring compiled. Outcome determined.', date: '2026-07-25', done: app.status === 'decided' },
   ];
 
   const matchPercent = app.scores?.composite || 94;
@@ -385,6 +387,26 @@ export default function CandidateApplicationDetailPage({ params }: { params: Pro
               >
                 <Video className="h-4 w-4" />
                 <span>Join Live Interview Room</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Human HR Round Status Box */}
+          {(app.status === 'hr_round' || app.stage === 'HR Round') && (
+            <div className="rounded-3xl border border-brand-200 dark:border-orange-800/80 bg-brand-50/50 dark:bg-orange-950/40 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
+              <div className="flex items-center gap-2 text-brand-700 dark:text-orange-300 font-extrabold">
+                <Video className="h-5 w-5 text-brand-600 dark:text-orange-400" />
+                <span className="text-sm font-display">Human HR Round Ready</span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Congratulations! You passed all automated AI vetting rounds. Your live 1:1 video call with HR is ready.
+              </p>
+              <Link
+                href={`/candidate/hr-round/${app.id}`}
+                className="w-full flex items-center justify-center gap-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 text-xs shadow-md transition-all cursor-pointer hover:scale-[1.02]"
+              >
+                <Video className="h-4 w-4" />
+                <span>Enter HR Round Room</span>
               </Link>
             </div>
           )}

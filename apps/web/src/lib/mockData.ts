@@ -21,13 +21,15 @@ export interface Job {
   experienceLevel: string;
   postedDate: string;
   applicantsCount: number;
-  stages?: ('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[];
+  stages?: ('screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision')[];
   assessmentConfig?: {
     mcqCount: number;
     codingProblemId: string;
     passingScore: number;
   };
 }
+
+export type HRRoundStatus = 'PENDING' | 'SCHEDULED' | 'PASSED' | 'FAILED';
 
 export interface Application {
   id: string;
@@ -37,8 +39,11 @@ export interface Application {
   jobId: string;
   jobTitle: string;
   orgName: string;
-  status: 'sourced' | 'screening' | 'interview_scheduled' | 'interviewed' | 'decided';
-  stage: 'Sourced' | 'Screened' | 'Assessment' | 'Interview' | 'Panel' | 'Decision';
+  status: 'sourced' | 'screening' | 'interview_scheduled' | 'interviewed' | 'hr_round' | 'decided';
+  stage: 'Sourced' | 'Screened' | 'Assessment' | 'Interview' | 'HR Round' | 'Panel' | 'Decision';
+  hrRoundStatus?: HRRoundStatus;
+  hrRoundScheduledAt?: string;
+  hrRoundCompletedAt?: string;
   appliedDate: string;
   resumeUrl: string;
   skills: string[];
@@ -336,8 +341,10 @@ export const mockApplications: Application[] = [
     jobId: 'job-101',
     jobTitle: 'Senior Frontend Engineer — Consumer Platform',
     orgName: 'Swiggy',
-    status: 'interview_scheduled',
-    stage: 'Interview',
+    status: 'hr_round',
+    stage: 'HR Round',
+    hrRoundStatus: 'SCHEDULED',
+    hrRoundScheduledAt: '2026-07-24 19:30:00',
     appliedDate: '2026-07-03',
     resumeUrl: 'rohan_deshmukh_resume.pdf',
     skills: ['React', 'TypeScript', 'Node.js', 'Vite', 'State Management', 'System Architecture'],
@@ -1106,6 +1113,23 @@ export const mockAssessments: AssessmentResult[] = [
       { section: 'Logical Reasoning', score: 94, benchmark: 78 },
       { section: 'Data Structures', score: 90, benchmark: 75 },
       { section: 'Numerical Ability', score: 88, benchmark: 72 },
+    ],
+  },
+  {
+    id: 'assess-503',
+    applicationId: 'app-503',
+    candidateName: 'Rohan Deshmukh',
+    assessmentName: 'Full-Stack Engineering Aptitude Test',
+    category: 'aptitude',
+    status: 'completed',
+    completedDate: '2026-07-04',
+    durationMinutes: 30,
+    overallScore: 89,
+    percentile: 94,
+    sectionScores: [
+      { section: 'Logical Reasoning', score: 92, benchmark: 78 },
+      { section: 'Data Structures', score: 88, benchmark: 75 },
+      { section: 'System Design Logic', score: 87, benchmark: 72 },
     ],
   },
   {

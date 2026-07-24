@@ -86,6 +86,15 @@ NextRound (HireOS) provides an end-to-end, multi-modal recruitment platform powe
 
 ---
 
+## 8.5. Human HR Round
+
+- **Human-to-Human Video Call**: After all automated AI assessment stages pass the job threshold (aptitude test, coding assessment, video screening, and AI voice interview), a live 1:1 video call is scheduled between the candidate and an HR representative.
+- **Zero AI Participation**: No AI agent participates in or scores this round; it is purely a human interaction.
+- **Manual HR Evaluation & Gating**: HR manually conducts the video call and marks the round result as `Pass` or `Fail` via the HR Video Call Console.
+- **Conditional Offer Release**: Only after HR marks `Pass` does the Decision Agent trigger and release the official digital offer letter. Marking `Fail` dispatches a polite rejection email.
+
+---
+
 ## 9. Analytics Agent & Reporting
 
 - **Hiring Funnel Analytics**: Visualizes candidate progression across Sourced, Screened, Assessment, Interview, Decided, and Hired stages.

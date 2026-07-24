@@ -2,6 +2,7 @@
 
 import React, { use, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { mockJobs, mockApplications } from '@/lib/mockData';
 import { CompanyLogo } from '@/components/ui';
 import {
@@ -48,8 +49,12 @@ export default function CandidateJobDetailPage({ params }: { params: Promise<{ j
   const similarJobs = mockJobs.filter((j) => j.id !== job.id).slice(0, 2);
   const skills = jobSkillsMap[job.id] || ['TypeScript', 'React', 'Node.js', 'System Design'];
 
+  const router = useRouter();
   const handleApply = () => {
     setApplied(true);
+    setTimeout(() => {
+      router.push('/candidate/applications/app-503');
+    }, 600);
   };
 
   const handleShare = () => {

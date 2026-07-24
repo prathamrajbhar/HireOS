@@ -16,8 +16,8 @@ interface PipelineConfigCardProps {
   voiceProfile: string;
   setVoiceProfile: (val: string) => void;
   
-  stages: ('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[];
-  setStages: (val: ('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[]) => void;
+  stages: ('screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision')[];
+  setStages: (val: ('screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision')[]) => void;
   assessmentConfig: {
     mcqCount: number;
     codingProblemId: string;
@@ -51,10 +51,11 @@ export default function PipelineConfigCard({
         setStages(remaining);
       }
     } else {
-      const sequenceOrder: ('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[] = [
+      const sequenceOrder: ('screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision')[] = [
         'screening',
         'assessment',
         'voice_screen',
+        'hr_round',
         'panel',
         'decision',
       ];

@@ -49,10 +49,11 @@ export default function HrCreateJob() {
   const [enableSourcing, setEnableSourcing] = useState(true);
   const [voiceProfile, setVoiceProfile] = useState('Serena (Warm/Professional)');
 
-  const [stages, setStages] = useState<('screening' | 'assessment' | 'voice_screen' | 'panel' | 'decision')[]>([
+  const [stages, setStages] = useState<('screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision')[]>([
     'screening',
     'assessment',
     'voice_screen',
+    'hr_round',
     'decision',
   ]);
   const [assessmentConfig, setAssessmentConfig] = useState({

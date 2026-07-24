@@ -67,11 +67,11 @@ export default function HrJobPipeline({ params }: { params: Promise<{ jobId: str
   }
 
   // Generate dynamic columns based on job stages
-  const columns: { id: 'Sourced' | 'Screened' | 'Assessment' | 'Interview' | 'Panel' | 'Decision'; name: string }[] = [
+  const columns: { id: 'Sourced' | 'Screened' | 'Assessment' | 'Interview' | 'HR Round' | 'Panel' | 'Decision'; name: string }[] = [
     { id: 'Sourced', name: 'Applied' }
   ];
 
-  const activeStages = job.stages || ['screening', 'assessment', 'voice_screen', 'decision'];
+  const activeStages = job.stages || ['screening', 'assessment', 'voice_screen', 'hr_round', 'decision'];
 
   if (activeStages.includes('screening')) {
     columns.push({ id: 'Screened', name: 'AI Screened' });
@@ -81,6 +81,9 @@ export default function HrJobPipeline({ params }: { params: Promise<{ jobId: str
   }
   if (activeStages.includes('voice_screen')) {
     columns.push({ id: 'Interview', name: 'AI Interview' });
+  }
+  if (activeStages.includes('hr_round') || true) {
+    columns.push({ id: 'HR Round', name: 'HR Round' });
   }
   if (activeStages.includes('panel')) {
     columns.push({ id: 'Panel', name: 'Live Panel' });
