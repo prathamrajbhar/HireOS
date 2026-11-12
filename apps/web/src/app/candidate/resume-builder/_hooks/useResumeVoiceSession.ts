@@ -36,46 +36,56 @@ export function useResumeVoiceSession({
   const [error, setError] = useState<string | null>(null);
 
   const aiStateRef = useRef<'speaking' | 'listening' | 'evaluating'>('speaking');
+  const isCallActiveRef = useRef(true);
   const submitResponseRef = useRef<((text: string) => Promise<void>) | null>(null);
   const finalizeExtrasRef = useRef<{
     memory: Record<string, unknown>;
     profileType: string | null;
   }>({ memory: {}, profileType: null });
 
+  const updateAiState = useCallback((newState: 'speaking' | 'listening' | 'evaluating') => {
+    aiStateRef.current = newState;
+    setAiState(newState);
+  }, []);
+
   useEffect(() => {
     aiStateRef.current = aiState;
   }, [aiState]);
 
   useEffect(() => {
+    isCallActiveRef.current = true;
     return () => {
+      isCallActiveRef.current = false;
       stopAudio();
     };
   }, []);
 
   const speech = useResumeSpeech({
     micActive,
-    getAiState: () => aiStateRef.current,
-    onFinalTranscript: (text) => submitResponseRef.current?.(text),
+    aiState,
+    onFinalTranscript: (text) => {
+      if (submitResponseRef.current) {
+        void submitResponseRef.current(text);
+      }
+    },
     onError: (msg) => setError(msg),
   });
 
   const speakText = useCallback(
     (text: string, audioUrl?: string, callback?: () => void) => {
-      setAiState('speaking');
-      speech.markSpeechStart();
-      speech.startSpeechRecognition();
+      if (!isCallActiveRef.current) return;
+
+      updateAiState('speaking');
+      speech.stopSpeechRecognition();
 
       playAudio(text, audioUrl, () => {
-        setTimeout(() => {
-          setAiState('listening');
-          if (callback) callback();
-          if (!speech.isRecognitionActive()) {
-            speech.startSpeechRecognition();
-          }
-        }, 600);
+        if (!isCallActiveRef.current) return;
+        if (callback) {
+          callback();
+        }
       });
     },
-    [speech]
+    [speech, updateAiState]
   );
 
   const handleFinalize = useCallback(
@@ -102,7 +112,7 @@ export function useResumeVoiceSession({
     onStopSpeech: speech.stopSpeechRecognition,
     onStartSpeech: speech.startSpeechRecognition,
     onFinalize: handleFinalize,
-    setAiState,
+    setAiState: updateAiState,
     setError,
   });
 
@@ -115,24 +125,35 @@ export function useResumeVoiceSession({
   }, [turns.memory, turns.profileType]);
 
   const replayLastAudio = useCallback(() => {
-    setAiState('speaking');
+    if (!isCallActiveRef.current) return;
+    updateAiState('speaking');
+    speech.stopSpeechRecognition();
     replayAudioManager(() => {
-      setAiState('listening');
+      if (!isCallActiveRef.current) return;
+      updateAiState('listening');
     });
-  }, []);
+  }, [speech, updateAiState]);
 
   const startCall = useCallback(async () => {
+    isCallActiveRef.current = true;
     unlockAudio();
     await turns.startCall();
   }, [turns]);
 
   const submitResponse = useCallback(
     async (text: string) => {
-      if (aiState !== 'listening' || !turns.sessionId) return;
+      if (!isCallActiveRef.current) return;
+      if (aiStateRef.current === 'evaluating' || !turns.sessionId) return;
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      stopAudio();
+      updateAiState('evaluating');
+      speech.stopSpeechRecognition();
       speech.setCandidateSpeechText('');
-      await turns.getAIResponse(text, turns.sessionId, turns.turnIndex, turns.stage);
+      await turns.getAIResponse(trimmed, turns.sessionId, turns.turnIndex, turns.stage);
     },
-    [aiState, turns, speech]
+    [turns, speech, updateAiState]
   );
 
   useEffect(() => {
@@ -140,35 +161,39 @@ export function useResumeVoiceSession({
   }, [submitResponse]);
 
   const submitVoiceResponse = useCallback(() => {
-    if (aiState !== 'listening' || !speech.candidateSpeechText.trim()) return;
-    submitResponse(speech.candidateSpeechText);
-  }, [aiState, speech.candidateSpeechText, submitResponse]);
+    speech.submitCurrentSpeech();
+  }, [speech]);
 
   const endCall = useCallback(async () => {
-    if (!turns.sessionId) return;
+    isCallActiveRef.current = false;
     stopAudio();
-    await handleFinalize(turns.sessionId, turns.conversationHistoryRef.current);
-  }, [turns.sessionId, turns.conversationHistoryRef, handleFinalize]);
+    speech.stopSpeechRecognition();
+    turns.abortCurrentRequest();
+    if (turns.sessionId) {
+      await handleFinalize(turns.sessionId, turns.conversationHistoryRef.current);
+    }
+  }, [turns, speech, handleFinalize]);
 
   const handleToggleMic = useCallback(() => {
     setMicActive((prev) => {
       const next = !prev;
       if (!next) {
         speech.stopSpeechRecognition();
-      } else if (aiState === 'listening') {
+      } else if (aiStateRef.current === 'listening') {
         setTimeout(speech.startSpeechRecognition, 100);
       }
       return next;
     });
-  }, [aiState, speech]);
+  }, [speech]);
 
   const abortCall = useCallback(() => {
+    isCallActiveRef.current = false;
     stopAudio();
     speech.stopSpeechRecognition();
-    setAiState('speaking');
+    updateAiState('speaking');
     speech.setCandidateSpeechText('');
     turns.resetAll();
-  }, [speech, turns]);
+  }, [speech, turns, updateAiState]);
 
   return {
     sessionId: turns.sessionId,

@@ -2,15 +2,23 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, User } from '@/lib/lucide-google-icons';
+import {
+  Sparkles,
+  ArrowRight,
+  User,
+  LogIn,
+  LayoutDashboard,
+  Building,
+  Briefcase,
+} from '@/lib/lucide-google-icons';
 
 interface HeroSectionProps {
-  hrHref: string;
-  candidateHref: string;
   isLoggedIn: boolean;
+  userRole?: 'hr' | 'candidate' | null;
+  dashboardHref: string;
 }
 
-export function HeroSection({ hrHref, candidateHref, isLoggedIn }: HeroSectionProps) {
+export function HeroSection({ isLoggedIn, userRole, dashboardHref }: HeroSectionProps) {
   return (
     <section className="relative px-4 sm:px-6 pt-16 pb-20 lg:px-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_50%_-120px,rgba(99,102,241,0.06),transparent)] dark:bg-[radial-gradient(circle_500px_at_50%_-120px,rgba(99,102,241,0.04),transparent)] pointer-events-none" />
@@ -32,22 +40,71 @@ export function HeroSection({ hrHref, candidateHref, isLoggedIn }: HeroSectionPr
           An AI recruiter that calls and interviews your candidates, asks structured questions, and grades responses. Zero scheduling required.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          <Link
-            href={hrHref}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-brand-600/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-          >
-            <span>{isLoggedIn ? 'Go to HR Dashboard' : 'Hire Talent (Employers)'}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href={candidateHref}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 px-6 py-3.5 text-sm font-extrabold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-          >
-            <User className="h-4 w-4" />
-            <span>{isLoggedIn ? 'Go to Candidate Dashboard' : 'Practice & Apply (Candidates)'}</span>
-          </Link>
-        </div>
+        {isLoggedIn ? (
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <Link
+              href={dashboardHref}
+              id="hero-dashboard-btn"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-brand-600/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Go to {userRole === 'hr' ? 'HR Console' : 'Candidate Dashboard'}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            <Link
+              href={userRole === 'hr' ? '/hr/jobs/new' : '/candidate/jobs'}
+              id="hero-role-action-btn"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 px-6 py-3.5 text-sm font-extrabold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+            >
+              {userRole === 'hr' ? <Building className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+              <span>{userRole === 'hr' ? 'Create Job Opening' : 'Explore Open Roles'}</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                href="/login"
+                id="hero-signin-btn"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-7 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-brand-600/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Sign In</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+
+              <Link
+                href="/signup"
+                id="hero-signup-btn"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 px-7 py-3.5 text-sm font-extrabold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                <User className="h-4 w-4" />
+                <span>Create Account</span>
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
+              <span className="font-semibold text-slate-400 dark:text-slate-500">Quick start as:</span>
+              <Link
+                href="/signup?role=hr"
+                id="hero-quick-hr"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-brand-50 dark:hover:bg-orange-950/40 text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-orange-400 border border-slate-200/80 dark:border-slate-800 font-bold transition-colors cursor-pointer"
+              >
+                <Building className="h-3 w-3" />
+                <span>Employer / HR</span>
+              </Link>
+              <Link
+                href="/signup?role=candidate"
+                id="hero-quick-candidate"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-brand-50 dark:hover:bg-orange-950/40 text-slate-700 dark:text-slate-300 hover:text-brand-600 dark:hover:text-orange-400 border border-slate-200/80 dark:border-slate-800 font-bold transition-colors cursor-pointer"
+              >
+                <User className="h-3 w-3" />
+                <span>Job Candidate</span>
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800/50 flex flex-wrap items-center gap-6 text-slate-400 dark:text-slate-500 select-none">
           <span className="text-xs font-black uppercase tracking-wider">Enterprise Security</span>

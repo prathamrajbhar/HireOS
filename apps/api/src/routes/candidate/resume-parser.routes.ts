@@ -7,16 +7,30 @@ import { logger } from '../../lib/logger';
 export const resumeParserRouter = Router();
 
 const upload = multer({
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = (file.originalname || '').toLowerCase();
-    const isAllowedExt = ext.endsWith('.pdf') || ext.endsWith('.docx') || ext.endsWith('.doc') || ext.endsWith('.txt');
-    const isAllowedMime = (file.mimetype || '').includes('pdf') || file.mimetype.includes('document') || file.mimetype.includes('text') || file.mimetype.includes('stream');
+    const isAllowedExt =
+      ext.endsWith('.pdf') ||
+      ext.endsWith('.docx') ||
+      ext.endsWith('.doc') ||
+      ext.endsWith('.txt') ||
+      ext.endsWith('.png') ||
+      ext.endsWith('.jpg') ||
+      ext.endsWith('.jpeg') ||
+      ext.endsWith('.webp') ||
+      ext.endsWith('.bmp') ||
+      ext.endsWith('.tiff');
+    const isAllowedMime =
+      (file.mimetype || '').includes('pdf') ||
+      file.mimetype.includes('document') ||
+      file.mimetype.includes('text') ||
+      file.mimetype.includes('image') ||
+      file.mimetype.includes('stream');
 
     if (isAllowedExt || isAllowedMime || !file.mimetype) {
       cb(null, true);
     } else {
-
       cb(null, false);
     }
   },

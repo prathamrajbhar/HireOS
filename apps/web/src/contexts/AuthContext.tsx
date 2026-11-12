@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {}
     apiClient.clearCache();
     setUser(null);
-    router.push('/login');
+    router.push('/login?logout=true');
   };
 
   return (

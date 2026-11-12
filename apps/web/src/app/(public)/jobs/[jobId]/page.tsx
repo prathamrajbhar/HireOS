@@ -18,7 +18,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
           router.replace(`/candidate/jobs/${jobId}`);
         }
       } else {
-        router.replace(`/login?redirectTo=/candidate/jobs/${jobId}`);
+        router.replace(`/login?from=/candidate/jobs/${jobId}`);
       }
     }
   }, [user, loading, router, jobId]);

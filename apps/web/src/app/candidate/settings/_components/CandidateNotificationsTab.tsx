@@ -70,7 +70,7 @@ export function CandidateNotificationsTab({ onSave }: CandidateNotificationsTabP
             Communication &amp; Alert Channels
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            Customize how and when NextRound contacts you for interviews and AI reports.
+            Customize how and when HireOS contacts you for interviews and AI reports.
           </p>
         </div>
       </div>

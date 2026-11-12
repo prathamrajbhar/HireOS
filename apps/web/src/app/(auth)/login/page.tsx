@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -16,7 +16,7 @@ import AuthField from '@/components/auth/AuthField';
 import { LOGIN_BENEFITS } from './_components/login.constants';
 import { useLoginForm } from './_components/useLoginForm';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const {
     email,
     setEmail,
@@ -45,7 +45,7 @@ export default function LoginPage() {
       <div className="space-y-6">
         <div className="space-y-1">
           <h2 className="font-display text-xl font-black tracking-tight text-white">Welcome back</h2>
-          <p className="text-xs font-medium text-slate-400">Sign in to your NextRound account.</p>
+          <p className="text-xs font-medium text-slate-400">Sign in to your HireOs account.</p>
         </div>
 
         {formError && (
@@ -126,7 +126,7 @@ export default function LoginPage() {
         </form>
 
         <p className="pt-1 text-center text-xs font-medium text-slate-500">
-          New to NextRound?{' '}
+          New to HireOs?{' '}
           <Link
             href="/signup"
             className="inline-flex items-center gap-1 font-extrabold text-orange-400 transition-colors hover:text-orange-300"
@@ -137,5 +137,19 @@ export default function LoginPage() {
         </p>
       </div>
     </AuthShell>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400 text-xs font-bold animate-pulse">
+          Loading sign in...
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

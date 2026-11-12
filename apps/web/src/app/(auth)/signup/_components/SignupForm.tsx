@@ -177,7 +177,7 @@ export default function SignupForm({ initialRole }: SignupFormProps) {
           </button>
 
           <p className="text-center text-[11px] text-slate-500">
-            By continuing you agree to the NextRound terms of service and privacy policy.
+            By continuing you agree to the HireOs terms of service and privacy policy.
           </p>
         </form>
 

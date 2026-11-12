@@ -42,15 +42,29 @@ export function ProfileResumeVaultCard({
       <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
         <h3 className="text-xs font-extrabold text-slate-900 dark:text-slate-100 border-b border-slate-200/60 dark:border-slate-800 pb-3 flex items-center justify-between">
           <span>Active Resume PDF</span>
-          <span className="text-[10px] text-emerald-500 font-bold">PDF Format</span>
+          <span className={`text-[10px] font-bold ${resumeUrl ? 'text-emerald-500' : 'text-slate-400'}`}>
+            {resumeUrl ? 'PDF Attached' : 'Not Attached'}
+          </span>
         </h3>
 
-        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-brand-50/50 dark:bg-orange-950/40 border border-brand-100 dark:border-orange-900/60 text-brand-700 dark:text-orange-300 shadow-sm">
-          <FileText className="h-6 w-6 flex-shrink-0 text-brand-600 dark:text-orange-400" />
+        <div
+          className={`flex items-center gap-3 p-3.5 rounded-2xl border shadow-sm transition-colors ${
+            resumeUrl
+              ? 'bg-brand-50/50 dark:bg-orange-950/40 border-brand-100 dark:border-orange-900/60 text-brand-700 dark:text-orange-300'
+              : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          <FileText
+            className={`h-6 w-6 flex-shrink-0 ${
+              resumeUrl ? 'text-brand-600 dark:text-orange-400' : 'text-slate-400 dark:text-slate-500'
+            }`}
+          />
           <div className="min-w-0 flex-grow">
-            <span className="text-xs font-extrabold truncate block">{resumeName}</span>
+            <span className="text-xs font-extrabold truncate block text-slate-800 dark:text-slate-200">
+              {resumeName}
+            </span>
             <span className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold block mt-0.5">
-              {resumeDate || 'PDF Resume Attached'}
+              {resumeDate || (resumeUrl ? 'PDF Resume Attached' : 'Upload your resume below to sync')}
             </span>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -93,7 +107,7 @@ export function ProfileResumeVaultCard({
           )}
           <input
             type="file"
-            accept=".pdf,.docx,.doc,.txt"
+            accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp"
             onChange={onUploadResume}
             disabled={uploadingResume}
             className="hidden"

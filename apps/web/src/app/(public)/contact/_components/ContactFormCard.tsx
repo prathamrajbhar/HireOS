@@ -15,7 +15,7 @@ export function ContactFormCard() {
     if (!name || !email || !message) return;
     const subjectLine = encodeURIComponent(subject);
     const body = encodeURIComponent(`${message}\n\n— ${name} (${email})`);
-    window.location.href = `mailto:support@nextround.ai?subject=${subjectLine}&body=${body}`;
+    window.location.href = `mailto:support@hireos.ai?subject=${subjectLine}&body=${body}`;
   };
 
   return (

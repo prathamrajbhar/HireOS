@@ -87,7 +87,7 @@ export function PersonalResumeUploadBanner({
 
   return (
     <div className="space-y-3">
-      <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFile} />
+      <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.png,.jpg,.jpeg,.webp" className="hidden" onChange={handleFile} />
 
       <div className="rounded-2xl border border-orange-500/30 bg-slate-900/90 p-4 shadow-md flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">

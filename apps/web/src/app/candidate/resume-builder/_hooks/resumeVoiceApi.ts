@@ -73,12 +73,14 @@ export async function finalizeResumeSession(
 }
 
 export async function fetchResumeAiTurn(
-  payload: ResumeAiTurnRequest
+  payload: ResumeAiTurnRequest,
+  signal?: AbortSignal
 ): Promise<ResumeAiTurnResponse> {
   const res = await fetch(`${siteConfig.aiServiceUrl}/api/v1/ai/resume-builder/respond`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+    signal,
   });
 
   if (!res.ok) {

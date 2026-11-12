@@ -48,7 +48,7 @@ export function ResumeGeneratingView() {
           AI Resumé Generation in Progress
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-          NextRound is processing your voice transcript, quantifying impact metrics, and compiling an ATS-optimized ReportLab PDF. This will take a moment...
+          HireOS is processing your voice transcript, quantifying impact metrics, and compiling an ATS-optimized ReportLab PDF. This will take a moment...
         </p>
       </div>
     </div>

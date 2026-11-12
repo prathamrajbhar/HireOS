@@ -127,9 +127,9 @@ export async function upsertProfile(req: Request, res: Response, next: NextFunct
         ...(bodyHas('proudProject') && validated.proudProject !== undefined ? { proud_project: validated.proudProject } : {}),
         ...(bodyHas('workValues') ? { work_values: validated.workValues } : {}),
         ...(bodyHas('availability') ? { availability: (validated.availability as Prisma.InputJsonValue) || undefined } : {}),
-        ...(resumeUrl || (bodyHas('resumeUrl') && validated.resumeUrl) ? { resume_url: resumeUrl || validated.resumeUrl } : {}),
-        ...(extractedRawText || (bodyHas('rawResumeText') && validated.rawResumeText) ? { raw_resume_text: validated.rawResumeText || extractedRawText } : {}),
-        ...(extractedParsedResume || (bodyHas('parsedResume') && validated.parsedResume) ? { parsed_resume: ((validated.parsedResume || extractedParsedResume) as Prisma.InputJsonValue) } : {}),
+        ...(resumeUrl ? { resume_url: resumeUrl } : bodyHas('resumeUrl') ? { resume_url: validated.resumeUrl ?? null } : {}),
+        ...(extractedRawText ? { raw_resume_text: extractedRawText } : bodyHas('rawResumeText') ? { raw_resume_text: validated.rawResumeText ?? null } : {}),
+        ...(extractedParsedResume ? { parsed_resume: (extractedParsedResume as Prisma.InputJsonValue) } : bodyHas('parsedResume') ? { parsed_resume: ((validated.parsedResume ?? {}) as Prisma.InputJsonValue) } : {}),
         ...(bodyHas('socialData') && (validated as Record<string, unknown>).socialData ? { social_data: ((validated as Record<string, unknown>).socialData as Prisma.InputJsonValue) } : {}),
         settings: mergedSettings,
         ...(bodyHas('dataConsent') ? { data_consent: validated.dataConsent ?? false } : {}),
@@ -185,11 +185,14 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
     }
 
     const settingsObj = (profile.settings && typeof profile.settings === 'object') ? (profile.settings as Record<string, unknown>) : {};
+    const parsedObj = (profile.parsed_resume && typeof profile.parsed_resume === 'object') ? (profile.parsed_resume as Record<string, unknown>) : {};
     const formattedProfile = {
       ...profile,
-      currentCompany: settingsObj.currentCompany || null,
-      currentTitle: settingsObj.currentTitle || null,
-      education: Array.isArray(settingsObj.education) ? settingsObj.education : [],
+      fullName: profile.full_name || (parsedObj.fullName as string) || null,
+      headline: profile.headline || (parsedObj.headline as string) || (Array.isArray(parsedObj.targetRoles) ? (parsedObj.targetRoles[0] as string) : null),
+      currentCompany: settingsObj.currentCompany || (parsedObj.currentCompany as string) || null,
+      currentTitle: settingsObj.currentTitle || (parsedObj.currentTitle as string) || null,
+      education: Array.isArray(settingsObj.education) && settingsObj.education.length > 0 ? settingsObj.education : (Array.isArray(parsedObj.education) ? parsedObj.education : []),
     };
 
     return res.json({
@@ -200,3 +203,98 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
     return next(error);
   }
 }
+
+export async function uploadAndParseResume(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.user?.userId) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No resume file uploaded' });
+    }
+
+    const fileKey = `resumes/${req.user.userId}/${Date.now()}-${req.file.originalname}`;
+    const resumeUrl = await uploadFile(fileKey, req.file.buffer, req.file.mimetype);
+
+    const rawText = await extractTextFromBuffer(
+      req.file.buffer,
+      req.file.mimetype,
+      req.file.originalname
+    );
+
+    if (!rawText || rawText.trim().length === 0) {
+      return res.status(400).json({ success: false, error: 'Could not extract text from the uploaded resume file' });
+    }
+
+    const parsedData = await parseResumeWithGemini(rawText);
+
+    if (!parsedData.fullName) {
+      const nameFromFilename = req.file.originalname
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[-_.]/g, ' ')
+        .replace(/\b(resume|cv|image|detailed|pdf|doc|docx|scan|new|updated)\b/gi, '')
+        .trim();
+      if (nameFromFilename.length >= 3 && nameFromFilename.length <= 40) {
+        parsedData.fullName = nameFromFilename;
+      }
+    }
+
+    const existingProfile = await prisma.candidateProfile.findUnique({
+      where: { user_id: req.user.userId },
+      select: { settings: true, full_name: true, headline: true, phone: true, location: true },
+    });
+    if (!parsedData.fullName && existingProfile?.full_name) {
+      parsedData.fullName = existingProfile.full_name;
+    }
+
+    const existingSettings = (existingProfile?.settings && typeof existingProfile.settings === 'object') ? (existingProfile.settings as Record<string, unknown>) : {};
+    const mergedSettings: Prisma.InputJsonValue = {
+      ...existingSettings,
+      ...(parsedData.currentCompany ? { currentCompany: parsedData.currentCompany } : {}),
+      ...(parsedData.currentTitle ? { currentTitle: parsedData.currentTitle } : {}),
+      ...(parsedData.education && parsedData.education.length > 0 ? { education: parsedData.education } : {}),
+    };
+
+    await prisma.candidateProfile.upsert({
+      where: { user_id: req.user.userId },
+      create: {
+        user_id: req.user.userId,
+        full_name: parsedData.fullName,
+        headline: parsedData.headline,
+        phone: parsedData.phone,
+        location: parsedData.location,
+        timezone: parsedData.timezone,
+        resume_url: resumeUrl,
+        raw_resume_text: rawText,
+        parsed_resume: (parsedData as unknown as Prisma.InputJsonValue) || {},
+        settings: mergedSettings,
+      },
+      update: {
+        resume_url: resumeUrl,
+        raw_resume_text: rawText,
+        parsed_resume: (parsedData as unknown as Prisma.InputJsonValue) || {},
+        settings: mergedSettings,
+        ...(parsedData.fullName ? { full_name: parsedData.fullName } : {}),
+        ...(parsedData.headline ? { headline: parsedData.headline } : {}),
+        ...(parsedData.phone ? { phone: parsedData.phone } : {}),
+        ...(parsedData.location ? { location: parsedData.location } : {}),
+      },
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        rawTextLength: rawText.length,
+        rawText,
+        resumeUrl,
+        profile: parsedData,
+      },
+    });
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? `${err.message}\n${err.stack}` : String(err);
+    logger.child('CandidateProfile').error(`Failed to upload and parse resume: ${errMsg}`);
+    return next(err);
+  }
+}
+

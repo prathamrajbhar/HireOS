@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { User, Mic } from '@/lib/lucide-google-icons';
+import { User, Mic, Send } from '@/lib/lucide-google-icons';
 
 interface InterviewUserPanelProps {
   micActive: boolean;
@@ -10,6 +10,8 @@ interface InterviewUserPanelProps {
   candidateSpeechText: string;
   lastCandidateTurnContent?: string;
   isChatOpen: boolean;
+  aiState?: 'speaking' | 'listening' | 'evaluating';
+  onSubmitResponse?: (text: string) => void;
 }
 
 export function InterviewUserPanel({
@@ -19,6 +21,8 @@ export function InterviewUserPanel({
   candidateSpeechText,
   lastCandidateTurnContent,
   isChatOpen,
+  aiState,
+  onSubmitResponse,
 }: InterviewUserPanelProps) {
   return (
     <div
@@ -71,9 +75,23 @@ export function InterviewUserPanel({
         </span>
 
         {candidateSpeechText ? (
-          <p className="text-xs font-semibold text-emerald-300 leading-relaxed animate-in fade-in duration-100">
-            &ldquo;{candidateSpeechText}&rdquo;
-          </p>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-emerald-300 leading-relaxed animate-in fade-in duration-100">
+              &ldquo;{candidateSpeechText}&rdquo;
+            </p>
+            {aiState === 'listening' && onSubmitResponse && (
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => onSubmitResponse(candidateSpeechText)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow-md cursor-pointer transition-all active:scale-95"
+                >
+                  <span>Done Speaking</span>
+                  <Send className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
         ) : lastCandidateTurnContent ? (
           <p className="text-xs font-semibold text-slate-200 leading-relaxed">
             &ldquo;{lastCandidateTurnContent}&rdquo;

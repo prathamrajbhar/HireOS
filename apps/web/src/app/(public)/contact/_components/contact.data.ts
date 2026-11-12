@@ -18,7 +18,7 @@ export const CONTACT_FAQS: ContactFaq[] = [
   {
     question: 'Can I request a custom live AI voice demo for my team?',
     answer:
-      'Yes! Select "Enterprise Sales & Demo" or email sales@nextround.ai to schedule a 15-minute tailored walk-through with our product team.',
+      'Yes! Select "Enterprise Sales & Demo" or email sales@hireos.ai to schedule a 15-minute tailored walk-through with our product team.',
   },
   {
     question: 'Is phone or dedicated Slack channel support available?',

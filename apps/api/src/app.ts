@@ -23,6 +23,8 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
 
 
 app.get('/api/v1/health', (_req, res) => {

@@ -50,9 +50,9 @@ export function ProctoringGate({ company, role, onProceed }: ProctoringGateProps
         <div className="w-full max-w-md space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <CompanyLogo name={company || 'NextRound'} size="sm" />
+              <CompanyLogo name={company || 'HireOs'} size="sm" />
               <div className="min-w-0">
-                <p className="text-sm font-bold truncate font-display">{company || 'NextRound'}</p>
+                <p className="text-sm font-bold truncate font-display">{company || 'HireOs'}</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{role || 'Candidate'}</p>
               </div>
             </div>

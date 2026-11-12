@@ -68,7 +68,7 @@ export default function ChangePasswordRequiredPage() {
       await refreshUser();
       toast({
         title: 'Password updated successfully',
-        description: 'Welcome to your NextRound workspace.',
+        description: 'Welcome to your HireOs workspace.',
         variant: 'success',
       });
 

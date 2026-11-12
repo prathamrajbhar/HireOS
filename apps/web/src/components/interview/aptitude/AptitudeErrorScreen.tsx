@@ -25,7 +25,7 @@ export function AptitudeErrorScreen({ error }: { error?: string | null }) {
         </div>
         {isAuthError ? (
           <button
-            onClick={() => router.push('/auth/login')}
+            onClick={() => router.push('/login')}
             className="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <LogIn className="h-4 w-4" />

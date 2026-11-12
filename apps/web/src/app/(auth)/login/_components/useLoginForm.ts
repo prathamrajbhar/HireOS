@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ import { EMAIL_RE } from './login.constants';
 
 export function useLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const { toast } = useToast();
 
@@ -48,6 +49,9 @@ export function useLoginForm() {
         return;
       }
 
+      const rawFrom = searchParams.get('from') || searchParams.get('redirectTo');
+      const isValidRedirect = !!rawFrom && rawFrom.startsWith('/') && !rawFrom.startsWith('//');
+
       if (result.user.role === 'candidate') {
         try {
           const profileData = await apiClient.get<{ profile?: CandidateProfileData }>('/candidate/profile');
@@ -71,12 +75,24 @@ export function useLoginForm() {
           router.push('/onboarding/candidate');
           return;
         }
+
+        if (isValidRedirect && rawFrom.startsWith('/candidate')) {
+          router.push(rawFrom);
+          return;
+        }
+
         router.push('/candidate/dashboard');
       } else {
         if (!result.user.org_id) {
           router.push('/onboarding/company');
           return;
         }
+
+        if (isValidRedirect && rawFrom.startsWith('/hr')) {
+          router.push(rawFrom);
+          return;
+        }
+
         router.push('/hr/dashboard');
       }
     } else {

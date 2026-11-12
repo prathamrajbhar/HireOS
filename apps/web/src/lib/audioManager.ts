@@ -94,6 +94,7 @@ export function playSpeechSynthesis(text: string, onEnd?: () => void) {
       if (onEnd) onEnd();
     };
     utterance.onerror = () => {
+      if (_audioStopped) return;
       if (onEnd) onEnd();
     };
 
@@ -102,6 +103,7 @@ export function playSpeechSynthesis(text: string, onEnd?: () => void) {
     }
     window.speechSynthesis.speak(utterance);
   } catch {
+    if (_audioStopped) return;
     if (onEnd) onEnd();
   }
 }
@@ -153,13 +155,19 @@ export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
     }
   }
 
-  playSpeechSynthesis(text, onEnd);
+  if (!_audioStopped) {
+    playSpeechSynthesis(text, onEnd);
+  }
 }
 
 export function stopAudio() {
   if (typeof window !== 'undefined') {
     _audioStopped = true;  // Signal all callbacks to abort before we tear down
-    window.speechSynthesis?.cancel();
+    try {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch {}
     revokeCurrentBlobUrl();
     if (globalAudioInstance) {
       try {
@@ -168,6 +176,7 @@ export function stopAudio() {
         globalAudioInstance.onended = null;
         globalAudioInstance.onerror = null;
         globalAudioInstance.pause();
+        globalAudioInstance.currentTime = 0;
         globalAudioInstance.src = '';
       } catch {}
     }

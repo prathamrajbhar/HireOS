@@ -16,10 +16,14 @@ export function errorHandler(
   _next: NextFunction
 ) {
   if (err instanceof ZodError || err?.name === 'ZodError' || Array.isArray(err?.issues) || Array.isArray(err?.errors)) {
+    const issues = (err.issues || err.errors || []) as Array<{ path?: (string | number)[]; message?: string }>;
+    const issueSummary = issues
+      .map((i) => `${(i.path || []).join('.') || 'field'}: ${i.message || 'invalid'}`)
+      .join('; ');
     return res.status(400).json({
       success: false,
-      error: 'Validation Error',
-      details: err.issues || err.errors,
+      error: issueSummary ? `Validation Error: ${issueSummary}` : 'Validation Error',
+      details: issues,
     });
   }
 

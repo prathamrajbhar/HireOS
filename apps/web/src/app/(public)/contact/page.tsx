@@ -17,7 +17,7 @@ export default function ContactPage() {
         <div className="text-center max-w-3xl mx-auto mb-14">
           <span className="text-[10px] font-extrabold text-brand-600 dark:text-orange-400 bg-brand-50 dark:bg-orange-950/80 border border-brand-200/60 dark:border-orange-900/60 px-3.5 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5 shadow-2xs">
             <Sparkles className="h-3 w-3" />
-            Connect With NextRound
+            Connect With HireOS
           </span>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight mt-3 font-display">

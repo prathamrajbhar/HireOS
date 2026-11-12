@@ -26,7 +26,7 @@ export function CodingHeader({ company, role, problem, language, isRunning, onLa
   return (
     <header className="h-14 px-4 bg-white dark:bg-[#141414] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between flex-shrink-0 z-10 shadow-xs">
       <div className="flex items-center gap-3">
-        <CompanyLogo name={company || 'NextRound'} size="sm" className="shadow-xs flex-shrink-0 border border-slate-200 dark:border-slate-700" />
+        <CompanyLogo name={company || 'HireOs'} size="sm" className="shadow-xs flex-shrink-0 border border-slate-200 dark:border-slate-700" />
         <div className="flex items-center gap-2">
           <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display">
             {problem.title}

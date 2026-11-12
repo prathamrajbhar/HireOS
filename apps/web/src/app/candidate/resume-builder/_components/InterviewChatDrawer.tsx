@@ -110,14 +110,14 @@ export function InterviewChatDrawer({
             type="text"
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            placeholder={aiState === 'listening' ? 'Type your response...' : 'Please wait for AI...'}
-            disabled={aiState !== 'listening'}
+            placeholder={aiState === 'evaluating' ? 'Please wait for AI response...' : 'Type your response and press Enter...'}
+            disabled={aiState === 'evaluating'}
             className="w-full pl-3 pr-10 py-2.5 bg-slate-950 border border-white/10 text-xs rounded-xl focus:outline-none focus:border-orange-500 text-white placeholder-slate-500 disabled:opacity-50"
           />
 
           <button
             type="submit"
-            disabled={aiState !== 'listening' || !textInput.trim()}
+            disabled={aiState === 'evaluating' || !textInput.trim()}
             className="absolute right-2.5 p-1 text-slate-400 hover:text-orange-400 disabled:opacity-30 cursor-pointer active:scale-95"
           >
             <Send className="h-3.5 w-3.5" />

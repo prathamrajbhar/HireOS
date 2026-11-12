@@ -78,7 +78,7 @@ export function getPricingPlans(billingCycle: 'monthly' | 'annual'): PricingPlan
 
 export const PRICING_FAQS: FaqItem[] = [
   {
-    question: 'Is NextRound free to try?',
+    question: 'Is HireOS free to try?',
     answer:
       'Yes! Our Free Starter Plan gives you lifetime access to post up to 3 active jobs, run automated AI resume screening, and conduct AI voice interviews with zero credit card required.',
   },

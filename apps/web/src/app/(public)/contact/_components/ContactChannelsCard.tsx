@@ -16,8 +16,8 @@ export function ContactChannelsCard() {
             </div>
             <div>
               <span className="text-[10px] text-slate-400 uppercase font-bold block">Support Email</span>
-              <a href="mailto:support@nextround.ai" className="text-slate-900 dark:text-slate-100 font-extrabold hover:underline">
-                support@nextround.ai
+              <a href="mailto:support@hireos.ai" className="text-slate-900 dark:text-slate-100 font-extrabold hover:underline">
+                support@hireos.ai
               </a>
             </div>
           </div>
@@ -28,8 +28,8 @@ export function ContactChannelsCard() {
             </div>
             <div>
               <span className="text-[10px] text-slate-400 uppercase font-bold block">Enterprise Sales</span>
-              <a href="mailto:sales@nextround.ai" className="text-slate-900 dark:text-slate-100 font-extrabold hover:underline">
-                sales@nextround.ai
+              <a href="mailto:sales@hireos.ai" className="text-slate-900 dark:text-slate-100 font-extrabold hover:underline">
+                sales@hireos.ai
               </a>
             </div>
           </div>

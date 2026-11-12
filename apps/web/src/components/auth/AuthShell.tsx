@@ -26,10 +26,10 @@ export function BrandMark({ className = 'h-10 w-10' }: { className?: string }) {
       <span
         className={`relative ${className} overflow-hidden rounded-full border border-white/40 shadow-lg shadow-slate-950/50 transition-transform flex-shrink-0 group-hover:scale-105`}
       >
-        <Image src="/logo.png" alt="NextRound logo" fill sizes="40px" className="scale-[1.3] object-cover" />
+        <Image src="/logo.png" alt="HireOS logo" fill sizes="40px" className="scale-[1.3] object-cover" />
       </span>
       <span className="font-display text-2xl font-black tracking-tight text-white">
-        Next<span className="text-orange-400">Round</span>
+        Hire<span className="text-orange-400">OS</span>
       </span>
     </Link>
   );

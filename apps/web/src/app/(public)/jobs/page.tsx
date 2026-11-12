@@ -17,7 +17,7 @@ export default function JobsPage() {
           router.replace('/candidate/jobs');
         }
       } else {
-        router.replace('/login?redirectTo=/candidate/jobs');
+        router.replace('/login?from=/candidate/jobs');
       }
     }
   }, [user, loading, router]);

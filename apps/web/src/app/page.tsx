@@ -13,8 +13,8 @@ import { FaqSection } from './landing/FaqSection';
 export default function LandingPage() {
   const { user } = useAuth();
 
-  const hrHref = user ? (user.role === 'hr' ? '/hr/dashboard' : '/candidate/dashboard') : '/signup?role=hr';
-  const candidateHref = user ? (user.role === 'candidate' ? '/candidate/dashboard' : '/hr/dashboard') : '/signup?role=candidate';
+  const userRole = user?.role;
+  const dashboardHref = userRole === 'hr' ? '/hr/dashboard' : '/candidate/dashboard';
   const isLoggedIn = !!user;
 
   return (
@@ -22,7 +22,11 @@ export default function LandingPage() {
       <PublicNavbar />
 
       <main className="flex-grow flex flex-col items-center">
-        <HeroSection hrHref={hrHref} candidateHref={candidateHref} isLoggedIn={isLoggedIn} />
+        <HeroSection
+          isLoggedIn={isLoggedIn}
+          userRole={userRole}
+          dashboardHref={dashboardHref}
+        />
 
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-24 w-full select-none">
           <div className="rounded-3xl border border-white/60 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/60 backdrop-blur-md p-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center shadow-xs">

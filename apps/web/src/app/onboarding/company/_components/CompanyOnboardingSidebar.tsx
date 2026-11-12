@@ -27,10 +27,10 @@ export function CompanyOnboardingSidebar({ steps, current }: CompanyOnboardingSi
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative h-10 w-10 rounded-xl overflow-hidden group-hover:scale-105 transition-transform border border-orange-500/40 shadow-md shrink-0">
-              <Image src="/logo.png" alt="NextRound Logo" fill sizes="40px" className="object-cover scale-[1.2]" />
+              <Image src="/logo.png" alt="HireOS Logo" fill sizes="40px" className="object-cover scale-[1.2]" />
             </div>
             <span className="text-2xl font-black tracking-tight text-white">
-              Next<span className="text-orange-500">Round</span>
+              Hire<span className="text-orange-500">OS</span>
             </span>
           </Link>
 
@@ -104,7 +104,7 @@ export function CompanyOnboardingSidebar({ steps, current }: CompanyOnboardingSi
             />
           </div>
           <p className="text-xs text-slate-400 leading-normal">
-            NextRound AI pipeline powers automated sourcing, screening, voice interviews and offer decisions.
+            HireOS AI pipeline powers automated sourcing, screening, voice interviews and offer decisions.
           </p>
         </div>
       </div>

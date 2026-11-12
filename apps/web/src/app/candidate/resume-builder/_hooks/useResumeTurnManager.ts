@@ -45,6 +45,8 @@ export function useResumeTurnManager({
   const conversationHistoryRef = useRef<ConversationTurn[]>([]);
   const memoryRef = useRef<Record<string, unknown>>({});
   const profileTypeRef = useRef<string | null>(null);
+  const isCallActiveRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     conversationHistoryRef.current = conversationHistory;
@@ -58,6 +60,20 @@ export function useResumeTurnManager({
     profileTypeRef.current = profileType;
   }, [profileType]);
 
+  const abortCurrentRequest = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      isCallActiveRef.current = false;
+      abortCurrentRequest();
+    };
+  }, [abortCurrentRequest]);
+
   const getAIResponse = useCallback(
     async (
       candidateResponse: string,
@@ -65,6 +81,12 @@ export function useResumeTurnManager({
       currentTurnIndex: number,
       currentStage: string
     ) => {
+      if (!isCallActiveRef.current) return;
+
+      abortCurrentRequest();
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
       setAiState('evaluating');
       onStopSpeech();
 
@@ -79,27 +101,30 @@ export function useResumeTurnManager({
       }
 
       try {
-        const data = await fetchResumeAiTurn({
-          sessionId: currentSessionId,
-          transcript: candidateResponse,
-          targetRole,
-          targetCompany: 'Target Enterprise',
-          experienceLevel,
-          stage: currentStage,
-          turnNumber: currentTurnIndex,
-          conversationHistory: newHistory.map((h) => ({
-            speaker: h.role,
-            text: h.content,
-          })),
-          memory: memoryRef.current,
-          existingResume,
-          careerGoals,
-          profileType: profileTypeRef.current,
-        });
+        const data = await fetchResumeAiTurn(
+          {
+            sessionId: currentSessionId,
+            transcript: candidateResponse,
+            targetRole,
+            targetCompany: 'Target Enterprise',
+            stage: currentStage,
+            turnNumber: currentTurnIndex,
+            conversationHistory: newHistory.map((h) => ({
+              speaker: h.role,
+              text: h.content,
+            })),
+            memory: memoryRef.current,
+            existingResume,
+            careerGoals,
+            profileType: profileTypeRef.current,
+          },
+          abortController.signal
+        );
+
+        if (!isCallActiveRef.current) return;
 
         if (data.memory) {
           setMemory(data.memory);
-          // Track profile type as it gets inferred by the agent
           const inferredType = (data.memory as Record<string, unknown>).profile_type as string | null;
           if (inferredType && inferredType !== profileTypeRef.current) {
             setProfileType(inferredType);
@@ -118,24 +143,44 @@ export function useResumeTurnManager({
         if (data.isComplete) {
           setAiState('speaking');
           onSpeakText(data.text, data.audioUrl, () => {
-            onFinalize(currentSessionId, updatedHistory);
+            if (isCallActiveRef.current) {
+              onFinalize(currentSessionId, updatedHistory);
+            }
           });
         } else {
           onSpeakText(data.text, data.audioUrl, () => {
-            setAiState('listening');
-            onStartSpeech();
+            if (isCallActiveRef.current) {
+              setAiState('listening');
+              onStartSpeech();
+            }
           });
         }
       } catch (err: unknown) {
+        if (!isCallActiveRef.current) return;
+        if (err instanceof Error && err.name === 'AbortError') return;
+
         const message = err instanceof Error ? err.message : 'Unknown error';
         setError(message || 'Error communicating with AI voice agent.');
         setAiState('listening');
+        onStartSpeech();
       }
     },
-    [targetRole, experienceLevel, existingResume, careerGoals, onSpeakText, onStopSpeech, onStartSpeech, onFinalize, setAiState, setError]
+    [
+      targetRole,
+      existingResume,
+      careerGoals,
+      abortCurrentRequest,
+      onSpeakText,
+      onStopSpeech,
+      onStartSpeech,
+      onFinalize,
+      setAiState,
+      setError,
+    ]
   );
 
   const startCall = useCallback(async () => {
+    isCallActiveRef.current = true;
     setError(null);
     setConversationHistory([]);
     setTurnIndex(0);
@@ -152,14 +197,18 @@ export function useResumeTurnManager({
         activeSessionId = await createResumeSession(targetRole, experienceLevel);
         setSessionId(activeSessionId);
       }
+      if (!isCallActiveRef.current) return;
       await getAIResponse('', activeSessionId, 0, 'intro');
     } catch (err: unknown) {
+      if (!isCallActiveRef.current) return;
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message || 'Failed to start resume builder session.');
     }
   }, [targetRole, experienceLevel, initialSessionId, getAIResponse, setAiState, setError]);
 
   const resetAll = useCallback(() => {
+    isCallActiveRef.current = false;
+    abortCurrentRequest();
     setSessionId(null);
     setTurnIndex(0);
     setStage('intro');
@@ -171,7 +220,7 @@ export function useResumeTurnManager({
     conversationHistoryRef.current = [];
     memoryRef.current = {};
     profileTypeRef.current = null;
-  }, [setError]);
+  }, [abortCurrentRequest, setError]);
 
   return {
     sessionId,
@@ -185,5 +234,7 @@ export function useResumeTurnManager({
     getAIResponse,
     startCall,
     resetAll,
+    abortCurrentRequest,
+    isCallActive: () => isCallActiveRef.current,
   };
 }

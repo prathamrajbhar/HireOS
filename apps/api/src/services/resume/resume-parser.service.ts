@@ -70,10 +70,20 @@ export async function parseResumeWithGemini(rawText: string): Promise<ParsedResu
     throw new Error('Resume text too short for parsing');
   }
 
-  const prompt = buildResumeParserPrompt(rawText);
+  const { optimizeResumeContent } = await import('./resume-extractor.service');
+  const { optimizedText, originalLength, optimizedLength, isCondensed, detectedSections } =
+    optimizeResumeContent(rawText);
+
+  if (isCondensed) {
+    logger.child('ResumeParser').info(
+      `Optimized multi-page resume: reduced from ${originalLength} to ${optimizedLength} chars while preserving high-priority sections (${detectedSections.length} sections detected)`
+    );
+  }
+
+  const prompt = buildResumeParserPrompt(optimizedText);
 
   try {
-    const responseText = await generateText(prompt);
+    const responseText = await generateText(prompt, 90000);
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
 
     if (!jsonMatch) {
@@ -81,9 +91,11 @@ export async function parseResumeWithGemini(rawText: string): Promise<ParsedResu
     }
 
     const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    parsed.rawText = rawText;
     return sanitizeParsedData(parsed);
   } catch (error) {
     logger.child('ResumeParser').error('LLM resume parsing error:', error);
     throw error instanceof Error ? error : new Error('Failed to parse resume with AI model');
   }
 }
+

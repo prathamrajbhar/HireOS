@@ -1,18 +1,32 @@
+import fs from 'fs';
+import path from 'path';
 import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  HeadBucketCommand,
+  CreateBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { env } from './env';
 import { logger } from './logger';
+
+const isLocalStorage =
+  process.env.STORAGE_DRIVER === 'local' ||
+  !process.env.AWS_ENDPOINT_URL ||
+  process.env.AWS_ENDPOINT_URL.includes('localhost') ||
+  process.env.AWS_ENDPOINT_URL.includes('127.0.0.1');
+
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const endpoint = process.env.AWS_ENDPOINT_URL || undefined;
 const region = process.env.AWS_DEFAULT_REGION || process.env.AWS_REGION || 'ap-south-1';
-const accessKeyId = env('AWS_ACCESS_KEY_ID');
-const secretAccessKey = env('AWS_SECRET_ACCESS_KEY');
-const bucket = process.env.AWS_S3_BUCKET_NAME || env('AWS_S3_BUCKET');
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID || 'test';
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || 'test';
+const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || 'nextroundbucket';
 
 const s3Client = new S3Client({
   ...(endpoint ? { endpoint, forcePathStyle: true } : {}),
@@ -27,6 +41,29 @@ function normalizeKey(key: string): string {
   return key.replace(/\\/g, '/').replace(/^\/+/, '');
 }
 
+let bucketEnsured = false;
+export async function ensureBucket(): Promise<void> {
+  if (isLocalStorage || bucketEnsured) return;
+  try {
+    await s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
+    bucketEnsured = true;
+  } catch (err: unknown) {
+    const errorName = (err as { name?: string })?.name;
+    const statusCode = (err as { $metadata?: { httpStatusCode?: number } })?.$metadata?.httpStatusCode;
+    if (errorName === 'NotFound' || errorName === 'NoSuchBucket' || statusCode === 404) {
+      try {
+        await s3Client.send(new CreateBucketCommand({ Bucket: bucket }));
+        logger.child('Storage').info(`Successfully verified and created missing S3 bucket: ${bucket}`);
+        bucketEnsured = true;
+      } catch (createErr) {
+        logger.child('Storage').warn(`Could not create bucket ${bucket}:`, createErr);
+      }
+    } else {
+      bucketEnsured = true;
+    }
+  }
+}
+
 export async function uploadFile(
   key: string,
   body: Buffer,
@@ -34,6 +71,18 @@ export async function uploadFile(
 ): Promise<string> {
   const normalizedKey = normalizeKey(key);
 
+  if (isLocalStorage) {
+    const filePath = path.join(uploadsDir, normalizedKey);
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    await fs.promises.writeFile(filePath, body);
+    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4000/api/v1').replace(/\/api\/v1\/?$/, '');
+    return `${appUrl}/uploads/${normalizedKey}`;
+  }
+
+  await ensureBucket();
   await s3Client.send(
     new PutObjectCommand({
       Bucket: bucket,
@@ -55,6 +104,9 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
   if (normalizedKey.startsWith('http://') || normalizedKey.startsWith('https://')) {
     try {
       const parsed = new URL(normalizedKey);
+      if (parsed.pathname.startsWith('/uploads/')) {
+        return normalizedKey;
+      }
       const pathParts = parsed.pathname.replace(/^\/+/, '').split('/');
       if (pathParts.length > 1 && pathParts[0] === bucket) {
         normalizedKey = pathParts.slice(1).join('/');
@@ -64,6 +116,11 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
     } catch {
       return normalizedKey;
     }
+  }
+
+  if (isLocalStorage) {
+    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4000/api/v1').replace(/\/api\/v1\/?$/, '');
+    return `${appUrl}/uploads/${normalizedKey}`;
   }
 
   const command = new GetObjectCommand({
@@ -76,6 +133,15 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
 
 export async function deleteFile(key: string): Promise<void> {
   const normalizedKey = normalizeKey(key);
+
+  if (isLocalStorage) {
+    const filePath = path.join(uploadsDir, normalizedKey);
+    if (fs.existsSync(filePath)) {
+      await fs.promises.unlink(filePath).catch(() => {});
+    }
+    return;
+  }
+
   try {
     await s3Client.send(
       new DeleteObjectCommand({

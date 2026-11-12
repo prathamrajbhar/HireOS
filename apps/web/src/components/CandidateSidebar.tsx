@@ -60,7 +60,7 @@ export default function CandidateSidebar({ avatar = '/avatar-girl.jpg', name = '
           <div className="relative h-9 w-9 rounded-full overflow-hidden group-hover:scale-105 transition-transform duration-200 flex-shrink-0 select-none">
             <Image
               src="/logo.png"
-              alt="NextRound Logo"
+              alt="HireOS Logo"
               fill
               sizes="36px"
               className="object-cover scale-[1.3]"

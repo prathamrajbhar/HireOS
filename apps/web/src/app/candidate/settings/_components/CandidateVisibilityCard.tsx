@@ -19,7 +19,7 @@ const VISIBILITY_OPTIONS = [
   {
     id: 'Public' as const,
     title: 'Public Talent Directory',
-    desc: 'Indexed in NextRound candidate index for all registered employers.',
+    desc: 'Indexed in HireOS candidate index for all registered employers.',
   },
   {
     id: 'Private' as const,

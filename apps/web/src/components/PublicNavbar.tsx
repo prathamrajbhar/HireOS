@@ -4,13 +4,13 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ArrowRight, LayoutDashboard } from '@/lib/lucide-google-icons';
+import { ArrowRight, LayoutDashboard, LogOut } from '@/lib/lucide-google-icons';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function PublicNavbar() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const dashboardPath = user?.role === 'hr' ? '/hr/dashboard' : '/candidate/dashboard';
 
   const links = [
@@ -28,7 +28,7 @@ export default function PublicNavbar() {
             <div className="relative h-10 w-10 rounded-full overflow-hidden group-hover:scale-105 transition-transform flex-shrink-0 select-none border border-slate-200 dark:border-slate-750 shadow-2xs">
               <Image
                 src="/logo.png"
-                alt="NextRound Logo"
+                alt="HireOS Logo"
                 fill
                 sizes="40px"
                 className="object-cover scale-[1.3]"
@@ -65,30 +65,45 @@ export default function PublicNavbar() {
           <ThemeToggle />
 
           {user ? (
-            <Link
-              href={dashboardPath}
-              className="inline-flex items-center gap-2 rounded-xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-5.5 py-3 text-sm font-extrabold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Go to Dashboard</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={dashboardPath}
+                id="navbar-dashboard-btn"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 px-4.5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Go to Dashboard</span>
+              </Link>
+              <button
+                type="button"
+                id="navbar-signout-btn"
+                onClick={() => logout()}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 px-3 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+            </div>
           ) : (
-            <>
+            <div className="flex items-center gap-2.5">
               <Link
                 href="/login"
-                className="text-sm font-extrabold text-slate-650 dark:text-slate-300 hover:text-brand-600 dark:hover:text-orange-400 transition-colors px-4 py-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-slate-800/60"
+                id="navbar-signin-btn"
+                className="text-sm font-extrabold text-slate-650 dark:text-slate-300 hover:text-brand-600 dark:hover:text-orange-400 transition-colors px-4 py-2.5 rounded-xl hover:bg-slate-100/60 dark:hover:bg-slate-800/60 cursor-pointer"
               >
                 <span>Sign In</span>
               </Link>
 
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-orange-600 hover:bg-slate-950 dark:hover:bg-orange-700 px-5.5 py-3 text-sm font-extrabold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                id="navbar-signup-btn"
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 dark:bg-orange-600 hover:bg-slate-950 dark:hover:bg-orange-700 px-5 py-2.5 text-sm font-extrabold text-white shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
                 <span>Get Started</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
-            </>
+            </div>
           )}
         </div>
       </div>

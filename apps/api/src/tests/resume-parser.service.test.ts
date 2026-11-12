@@ -6,6 +6,7 @@ import {
 import {
   parseResumeWithGemini,
   generateFieldWithGemini,
+  optimizeResumeContent,
   FieldRegenerationPayload,
 } from '../services/resume/resume-parser.service';
 vi.mock('../lib/logger', () => ({
@@ -375,5 +376,50 @@ describe('Resume Parser — edge cases', () => {
     const callArg = (generateText as vi.Mock).mock.calls[0][0];
     expect(callArg).toContain('executive 2-4 sentence summary');
     expect(callArg).toContain('Do NOT include emails, phone numbers');
+  });
+
+  it('optimizeResumeContent preserves all important career data over 12000 chars while condensing publications', () => {
+    // Construct a simulated 20+ page academic CV
+    const header = 'Dr. Jane Doe\nEmail: jane.doe@university.edu\nPhone: +1 555 0199\nSummary: Distinguished Professor with 20+ years in Computer Systems.\n';
+    const experienceLong = 'WORK EXPERIENCE\n' + 'Company ABC: Principal Architect leading distributed systems.\n'.repeat(120); // ~7,500 chars
+    const skills = 'TECHNICAL SKILLS\nDistributed Systems, Kubernetes, Go, Rust, C++, Architecture, Consensus Protocols, Cloud Computing, Database Engines\n';
+    const education = 'EDUCATION\nPh.D. in Computer Science - Stanford University\nM.S. in Computer Engineering - MIT\nB.S. in Electrical Engineering - UC Berkeley\n';
+    const projects = 'KEY PROJECTS\n' + 'Project Alpha: High throughput consensus engine processing 1M ops/sec.\n'.repeat(30); // ~2,100 chars
+    const certifications = 'CERTIFICATIONS\nAWS Certified Solutions Architect Professional, CKA Certified Kubernetes Administrator\n';
+    const publicationsMassive = 'PUBLICATIONS\n' + '1. Doe, J. et al. "Scalable Consensus in Partitioned Networks", IEEE Transactions, 2021.\n'.repeat(300); // ~28,000 chars of papers!
+
+    const fullCvText = [
+      header,
+      skills,
+      education,
+      experienceLong,
+      projects,
+      certifications,
+      publicationsMassive,
+    ].join('\n\n');
+
+    expect(fullCvText.length).toBeGreaterThan(35000); // 35,000+ characters like 17-20 page CV
+
+    const result = optimizeResumeContent(fullCvText);
+
+    expect(result.isCondensed).toBe(true);
+    // Verified: Publications section was condensed
+    expect(result.optimizedText).toContain('PUBLICATIONS & RESEARCH (Condensed)');
+    expect(result.optimizedText).toContain('[Note: Additional publication entries omitted for AI profile extraction efficiency]');
+
+    // Verified: ALL important sections are 100% preserved
+    expect(result.optimizedText).toContain('Dr. Jane Doe');
+    expect(result.optimizedText).toContain('TECHNICAL SKILLS');
+    expect(result.optimizedText).toContain('Kubernetes, Go, Rust');
+    expect(result.optimizedText).toContain('EDUCATION & QUALIFICATIONS');
+    expect(result.optimizedText).toContain('Stanford University');
+    expect(result.optimizedText).toContain('EXPERIENCE & EMPLOYMENT HISTORY');
+    expect(result.optimizedText).toContain('Principal Architect');
+    expect(result.optimizedText).toContain('KEY PROJECTS');
+    expect(result.optimizedText).toContain('CERTIFICATIONS');
+
+    // Total length was brought into an optimal LLM processing budget
+    expect(result.optimizedLength).toBeLessThan(24000);
+    expect(result.optimizedLength).toBeGreaterThan(10000);
   });
 });

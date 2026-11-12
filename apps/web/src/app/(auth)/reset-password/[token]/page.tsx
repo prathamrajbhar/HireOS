@@ -81,7 +81,7 @@ export default function ResetPasswordPage({ params }: { params: Promise<{ token:
           Create your <span className="text-orange-400">new password.</span>
         </>
       }
-      sub="Choose a strong, unique password to secure your NextRound recruitment workspace."
+      sub="Choose a strong, unique password to secure your HireOs recruitment workspace."
       benefits={RESET_BENEFITS}
     >
       <div className="space-y-6">

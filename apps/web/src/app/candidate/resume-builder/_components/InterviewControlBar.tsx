@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Mic, MicOff, Video, VideoOff, MessageSquare, X } from '@/lib/lucide-google-icons';
+import { Mic, MicOff, Video, VideoOff, MessageSquare, X, Sparkles } from '@/lib/lucide-google-icons';
 
 interface InterviewControlBarProps {
   micActive: boolean;
@@ -11,6 +11,7 @@ interface InterviewControlBarProps {
   isChatOpen: boolean;
   onToggleChat: () => void;
   onCancelCall?: () => void;
+  onEndCall?: () => void;
 }
 
 export function InterviewControlBar({
@@ -21,6 +22,7 @@ export function InterviewControlBar({
   isChatOpen,
   onToggleChat,
   onCancelCall,
+  onEndCall,
 }: InterviewControlBarProps) {
   return (
     <div className="mx-auto px-5 py-2.5 rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur-xl flex items-center gap-3 select-none shadow-2xl">
@@ -62,6 +64,18 @@ export function InterviewControlBar({
       >
         <MessageSquare className="h-4 w-4" />
       </button>
+
+      {onEndCall && (
+        <button
+          type="button"
+          onClick={onEndCall}
+          className="p-2.5 px-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+          title="Finish Interview & Generate Resume"
+        >
+          <Sparkles className="h-4 w-4 text-emerald-400" />
+          <span className="hidden sm:inline">Finish &amp; Generate Resume</span>
+        </button>
+      )}
 
       {onCancelCall && (
         <button

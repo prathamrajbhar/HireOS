@@ -54,6 +54,7 @@ export function InterviewStage({
   voiceError,
   onReplayAudio,
   onSubmitResponse,
+  onEndCall,
   onCancelCall,
 }: InterviewStageProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -97,6 +98,8 @@ export function InterviewStage({
           candidateSpeechText={candidateSpeechText}
           lastCandidateTurnContent={lastCandidateTurn?.content}
           isChatOpen={isChatOpen}
+          aiState={aiState}
+          onSubmitResponse={onSubmitResponse}
         />
 
         {isChatOpen && (
@@ -118,6 +121,7 @@ export function InterviewStage({
         isChatOpen={isChatOpen}
         onToggleChat={() => setIsChatOpen(!isChatOpen)}
         onCancelCall={onCancelCall}
+        onEndCall={onEndCall}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocalMediaStream } from '@/hooks/useLocalMediaStream';
 import { apiClient } from '@/lib/apiClient';
+import { stopAudio } from '@/lib/audioManager';
 import { InterviewStage } from '../_components/InterviewStage';
 import { ResumeStage } from '../_components/ResumeStage';
 import { useResumeVoiceSession } from '../_hooks/useResumeVoiceSession';
@@ -43,6 +44,7 @@ export default function AIResumeBuilderSessionPage({
     existingResume: existingResumeText,
     careerGoals,
     onComplete: () => {
+      stopAudio();
       setIsTimerRunning(false);
       setStage('resume');
       setResumeStatus('generating');
@@ -50,6 +52,12 @@ export default function AIResumeBuilderSessionPage({
   });
 
   const { startCall, endCall, abortCall } = voice;
+
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, []);
 
   useEffect(() => {
     if (stage === 'interview' && !details.loadingSession && !callStartedRef.current) {
@@ -89,11 +97,13 @@ export default function AIResumeBuilderSessionPage({
 
   const handleEndCall = async () => {
     setIsTimerRunning(false);
+    stopAudio();
     await endCall();
   };
 
   const handleCancelCall = () => {
     setIsTimerRunning(false);
+    stopAudio();
     abortCall();
     router.push('/candidate/resume-builder');
   };

@@ -121,7 +121,9 @@ export function useCandidateProfileForm() {
     if (typeof p.bio === 'string') setBio(p.bio);
     if (typeof p.resume_url === 'string' && p.resume_url) {
       setResumeUrl(p.resume_url);
-      setResumeName(p.resume_url.split('/').pop() || 'candidate_resume.pdf');
+      const rawFileName = p.resume_url.split('/').pop() || 'candidate_resume.pdf';
+      const cleanFileName = rawFileName.replace(/^\d+-/, '');
+      setResumeName(cleanFileName || 'candidate_resume.pdf');
       setResumeDate('Uploaded recently');
     } else {
       setResumeUrl('');
@@ -172,8 +174,13 @@ export function useCandidateProfileForm() {
         await refreshUser();
       }
 
+      const payload = {
+        ...buildPayload(),
+        resumeUrl: resumeActions.resumeUrl || null,
+      };
+
       const fd = new FormData();
-      fd.append('data', JSON.stringify(buildPayload()));
+      fd.append('data', JSON.stringify(payload));
       if (resumeActions.resumeFile) fd.append('resume', resumeActions.resumeFile);
 
       await apiClient.post('/candidate/profile', fd);

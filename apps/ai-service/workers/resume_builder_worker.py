@@ -211,8 +211,13 @@ async def process_resume_builder_job(job_data: dict) -> bool:
         await _mark_failed(session_id)
         return False
 
+    pdf_url = None
     try:
         pdf_url = generate_resume_pdf(generated_resume)
+    except Exception as e:
+        logger.error(f"Resume PDF generation error for session {session_id} (proceeding with JSON resume): {e}")
+
+    try:
         return await post_internal(
             "PATCH",
             f"/internal/resume-builder/{session_id}/result",
@@ -220,7 +225,7 @@ async def process_resume_builder_job(job_data: dict) -> bool:
             context=f"resume result for session {session_id}",
         )
     except Exception as e:
-        logger.error(f"Resume builder job failed for session {session_id}: {e}")
+        logger.error(f"Failed to record resume result for session {session_id}: {e}")
         await _mark_failed(session_id)
         return False
 

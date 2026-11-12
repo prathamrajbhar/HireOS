@@ -30,7 +30,7 @@ export default function AboutPage() {
           </h1>
 
           <p className="mt-4 text-slate-600 dark:text-slate-400 text-xs sm:text-sm max-w-xl mx-auto font-medium leading-relaxed">
-            NextRound helps engineering teams hire top candidates 70% faster using automated AI voice interviews, coding tests, and objective scorecards.
+            HireOS helps engineering teams hire top candidates 70% faster using automated AI voice interviews, coding tests, and objective scorecards.
           </p>
 
           <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-8 max-w-xl mx-auto">
@@ -74,9 +74,9 @@ export default function AboutPage() {
               <Zap className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 font-display">How NextRound Fixes It</h3>
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 font-display">How HireOS Fixes It</h3>
               <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                NextRound automates early candidate vetting with 15-minute AI voice interviews, LeetCode-style coding tests, and objective rubrics. Candidates get fast feedback, and HR gets clean candidate scorecards.
+                HireOS automates early candidate vetting with 15-minute AI voice interviews, LeetCode-style coding tests, and objective rubrics. Candidates get fast feedback, and HR gets clean candidate scorecards.
               </p>
             </div>
             <ul className="space-y-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300 pt-2 border-t border-emerald-200/60 dark:border-emerald-900/40">
@@ -92,7 +92,7 @@ export default function AboutPage() {
             <ShieldCheck className="h-6 w-6 text-brand-600 dark:text-orange-400" />
             <div>
               <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 font-display">
-                How NextRound Guarantees Fair &amp; Fast Evaluation
+                How HireOS Guarantees Fair &amp; Fast Evaluation
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 Built on objective AI evaluation rubrics and transparent candidate feedback.
@@ -156,12 +156,12 @@ export default function AboutPage() {
             Ready to Experience Modern AI Hiring?
           </h2>
           <p className="text-xs md:text-sm text-slate-300 font-medium max-w-xl mx-auto">
-            Whether you are an engineering team looking to hire or a candidate preparing for interviews, NextRound makes the process fast, fair, and seamless.
+            Whether you are an engineering team looking to hire or a candidate preparing for interviews, HireOS makes the process fast, fair, and seamless.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
-              href="/candidate/jobs"
+              href="/jobs"
               className="w-full sm:w-auto px-6 py-3 rounded-full bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Briefcase className="h-4 w-4" />
@@ -169,11 +169,11 @@ export default function AboutPage() {
             </Link>
 
             <Link
-              href="/hr/dashboard"
+              href="/signup?role=hr"
               className="w-full sm:w-auto px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs border border-white/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Users className="h-4 w-4" />
-              <span>Open HR Console</span>
+              <span>Hire With HireOS</span>
             </Link>
           </div>
         </div>

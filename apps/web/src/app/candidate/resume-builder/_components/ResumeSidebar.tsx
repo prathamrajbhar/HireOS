@@ -101,23 +101,25 @@ export function ResumeSidebar({
             {copiedText ? 'Copied Full Resume Text!' : 'Copy Plain Text (ATS)'}
           </button>
 
-          {resumeData.pdfUrl ? (
+          {resumeData.pdfUrl && (
             <a
               href={getAbsolutePdfUrl(resumeData.pdfUrl)}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-md transition-all flex items-center justify-center gap-2 text-center"
+              download="Resume.pdf"
+              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-md transition-all flex items-center justify-center gap-2 text-center cursor-pointer"
             >
-              <Download className="h-4 w-4" /> Download PDF Resume
+              <Download className="h-4 w-4" /> Download PDF (S3)
             </a>
-          ) : (
-            <button
-              disabled
-              className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-extrabold flex items-center justify-center gap-2 cursor-not-allowed"
-            >
-              <Download className="h-4 w-4" /> PDF Link Unavailable
-            </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <Download className="h-4 w-4" /> Print / Save as PDF
+          </button>
 
           <button
             onClick={onRestart}

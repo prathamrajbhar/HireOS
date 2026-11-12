@@ -32,7 +32,7 @@ export function AptitudeTestConsole({
   recordingActive = false,
   recordingDurationMs = 0,
 }: AptitudeTestConsoleProps) {
-  const displayCompany = company || companyName || 'NextRound';
+  const displayCompany = company || companyName || 'HireOs';
   const displayRole = role || roleTitle || 'Candidate';
 
   const {

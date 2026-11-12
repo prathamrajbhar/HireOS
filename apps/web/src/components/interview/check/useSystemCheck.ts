@@ -140,7 +140,7 @@ export function useSystemCheck() {
     if (latencyMs === 9999 && downloadMbps === 0) {
       setStep('connection', {
         status: 'fail',
-        error: 'Cannot reach the NextRound server. Make sure the API is running, then retry.',
+        error: 'Cannot reach the HireOs server. Make sure the API is running, then retry.',
       });
       return false;
     }

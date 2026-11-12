@@ -43,9 +43,32 @@ export function sanitizeParsedData(data: Record<string, unknown>): ParsedResumeD
     }
   }
 
-  const headline = toString(data.headline, data.professionalHeadline, data.title, data.currentRole, data.role);
-  const currentCompany = toString(data.currentCompany, data.company, data.employer, data.currentEmployer);
-  const currentTitle = toString(data.currentTitle, data.jobTitle, data.designation, data.currentDesignation);
+  let headline = toString(data.headline, data.professionalHeadline, data.title, data.currentRole, data.role);
+  let currentCompany = toString(data.currentCompany, data.company, data.employer, data.currentEmployer);
+  let currentTitle = toString(data.currentTitle, data.jobTitle, data.designation, data.currentDesignation);
+
+  const rawResumeText = typeof data.rawText === 'string' ? data.rawText : '';
+
+  if (!fullName && rawResumeText) {
+    const lines = rawResumeText.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+    for (const l of lines.slice(0, 5)) {
+      const isHeaderWord = /^(?:curriculum|resume|profile|summary|contact|experience|education|projects|skills|page\s*\d)/i.test(l);
+      if (
+        !isHeaderWord &&
+        !l.includes('@') &&
+        !l.includes('http') &&
+        !/\d/.test(l) &&
+        !/[|/\\:]/.test(l) &&
+        l.length >= 3 &&
+        l.length <= 40 &&
+        l.split(/\s+/).length <= 4
+      ) {
+        fullName = l;
+        break;
+      }
+    }
+  }
+
 
   let education = undefined;
   if (Array.isArray(data.education)) {
@@ -96,8 +119,8 @@ export function sanitizeParsedData(data: Record<string, unknown>): ParsedResumeD
   const skills = Array.from(skillsMap.values());
 
   let targetRoles = toStringArray(data.targetRoles, data.roles);
-  if (targetRoles.length === 0 && headline) {
-    targetRoles = [headline.split('|')[0].trim()];
+  if (!headline && targetRoles.length > 0) {
+    headline = targetRoles[0];
   }
 
   const targetLocations = toStringArray(data.targetLocations);
