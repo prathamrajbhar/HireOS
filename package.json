@@ -16,6 +16,7 @@
     "db:generate": "npm run generate --workspace=@nextround/database",
     "db:migrate": "npm run migrate --workspace=@nextround/database",
     "db:studio": "npm run studio --workspace=@nextround/database",
+    "db:seed:safe": "npm run seed:safe --workspace=@nextround/database",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
