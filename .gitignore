@@ -83,3 +83,7 @@ apps/ai-service/services/local_models/
 test-results/
 playwright-report/
 /dist/e2e/
+
+hireos_backup.dump
+nextround-before-seed.dump
+*.dump
