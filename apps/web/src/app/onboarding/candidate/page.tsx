@@ -40,6 +40,28 @@ export default function CandidateOnboarding() {
       setError('Please consent to profile data usage to continue.');
       return;
     }
+    if (step === 4) {
+      if (form.currentCtc && Number(form.currentCtc) < 0) {
+        setError('Current CTC must be a positive amount.');
+        return;
+      }
+      if (form.expectedSalaryMin && Number(form.expectedSalaryMin) < 0) {
+        setError('Min target salary must be a positive amount.');
+        return;
+      }
+      if (form.expectedSalaryMax && Number(form.expectedSalaryMax) < 0) {
+        setError('Max target salary must be a positive amount.');
+        return;
+      }
+      if (
+        form.expectedSalaryMin &&
+        form.expectedSalaryMax &&
+        Number(form.expectedSalaryMin) > Number(form.expectedSalaryMax)
+      ) {
+        setError('Min target salary cannot exceed max target salary.');
+        return;
+      }
+    }
     setError('');
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   };

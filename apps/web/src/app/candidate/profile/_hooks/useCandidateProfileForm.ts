@@ -202,6 +202,27 @@ export function useCandidateProfileForm() {
     reader.readAsDataURL(file);
   };
 
+  const [deletingResumeId, setDeletingResumeId] = useState<string | null>(null);
+
+  const handleDeleteGeneratedResume = async (id: string) => {
+    try {
+      setDeletingResumeId(id);
+      await apiClient.delete(`/resume-builder/${id}`);
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete resume.';
+      if (!errorMsg.toLowerCase().includes('not found') && (err as { status?: number })?.status !== 404) {
+        setSaveError(errorMsg);
+      }
+    } finally {
+      queryClient.setQueryData(['resume-history'], (old: { history?: Array<{ id: string }> } | undefined) => {
+        if (!old?.history) return old;
+        return { ...old, history: old.history.filter((h) => h.id !== id) };
+      });
+      queryClient.invalidateQueries({ queryKey: ['resume-history'] });
+      setDeletingResumeId(null);
+    }
+  };
+
   const initials = fields.name
     ? fields.name
         .split(' ')
@@ -224,11 +245,13 @@ export function useCandidateProfileForm() {
     profileStatus,
     profileError,
     generatedResumes,
+    deletingResumeId,
     readiness,
     initials,
     handleSaveDetails,
     handleResumeUpload: resumeActions.handleResumeUpload,
     handleDeleteResume: resumeActions.handleDeleteResume,
+    handleDeleteGeneratedResume,
     handleCustomAvatarUpload,
     handleToggleRole: (role: string) =>
       fields.setTargetRoles((prev) =>

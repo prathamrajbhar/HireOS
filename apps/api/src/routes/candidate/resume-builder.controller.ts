@@ -71,16 +71,32 @@ export async function getResumeResult(req: Request, res: Response, next: NextFun
 export async function deleteResumeSession(req: Request, res: Response, next: NextFunction) {
   try {
     const candidateId = await getCandidateProfileId(req.user!.userId);
+    const sessionId = req.params.sessionId as string;
+
     const session = await prisma.mockSession.findFirst({
       where: {
-        id: req.params.sessionId as string,
+        id: sessionId,
         candidate_id: candidateId,
         type: 'resume_builder',
       },
     });
 
     if (!session) {
-      return res.status(404).json({ success: false, error: 'Resume builder session not found' });
+      // Check if session belongs to another candidate
+      const otherSession = await prisma.mockSession.findFirst({
+        where: { id: sessionId },
+        select: { id: true, candidate_id: true },
+      });
+
+      if (otherSession && otherSession.candidate_id !== candidateId) {
+        return res.status(403).json({ success: false, error: 'Unauthorized to delete this resume' });
+      }
+
+      // If already deleted or not found, return 200 OK for idempotent deletion
+      return res.json({
+        success: true,
+        message: 'Resume deleted successfully',
+      });
     }
 
     await prisma.mockSession.delete({

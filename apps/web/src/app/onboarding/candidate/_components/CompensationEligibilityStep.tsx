@@ -34,6 +34,22 @@ export function CompensationEligibilityStep({ form, update }: OnboardingStepProp
   const minSalNum = Number(form.expectedSalaryMin) || Number(form.expectedSalary) || 0;
   const maxSalNum = Number(form.expectedSalaryMax) || minSalNum || 0;
 
+  const handleSalaryInput = (field: 'currentCtc' | 'expectedSalaryMin' | 'expectedSalaryMax', rawValue: string) => {
+    // Only allow positive numbers or empty string
+    const cleaned = rawValue.replace(/[^0-9.]/g, '');
+    update(field, cleaned);
+    if (field === 'expectedSalaryMin' && !form.expectedSalaryMax) {
+      update('expectedSalaryMax', cleaned);
+    }
+    if (field === 'expectedSalaryMax') {
+      update('expectedSalary', cleaned);
+    }
+  };
+
+  const currentCtcNegative = Number(form.currentCtc) < 0;
+  const minSalNegative = Number(form.expectedSalaryMin) < 0;
+  const maxSalNegative = Number(form.expectedSalaryMax) < 0;
+
   const minHikePercent =
     currentCtcNum > 0 && minSalNum > currentCtcNum
       ? Math.round(((minSalNum - currentCtcNum) / currentCtcNum) * 100)
@@ -59,13 +75,25 @@ export function CompensationEligibilityStep({ form, update }: OnboardingStepProp
           <input
             type="number"
             min={0}
+            step="any"
             value={form.currentCtc ?? ''}
-            onChange={(e) => update('currentCtc', e.target.value)}
+            onChange={(e) => handleSalaryInput('currentCtc', e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                e.preventDefault();
+              }
+            }}
             placeholder="e.g. 15"
-            className={`${numberInputCls} pl-10`}
+            className={`${numberInputCls} pl-10 ${currentCtcNegative ? 'border-rose-500 focus:border-rose-500' : ''}`}
           />
         </div>
-        <p className="text-xs text-slate-400 font-medium">Your current annual compensation in Lakhs Per Annum (LPA)</p>
+        {currentCtcNegative ? (
+          <p className="text-xs text-rose-400 font-semibold animate-in fade-in duration-150">
+            Current CTC must be a positive amount (e.g. 15, 25). Negative values are invalid.
+          </p>
+        ) : (
+          <p className="text-xs text-slate-400 font-medium">Your current annual compensation in Lakhs Per Annum (LPA)</p>
+        )}
       </div>
 
       <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl">
@@ -100,15 +128,21 @@ export function CompensationEligibilityStep({ form, update }: OnboardingStepProp
               <input
                 type="number"
                 min={0}
+                step="any"
                 value={form.expectedSalaryMin ?? ''}
-                onChange={(e) => {
-                  update('expectedSalaryMin', e.target.value);
-                  if (!form.expectedSalaryMax) update('expectedSalaryMax', e.target.value);
+                onChange={(e) => handleSalaryInput('expectedSalaryMin', e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                    e.preventDefault();
+                  }
                 }}
                 placeholder="e.g. 18"
-                className={`${numberInputCls} pl-10`}
+                className={`${numberInputCls} pl-10 ${minSalNegative ? 'border-rose-500 focus:border-rose-500' : ''}`}
               />
             </div>
+            {minSalNegative && (
+              <p className="text-[11px] text-rose-400 font-semibold mt-1">Salary must be a positive number.</p>
+            )}
           </div>
 
           <div className="hidden sm:flex items-center justify-center pt-5 text-slate-600 font-black text-xs">
@@ -122,15 +156,21 @@ export function CompensationEligibilityStep({ form, update }: OnboardingStepProp
               <input
                 type="number"
                 min={0}
+                step="any"
                 value={form.expectedSalaryMax ?? ''}
-                onChange={(e) => {
-                  update('expectedSalaryMax', e.target.value);
-                  update('expectedSalary', e.target.value);
+                onChange={(e) => handleSalaryInput('expectedSalaryMax', e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                    e.preventDefault();
+                  }
                 }}
                 placeholder="e.g. 30"
-                className={`${numberInputCls} pl-10`}
+                className={`${numberInputCls} pl-10 ${maxSalNegative ? 'border-rose-500 focus:border-rose-500' : ''}`}
               />
             </div>
+            {maxSalNegative && (
+              <p className="text-[11px] text-rose-400 font-semibold mt-1">Salary must be a positive number.</p>
+            )}
           </div>
         </div>
 
