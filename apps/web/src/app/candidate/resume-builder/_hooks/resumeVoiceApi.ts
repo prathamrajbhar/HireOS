@@ -29,7 +29,8 @@ export interface ResumeAiTurnResponse {
   isComplete: boolean;
   realtimeInsight?: string;
   memory?: Record<string, unknown>;
-  audioUrl?: string;
+  audioUrl?: string | null;
+  audioAvailable?: boolean;
 }
 
 export async function createResumeSession(
@@ -76,15 +77,34 @@ export async function fetchResumeAiTurn(
   payload: ResumeAiTurnRequest,
   signal?: AbortSignal
 ): Promise<ResumeAiTurnResponse> {
-  const res = await fetch(`${siteConfig.aiServiceUrl}/api/v1/ai/resume-builder/respond`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-    signal,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${siteConfig.aiServiceUrl}/api/v1/ai/resume-builder/respond`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal,
+    });
+  } catch (fetchErr: unknown) {
+    if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+      throw fetchErr;
+    }
+    throw new Error(
+      'Unable to connect to AI voice service. Please check that the AI service is running and try again.'
+    );
+  }
 
   if (!res.ok) {
-    throw new Error(`AI Service error: ${res.statusText}`);
+    let errorDetail = '';
+    try {
+      const errJson = await res.json();
+      errorDetail = errJson?.detail || errJson?.message || '';
+    } catch {}
+
+    throw new Error(
+      errorDetail ||
+      `AI Service responded with status ${res.status}${res.statusText ? ` (${res.statusText})` : ''}. Please retry.`
+    );
   }
 
   return (await res.json()) as ResumeAiTurnResponse;

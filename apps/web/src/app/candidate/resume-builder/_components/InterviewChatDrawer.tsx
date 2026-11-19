@@ -15,6 +15,7 @@ interface InterviewChatDrawerProps {
   candidateSpeechText: string;
   onClose: () => void;
   onSubmitResponse?: (text: string) => void;
+  failedInput?: string | null;
 }
 
 export function InterviewChatDrawer({
@@ -23,6 +24,7 @@ export function InterviewChatDrawer({
   candidateSpeechText,
   onClose,
   onSubmitResponse,
+  failedInput,
 }: InterviewChatDrawerProps) {
   const [textInput, setTextInput] = useState('');
   const chatScrollRef = useRef<HTMLDivElement>(null);
@@ -100,6 +102,19 @@ export function InterviewChatDrawer({
           ))
         )}
       </div>
+
+      {failedInput && !textInput && (
+        <div className="pt-2 text-[10px] text-amber-400 flex items-center justify-between">
+          <span>Previous message failed to send:</span>
+          <button
+            type="button"
+            onClick={() => setTextInput(failedInput)}
+            className="underline font-bold hover:text-amber-300 cursor-pointer"
+          >
+            Restore text
+          </button>
+        </div>
+      )}
 
       {onSubmitResponse && (
         <form

@@ -143,14 +143,13 @@ export function useResumeVoiceSession({
   const submitResponse = useCallback(
     async (text: string) => {
       if (!isCallActiveRef.current) return;
-      if (aiStateRef.current === 'evaluating' || !turns.sessionId) return;
+      if (aiStateRef.current === 'evaluating' || !turns.sessionId || turns.isSubmitting) return;
       const trimmed = text.trim();
       if (!trimmed) return;
 
       stopAudio();
       updateAiState('evaluating');
       speech.stopSpeechRecognition();
-      speech.setCandidateSpeechText('');
       await turns.getAIResponse(trimmed, turns.sessionId, turns.turnIndex, turns.stage);
     },
     [turns, speech, updateAiState]
@@ -202,12 +201,22 @@ export function useResumeVoiceSession({
     conversationHistory: turns.conversationHistory,
     aiState,
     candidateSpeechText: speech.candidateSpeechText,
+    setCandidateSpeechText: speech.setCandidateSpeechText,
+    clearCandidateSpeech: speech.clearCandidateSpeech,
+    micState: speech.micState,
+    micErrorMessage: speech.micErrorMessage,
+    silenceCountdown: speech.silenceCountdown,
+    requestMicPermission: speech.requestMicPermission,
     realtimeInsight: turns.realtimeInsight,
     micActive,
     camActive,
     setCamActive,
     toggleMic: handleToggleMic,
     error,
+    audioNotice: turns.audioNotice,
+    failedInput: turns.failedInput,
+    isSubmitting: turns.isSubmitting,
+    retryLastTurn: turns.retryLastTurn,
     startCall,
     submitResponse,
     submitVoiceResponse,

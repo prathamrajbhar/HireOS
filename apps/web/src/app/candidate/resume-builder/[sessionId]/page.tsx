@@ -165,8 +165,17 @@ export default function AIResumeBuilderSessionPage({
           setMicActive={voice.toggleMic}
           micLevel={voice.micActive ? micLevel : 0}
           candidateSpeechText={voice.candidateSpeechText}
+          setCandidateSpeechText={voice.setCandidateSpeechText}
+          clearCandidateSpeech={voice.clearCandidateSpeech}
+          micState={voice.micState}
+          silenceCountdown={voice.silenceCountdown}
+          requestMicPermission={voice.requestMicPermission}
+          micErrorMessage={voice.micErrorMessage}
           realtimeInsight={voice.realtimeInsight}
           voiceError={voice.error}
+          audioNotice={voice.audioNotice}
+          onRetryTurn={voice.retryLastTurn}
+          failedInput={voice.failedInput}
           onReplayAudio={voice.replayLastAudio}
           onSubmitResponse={voice.submitResponse}
           onEndCall={handleEndCall}

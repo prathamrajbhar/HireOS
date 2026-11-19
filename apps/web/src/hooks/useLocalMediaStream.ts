@@ -62,11 +62,38 @@ export function useLocalMediaStream({
     }
   }, [videoRef]);
 
+  // Synchronize video track enabled state without restarting the stream
+  useEffect(() => {
+    if (streamRef.current) {
+      streamRef.current.getVideoTracks().forEach((track) => {
+        track.enabled = camActive;
+      });
+    }
+  }, [camActive]);
+
+  // Synchronize audio track enabled state without restarting the stream
+  useEffect(() => {
+    if (streamRef.current) {
+      streamRef.current.getAudioTracks().forEach((track) => {
+        track.enabled = micActive;
+      });
+    }
+  }, [micActive]);
+
   useEffect(() => {
     async function setup() {
       if (!enabled || (!camActive && !micActive)) {
         stopLocalStream();
         return;
+      }
+
+      // If stream already exists and has the necessary tracks, let the enabled sync effects handle it
+      if (streamRef.current && streamRef.current.active) {
+        const hasNeededVideo = !camActive || streamRef.current.getVideoTracks().length > 0;
+        const hasNeededAudio = !micActive || streamRef.current.getAudioTracks().length > 0;
+        if (hasNeededVideo && hasNeededAudio) {
+          return;
+        }
       }
 
       const gen = ++setupGenerationRef.current;

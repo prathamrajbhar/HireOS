@@ -7,49 +7,165 @@ knows exactly what information to collect and how to ask for it.
 """
 
 import json
+import re
 from typing import Dict, Any, List, Optional
 from agents.resume_builder_types import STAGES, ACTIONS, SYSTEM_PROMPT, STAGE_MIN_TURNS, PROFILE_TYPES, ResumeBuilderState
 
 
+ACTION_ALIASES = {
+    "FOLLOW_UP": "FOLLOW_UP",
+    "FOLLOWUP": "FOLLOW_UP",
+    "FOLLOW-UP": "FOLLOW_UP",
+    "FOLLOW": "FOLLOW_UP",
+    "QUESTION": "FOLLOW_UP",
+    "ASK": "FOLLOW_UP",
+    "CLARIFY": "CLARIFY",
+    "CLARIFICATION": "CLARIFY",
+    "REPHRASE": "CLARIFY",
+    "DEEPEN": "DEEPEN",
+    "PROBE": "DEEPEN",
+    "ELABORATE": "DEEPEN",
+    "DIG_DEEPER": "DEEPEN",
+    "NEXT_TOPIC": "NEXT_TOPIC",
+    "NEXT": "NEXT_TOPIC",
+    "NEXT_STAGE": "NEXT_TOPIC",
+    "CONTINUE": "NEXT_TOPIC",
+    "ADVANCE": "NEXT_TOPIC",
+    "MOVE_ON": "NEXT_TOPIC",
+    "PROCEED": "NEXT_TOPIC",
+    "END": "END",
+    "CLOSE": "END",
+    "FINISH": "END",
+    "COMPLETE": "END",
+    "DONE": "END",
+}
+
 # ---------------------------------------------------------------------------
-# Validation
+# Validation & Parsing
 # ---------------------------------------------------------------------------
 
+def _fallback_parse_plain_text(raw_text: str) -> Optional[Dict[str, Any]]:
+    """Gracefully extracts a conversational analysis object from plain natural-language text.
+
+    Used when the LLM outputs a direct conversational response instead of strict JSON,
+    ensuring candidate turns are not abruptly terminated.
+    """
+    if not raw_text or not isinstance(raw_text, str):
+        return None
+
+    cleaned = raw_text.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+        cleaned = cleaned.strip()
+
+    # Strip surrounding quotes if the entire output was quoted
+    if (cleaned.startswith('"') and cleaned.endswith('"')) or (cleaned.startswith("'") and cleaned.endswith("'")):
+        cleaned = cleaned[1:-1].strip()
+
+    if not cleaned or len(cleaned) < 2:
+        return None
+
+    # Check if there is an explicit question mark
+    q_idx = cleaned.rfind('?')
+    if q_idx != -1 and q_idx < len(cleaned) - 1:
+        # Text continues after question mark, keep whole string in response
+        response = cleaned
+        question = None
+    elif q_idx != -1:
+        # Ends with question
+        response = cleaned
+        question = None
+    else:
+        response = cleaned
+        question = None
+
+    return {
+        "action": "FOLLOW_UP",
+        "response": response,
+        "next_question": question,
+        "topic": None,
+        "memory_update": None,
+        "missing_information": [],
+        "user_name": None,
+        "profile_type": None,
+    }
+
 def _validate_analysis(parsed: Any) -> Optional[Dict[str, Any]]:
+    """Validates and normalizes the parsed dictionary from an LLM turn response."""
     if not isinstance(parsed, dict):
         return None
+
     if "response" not in parsed or "action" not in parsed:
         return None
-    action = str(parsed.get("action") or "").upper()
-    if action not in ACTIONS:
+
+    # Resolve action with aliases
+    raw_action = str(parsed.get("action") or "").strip().upper()
+    action = ACTION_ALIASES.get(raw_action)
+    if not action:
         return None
+
+    # Response must be a non-empty string
     response = parsed.get("response")
     if not isinstance(response, str) or not response.strip():
         return None
+    response = response.strip()
+
+    # next_question must be string or None
     question = parsed.get("next_question")
     if question is not None and not isinstance(question, str):
         return None
+    question = (question or "").strip() or None
+
+    # topic must be string or None
     topic = parsed.get("topic")
     if topic is not None and not isinstance(topic, str):
         return None
+    topic = (topic or "").strip() or None
+
+    # memory_update must be string or None
     update = parsed.get("memory_update")
     if update is not None and not isinstance(update, str):
         return None
+    update = (update or "").strip() or None
+
+    # missing_information must be a list (coerced to [] if not)
     missing = parsed.get("missing_information")
     if not isinstance(missing, list):
         missing = []
+    missing_clean = [str(m).strip() for m in missing if str(m).strip()]
 
-    parsed["action"] = action
-    parsed["response"] = response.strip()
-    parsed["next_question"] = (question or "").strip() or None
-    parsed["topic"] = (topic or "").strip() or None
-    parsed["memory_update"] = (update or "").strip() or None
-    parsed["missing_information"] = [str(m).strip() for m in missing if str(m).strip()]
-    if "user_name" in parsed and isinstance(parsed["user_name"], str):
-        parsed["user_name"] = parsed["user_name"].strip() or None
-    if "profile_type" in parsed and isinstance(parsed["profile_type"], str):
-        parsed["profile_type"] = parsed["profile_type"].strip().lower() or None
-    return parsed
+    # Resolve candidate name
+    user_name = parsed.get("user_name")
+    if isinstance(user_name, str):
+        user_name = user_name.strip() or None
+    else:
+        user_name = None
+
+    # Resolve profile_type
+    profile_type = parsed.get("profile_type")
+    if isinstance(profile_type, str):
+        profile_type = profile_type.strip().lower() or None
+        if profile_type and profile_type not in PROFILE_TYPES:
+            for pt in PROFILE_TYPES:
+                if pt in profile_type:
+                    profile_type = pt
+                    break
+            else:
+                profile_type = None
+    else:
+        profile_type = None
+
+    return {
+        "action": action,
+        "response": response,
+        "next_question": question,
+        "topic": topic,
+        "memory_update": update,
+        "missing_information": missing_clean,
+        "user_name": user_name,
+        "profile_type": profile_type,
+    }
 
 
 # ---------------------------------------------------------------------------

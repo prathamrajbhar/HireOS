@@ -41,12 +41,16 @@ export function useResumeTurnManager({
   const [realtimeInsight, setRealtimeInsight] = useState<string | null>(null);
   const [memory, setMemory] = useState<Record<string, unknown>>({});
   const [profileType, setProfileType] = useState<string | null>(null);
+  const [audioNotice, setAudioNotice] = useState<string | null>(null);
+  const [failedInput, setFailedInput] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const conversationHistoryRef = useRef<ConversationTurn[]>([]);
   const memoryRef = useRef<Record<string, unknown>>({});
   const profileTypeRef = useRef<string | null>(null);
   const isCallActiveRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const lastSubmittedInputRef = useRef<string>('');
 
   useEffect(() => {
     conversationHistoryRef.current = conversationHistory;
@@ -65,6 +69,7 @@ export function useResumeTurnManager({
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+    setIsSubmitting(false);
   }, []);
 
   useEffect(() => {
@@ -87,17 +92,22 @@ export function useResumeTurnManager({
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
+      setIsSubmitting(true);
       setAiState('evaluating');
       onStopSpeech();
+      setError(null);
 
-      const newHistory = [...conversationHistoryRef.current];
+      lastSubmittedInputRef.current = candidateResponse;
+
+      // Optimistically stage history for the LLM request
+      const baseHistory = [...conversationHistoryRef.current];
+      const pendingHistory = [...baseHistory];
       if (candidateResponse.trim()) {
-        newHistory.push({
+        pendingHistory.push({
           role: 'candidate',
           content: candidateResponse,
           timestamp: new Date().toLocaleTimeString(),
         });
-        setConversationHistory(newHistory);
       }
 
       try {
@@ -109,7 +119,7 @@ export function useResumeTurnManager({
             targetCompany: 'Target Enterprise',
             stage: currentStage,
             turnNumber: currentTurnIndex,
-            conversationHistory: newHistory.map((h) => ({
+            conversationHistory: pendingHistory.map((h) => ({
               speaker: h.role,
               text: h.content,
             })),
@@ -123,6 +133,18 @@ export function useResumeTurnManager({
 
         if (!isCallActiveRef.current) return;
 
+        // Turn succeeded — clear failed input and errors
+        setFailedInput(null);
+        setError(null);
+        setIsSubmitting(false);
+
+        // Update audio availability notice
+        if (data.audioAvailable === false || !data.audioUrl) {
+          setAudioNotice('Voice audio server offline — continuing with browser device speech.');
+        } else {
+          setAudioNotice(null);
+        }
+
         if (data.memory) {
           setMemory(data.memory);
           const inferredType = (data.memory as Record<string, unknown>).profile_type as string | null;
@@ -132,7 +154,7 @@ export function useResumeTurnManager({
         }
 
         const updatedHistory = [
-          ...newHistory,
+          ...pendingHistory,
           { role: 'ai' as const, content: data.text, timestamp: new Date().toLocaleTimeString() },
         ];
         setConversationHistory(updatedHistory);
@@ -142,13 +164,13 @@ export function useResumeTurnManager({
 
         if (data.isComplete) {
           setAiState('speaking');
-          onSpeakText(data.text, data.audioUrl, () => {
+          onSpeakText(data.text, data.audioUrl || undefined, () => {
             if (isCallActiveRef.current) {
               onFinalize(currentSessionId, updatedHistory);
             }
           });
         } else {
-          onSpeakText(data.text, data.audioUrl, () => {
+          onSpeakText(data.text, data.audioUrl || undefined, () => {
             if (isCallActiveRef.current) {
               setAiState('listening');
               onStartSpeech();
@@ -157,10 +179,15 @@ export function useResumeTurnManager({
         }
       } catch (err: unknown) {
         if (!isCallActiveRef.current) return;
+        setIsSubmitting(false);
         if (err instanceof Error && err.name === 'AbortError') return;
 
+        // Preserve the candidate's input for retry and don't commit orphaned candidate turn
+        setFailedInput(candidateResponse);
+        setConversationHistory(baseHistory);
+
         const message = err instanceof Error ? err.message : 'Unknown error';
-        setError(message || 'Error communicating with AI voice agent.');
+        setError(message || 'Error communicating with AI resume coach. Please click Retry.');
         setAiState('listening');
         onStartSpeech();
       }
@@ -179,9 +206,18 @@ export function useResumeTurnManager({
     ]
   );
 
+  const retryLastTurn = useCallback(async () => {
+    if (!sessionId || isSubmitting) return;
+    const textToRetry = failedInput ?? lastSubmittedInputRef.current;
+    await getAIResponse(textToRetry, sessionId, turnIndex, stage);
+  }, [sessionId, isSubmitting, failedInput, getAIResponse, turnIndex, stage]);
+
   const startCall = useCallback(async () => {
     isCallActiveRef.current = true;
     setError(null);
+    setAudioNotice(null);
+    setFailedInput(null);
+    setIsSubmitting(false);
     setConversationHistory([]);
     setTurnIndex(0);
     setStage('intro');
@@ -215,6 +251,9 @@ export function useResumeTurnManager({
     setConversationHistory([]);
     setRealtimeInsight(null);
     setError(null);
+    setAudioNotice(null);
+    setFailedInput(null);
+    setIsSubmitting(false);
     setMemory({});
     setProfileType(null);
     conversationHistoryRef.current = [];
@@ -231,6 +270,10 @@ export function useResumeTurnManager({
     realtimeInsight,
     memory,
     profileType,
+    audioNotice,
+    failedInput,
+    isSubmitting,
+    retryLastTurn,
     getAIResponse,
     startCall,
     resetAll,

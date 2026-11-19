@@ -28,12 +28,18 @@ from agents.resume_builder_memory import (
 )
 from agents.resume_builder_prompts import (
     _validate_analysis,
+    _fallback_parse_plain_text,
     _build_greeting_prompt,
     _build_turn_prompt,
     _build_closing_prompt,
 )
 
 logger = logging.getLogger("resume_builder_agent")
+
+
+class ResumeBuilderTurnError(RuntimeError):
+    """Raised when the LLM consistently fails to generate a valid turn response after retries."""
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -46,10 +52,51 @@ def _generate_turn(
     asked: List[str],
     target_role: str,
     target_company: str,
+    max_retries: int = 2,
 ) -> Optional[Dict[str, Any]]:
-    raw = generate_text(_build_turn_prompt(state, memory, asked, target_role, target_company))
-    parsed = extract_json_object(raw) if raw else None
-    return _validate_analysis(parsed)
+    prompt = _build_turn_prompt(state, memory, asked, target_role, target_company)
+    last_error: Optional[Exception] = None
+    for attempt in range(max_retries + 1):
+        curr_prompt = prompt
+        if attempt > 0:
+            curr_prompt += (
+                "\n\nIMPORTANT: Output ONLY a valid JSON object matching:\n"
+                '{"response": "brief warm acknowledgement", "next_question": "one short question", "action": "FOLLOW_UP", '
+                '"topic": "topic name", "memory_update": null, "missing_information": []}'
+            )
+        try:
+            raw = generate_text(curr_prompt)
+            if not raw or not raw.strip():
+                logger.warning(
+                    f"ResumeBuilderAgent: LLM returned empty response on turn attempt {attempt + 1}/{max_retries + 1}."
+                )
+                continue
+
+            parsed = extract_json_object(raw, allow_repair=True)
+            validated = _validate_analysis(parsed)
+            if validated:
+                return validated
+
+            plain_parsed = _fallback_parse_plain_text(raw)
+            if plain_parsed:
+                logger.info(
+                    f"ResumeBuilderAgent: Parsed conversational turn from plain text on attempt {attempt + 1}."
+                )
+                return plain_parsed
+
+            logger.warning(
+                f"ResumeBuilderAgent: Invalid analysis structure on attempt {attempt + 1}/{max_retries + 1}."
+            )
+        except Exception as e:
+            last_error = e
+            logger.warning(f"ResumeBuilderAgent: Error during turn generation attempt {attempt + 1}: {e}")
+            if attempt < max_retries:
+                import time
+                time.sleep(1.0)
+
+    if last_error:
+        raise ResumeBuilderTurnError(f"ResumeBuilderAgent: LLM failed to generate turn response: {last_error}") from last_error
+    return None
 
 
 def _compose_response(analysis: Dict[str, Any]) -> str:
@@ -61,11 +108,16 @@ def _compose_response(analysis: Dict[str, Any]) -> str:
     return " ".join(p for p in parts if p).strip()
 
 
-def _generate_closing(state: ResumeBuilderState, target_role: str, target_company: str) -> str:
-    closing = generate_text(_build_closing_prompt(state, target_role, target_company))
-    if not closing or not closing.strip():
-        raise RuntimeError("ResumeBuilderAgent: LLM failed to generate closing message.")
-    return closing.strip()
+def _generate_closing(state: ResumeBuilderState, target_role: str, target_company: str, max_retries: int = 2) -> str:
+    prompt = _build_closing_prompt(state, target_role, target_company)
+    for attempt in range(max_retries + 1):
+        try:
+            closing = generate_text(prompt)
+            if closing and closing.strip():
+                return closing.strip()
+        except Exception as e:
+            logger.warning(f"ResumeBuilderAgent: Closing generation attempt {attempt + 1} failed: {e}")
+    raise ResumeBuilderTurnError("ResumeBuilderAgent: LLM failed to generate closing message.")
 
 
 def _handle_greeting(
@@ -73,13 +125,38 @@ def _handle_greeting(
     memory: Dict[str, Any],
     target_role: str,
     target_company: str,
+    max_retries: int = 2,
 ) -> ResumeBuilderState:
-    raw = generate_text(_build_greeting_prompt(state, target_role, target_company))
-    analysis = _validate_analysis(extract_json_object(raw)) if raw else None
+    prompt = _build_greeting_prompt(state, target_role, target_company)
+    analysis = None
+    last_error: Optional[Exception] = None
+    for attempt in range(max_retries + 1):
+        curr_prompt = prompt
+        if attempt > 0:
+            curr_prompt += (
+                '\n\nIMPORTANT: Return ONLY valid JSON:\n'
+                '{"response": "Warm welcome message", "next_question": "What is your name?", "action": "NEXT_TOPIC", "topic": "intro"}'
+            )
+        try:
+            raw = generate_text(curr_prompt)
+            if raw:
+                parsed = extract_json_object(raw, allow_repair=True)
+                analysis = _validate_analysis(parsed) or _fallback_parse_plain_text(raw)
+                if analysis:
+                    break
+        except Exception as e:
+            last_error = e
+            logger.warning(f"ResumeBuilderAgent: Greeting generation attempt {attempt + 1} failed: {e}")
+
     if not analysis:
-        raise RuntimeError("ResumeBuilderAgent: LLM failed to generate a valid greeting response.")
+        logger.error("ResumeBuilderAgent: LLM failed to generate a valid greeting response.")
+        if last_error:
+            raise ResumeBuilderTurnError(f"ResumeBuilderAgent: LLM failed to generate greeting: {last_error}") from last_error
+        raise ResumeBuilderTurnError("ResumeBuilderAgent: LLM failed to generate a valid greeting response.")
+
     analysis["action"] = "NEXT_TOPIC"
     analysis["topic"] = "intro"
+    state["turn_number"] = 1
     state["last_analysis"] = analysis
     state["next_action"] = "NEXT_TOPIC"
     state["latest_ai_response"] = _compose_response(analysis)
@@ -138,13 +215,12 @@ def _route_action(
 def run_resume_builder_agent(state: ResumeBuilderState) -> ResumeBuilderState:
     target_role = state.get("target_role") or ""
     target_company = state.get("target_company") or ""
-    turn = state.get("turn_number", 0) + 1
-    state["turn_number"] = turn
+    current_turn = state.get("turn_number", 0)
+    proposed_turn = current_turn + 1
 
     history = state.get("conversation_history") or []
     candidate_input = (state.get("latest_candidate_response") or "").strip()
     memory = _normalize_memory(state.get("memory"))
-    state["memory"] = memory
 
     # Sync profile_type and user_name from memory back to state for prompt builders
     if memory.get("profile_type") and not state.get("profile_type"):
@@ -163,25 +239,28 @@ def run_resume_builder_agent(state: ResumeBuilderState) -> ResumeBuilderState:
             memory["profile_type"] = "experienced"
 
     # Force close when max turns reached
-    if turn > MAX_TURNS and not state.get("is_complete"):
+    if proposed_turn > MAX_TURNS and not state.get("is_complete"):
         logger.info(f"ResumeBuilderAgent: MAX_TURNS ({MAX_TURNS}) reached — forcing close.")
+        state["turn_number"] = proposed_turn
+        state["memory"] = memory
         state["current_stage"] = "closing"
         state["is_complete"] = True
         state["latest_ai_response"] = _generate_closing(state, target_role, target_company)
         return state
 
     # Greeting — first turn with no candidate input
-    is_start = turn == 1 and not candidate_input and not history
+    is_start = proposed_turn == 1 and not candidate_input and not history
     if is_start:
         return _handle_greeting(state, memory, target_role, target_company)
 
-    # Generate turn response
+    # Generate turn response using candidate input
     asked = _collect_asked_questions(memory, history)
     analysis = _generate_turn(state, memory, asked, target_role, target_company)
 
     if not analysis:
-        logger.error("ResumeBuilderAgent: LLM returned invalid or missing response for turn.")
-        raise RuntimeError("ResumeBuilderAgent: LLM failed to generate turn response.")
+        logger.error("ResumeBuilderAgent: LLM returned invalid or missing response for turn after retries.")
+        # Note: Do NOT mutate state['turn_number'] or memory on failure to allow clean retry
+        raise ResumeBuilderTurnError("ResumeBuilderAgent: LLM failed to generate turn response.")
 
     # Duplicate question guard — regenerate instead of silently dropping
     generated_q = analysis.get("next_question") or ""
@@ -190,7 +269,10 @@ def run_resume_builder_agent(state: ResumeBuilderState) -> ResumeBuilderState:
         analysis["next_question"] = "Could you tell me a bit more about that?"
         analysis["action"] = "DEEPEN"
 
-    # Update memory with current turn
+    # Commit state changes now that analysis succeeded
+    state["turn_number"] = proposed_turn
+    state["memory"] = memory
+
     current_stage = state.get("current_stage") or "intro"
     _update_memory(memory, analysis, candidate_input, current_stage)
 
@@ -214,7 +296,7 @@ def run_resume_builder_agent(state: ResumeBuilderState) -> ResumeBuilderState:
     _route_action(state, analysis, memory)
 
     # Final max-turn check after routing
-    if not state.get("is_complete") and turn >= MAX_TURNS:
+    if not state.get("is_complete") and proposed_turn >= MAX_TURNS:
         state["current_stage"] = "closing"
         state["is_complete"] = True
         state["latest_ai_response"] = _generate_closing(state, target_role, target_company)

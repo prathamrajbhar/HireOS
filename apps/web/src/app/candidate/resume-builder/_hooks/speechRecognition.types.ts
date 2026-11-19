@@ -1,3 +1,12 @@
+export type MicState =
+  | 'idle'
+  | 'requesting_permission'
+  | 'listening'
+  | 'processing_speech'
+  | 'transcript_ready'
+  | 'submitting'
+  | 'error';
+
 export interface SpeechRecognitionEvent {
   resultIndex: number;
   results: {
