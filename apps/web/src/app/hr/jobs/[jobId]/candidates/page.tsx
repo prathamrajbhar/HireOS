@@ -117,6 +117,14 @@ export default function HrJobCandidatesList({ params }: { params: Promise<{ jobI
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${getApplicationStatusBadgeClasses(app.status, 'hr')}`}>
                       {formatApplicationStatus(app.status)}
                     </span>
+                    {app.status === 'rejected' && (app.rejectionReason || app.reasoning) && (
+                      <span
+                        className="block text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 max-w-xs truncate"
+                        title={app.rejectionReason || app.reasoning}
+                      >
+                        {app.rejectionReason || app.reasoning}
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {app.scores ? (

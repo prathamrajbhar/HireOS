@@ -8,6 +8,7 @@ import { CandidateDrawerHeader } from './CandidateDrawerHeader';
 import { CandidateDrawerResumeTab } from './CandidateDrawerResumeTab';
 import { CandidateDrawerScorecardTab } from './CandidateDrawerScorecardTab';
 import { CandidateDrawerTranscriptTab } from './CandidateDrawerTranscriptTab';
+import { downloadCandidateResumePdf } from '@/lib/pdf/candidateResumePdf';
 
 interface CandidateProfileDrawerProps {
   app: Application | null;
@@ -24,18 +25,8 @@ export default function CandidateProfileDrawer({
 
   if (!isOpen || !app) return null;
 
-  const handleDownloadResume = () => {
-    const content = `=================================================\nHireOS CANDIDATE DOSSIER & RESUME: ${app.candidateName.toUpperCase()}\nEmail: ${app.candidateEmail}\nPipeline Stage: ${app.stage}\nAI Readiness Score: ${app.scores?.composite ?? 'N/A'}%\n=================================================\n\nCANDIDATE SNAPSHOT:\n- Position Applied: ${app.jobTitle || 'N/A'}\n- Skills: ${(app.skills || []).join(', ') || 'N/A'}\n\nAI EVALUATION SUMMARY:\nTechnical Score: ${app.scores?.technical ?? 'N/A'}%\nCommunication Score: ${app.scores?.communication ?? 'N/A'}%\nProblem Solving Score: ${app.scores?.problemSolving ?? 'N/A'}%\nExperience Score: ${app.scores?.experience ?? 'N/A'}%\n\nEvaluator Notes: "${app.reasoning || 'No evaluation notes available.'}"\n`;
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${app.candidateName.replace(/\s+/g, '_')}_Resume.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDownloadResume = async () => {
+    await downloadCandidateResumePdf(app);
   };
 
   return (

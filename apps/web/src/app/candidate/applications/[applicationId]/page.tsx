@@ -7,7 +7,7 @@ import { apiClient } from '@/lib/apiClient';
 import { Application, AssessmentResult } from '@/types';
 import { useApplication, useOffer, useOnboarding, useJob } from '@/hooks/queries';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { ChevronRight, ArrowRight } from '@/lib/lucide-google-icons';
+import { ChevronRight, ArrowRight, AlertCircle } from '@/lib/lucide-google-icons';
 import { ApplicationHeaderBanner } from './_components/ApplicationHeaderBanner';
 import { StagePipelineTimeline } from './_components/StagePipelineTimeline';
 import { CandidateScorecard } from './_components/CandidateScorecard';
@@ -118,6 +118,40 @@ export default function CandidateApplicationDetailPage({
       </div>
 
       <ApplicationHeaderBanner app={app} jobLogo={job?.orgLogo} matchPercent={matchPercent} />
+
+      {app.status === 'rejected' && (
+        <div className="rounded-3xl border border-rose-200/90 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/40 p-6 shadow-sm backdrop-blur-md glass-panel flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 animate-in fade-in duration-200">
+          <div className="flex items-start gap-4">
+            <div className="h-11 w-11 rounded-2xl bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-extrabold text-rose-950 dark:text-rose-200 font-display">
+                  Application Not Selected
+                </h3>
+                <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-rose-200/70 dark:bg-rose-900/80 text-rose-800 dark:text-rose-300">
+                  Status: Rejected
+                </span>
+              </div>
+              <p className="text-xs text-rose-900 dark:text-rose-300 font-semibold leading-relaxed">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-rose-700 dark:text-rose-400 mr-1.5">
+                  Rejection Reason:
+                </span>
+                {app.rejectionReason || app.reasoning || 'Based on the evaluation criteria, the candidate profile did not meet the required threshold for this role.'}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href={`/candidate/mock/new?company=${encodeURIComponent(app.orgName)}&role=${encodeURIComponent(app.jobTitle)}`}
+            className="shrink-0 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-bold hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+          >
+            <span>Practice with AI Mock</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Application, Offer } from '@/types';
-import { Gift, Calendar, Video, Sparkles, ArrowRight } from '@/lib/lucide-google-icons';
+import { Gift, Calendar, Video, Sparkles, ArrowRight, AlertCircle } from '@/lib/lucide-google-icons';
 
 import { NextStepItem, toneClass, badgeToneClass } from './applicationSidebar.types';
 
@@ -22,6 +22,21 @@ export function ApplicationActionSidebar({
 }: ApplicationActionSidebarProps) {
   return (
     <div className="space-y-6">
+      {app.status === 'rejected' && (
+        <div className="rounded-3xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/30 p-6 shadow-sm backdrop-blur-md glass-panel space-y-3">
+          <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-extrabold">
+            <AlertCircle className="h-4.5 w-4.5" />
+            <h3 className="text-xs font-display">Evaluation Outcome</h3>
+          </div>
+          <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold italic bg-white/70 dark:bg-slate-900/70 p-3 rounded-2xl border border-rose-200/60 dark:border-rose-900/40 leading-relaxed">
+            &ldquo;{app.rejectionReason || app.reasoning || 'Candidate profile did not meet the required stage threshold.'}&rdquo;
+          </p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal font-medium">
+            This hiring pipeline has concluded. We encourage you to explore other openings and continue refining your skillset!
+          </p>
+        </div>
+      )}
+
       {app.status === 'decided' && (
         <div className="relative overflow-hidden rounded-3xl border border-emerald-200 dark:border-emerald-800/80 bg-gradient-to-br from-emerald-50/60 via-emerald-50/30 to-teal-50/40 dark:from-emerald-950/50 dark:via-emerald-900/30 dark:to-teal-950/40 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
           <div className="flex items-center justify-between">

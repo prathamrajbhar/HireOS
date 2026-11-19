@@ -145,12 +145,20 @@ export function CandidateApplicationsSection({ applications }: CandidateApplicat
               </div>
             </div>
 
-            <div className="flex flex-col sm:items-end gap-2.5 w-full sm:w-auto">
+            <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
               <span
                 className={`self-start sm:self-auto text-[10px] font-bold px-3 py-1 rounded-full border uppercase tracking-wider ${getApplicationStatusBadgeClasses(app.status, 'card')}`}
               >
                 {formatApplicationStatus(app.status)}
               </span>
+              {app.status === 'rejected' && (app.rejectionReason || app.reasoning) && (
+                <span
+                  className="text-[10px] text-rose-500 dark:text-rose-400 font-semibold max-w-xs text-left sm:text-right line-clamp-1"
+                  title={app.rejectionReason || app.reasoning}
+                >
+                  {app.rejectionReason || app.reasoning}
+                </span>
+              )}
 
               <Link
                 href={`/candidate/applications/${app.id}`}

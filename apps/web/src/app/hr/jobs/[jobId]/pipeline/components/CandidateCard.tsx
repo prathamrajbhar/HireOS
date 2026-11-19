@@ -45,13 +45,25 @@ export default function CandidateCard({ app, onSelectCandidate }: CandidateCardP
           <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block mt-0.5 truncate">
             {app.candidateEmail}
           </span>
+          {app.status === 'rejected' && (app.rejectionReason || app.reasoning) && (
+            <span
+              className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold block mt-1 line-clamp-1"
+              title={app.rejectionReason || app.reasoning}
+            >
+              {app.rejectionReason || app.reasoning}
+            </span>
+          )}
         </div>
 
-        {app.scores && (
+        {app.status === 'rejected' ? (
+          <span className="text-[9px] font-extrabold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-200/60 dark:border-rose-900/60 flex-shrink-0 shadow-2xs uppercase">
+            Rejected
+          </span>
+        ) : app.scores ? (
           <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-900/60 flex-shrink-0 shadow-2xs">
             {app.scores.composite}%
           </span>
-        )}
+        ) : null}
       </div>
 
       {app.scores && (

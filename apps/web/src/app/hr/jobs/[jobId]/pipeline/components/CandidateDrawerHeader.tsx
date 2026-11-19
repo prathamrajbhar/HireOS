@@ -49,7 +49,11 @@ export function CandidateDrawerHeader({
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">{app.candidateEmail}</p>
           <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
-            <span>Stage: <strong className="text-brand-600 dark:text-orange-400 uppercase">{app.stage}</strong></span>
+            {app.status === 'rejected' ? (
+              <span>Status: <strong className="text-rose-600 dark:text-rose-400 uppercase">Rejected</strong></span>
+            ) : (
+              <span>Stage: <strong className="text-brand-600 dark:text-orange-400 uppercase">{app.stage}</strong></span>
+            )}
             <span>•</span>
             <a
               href={`https://linkedin.com/in/${linkedinHandle}`}

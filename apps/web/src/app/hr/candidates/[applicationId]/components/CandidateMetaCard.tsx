@@ -21,8 +21,18 @@ export function CandidateMetaCard({ app, job }: CandidateMetaCardProps) {
         </div>
         <div>
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Current Status</span>
-          <span className="text-slate-800 dark:text-slate-200 block mt-0.5 capitalize">{app.stage}</span>
+          <span className="text-slate-800 dark:text-slate-200 block mt-0.5 capitalize">
+            {app.status === 'rejected' ? 'Rejected' : app.stage}
+          </span>
         </div>
+        {app.status === 'rejected' && (
+          <div className="p-3 rounded-2xl bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200/70 dark:border-rose-900/40">
+            <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-400 block uppercase">Rejection Reason</span>
+            <span className="text-slate-800 dark:text-slate-200 block mt-1 text-xs font-semibold leading-relaxed">
+              {app.rejectionReason || app.reasoning || 'Candidate did not meet stage threshold.'}
+            </span>
+          </div>
+        )}
         <div>
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Applied Role</span>
           <span className="text-slate-800 dark:text-slate-200 block mt-0.5">{job?.title || app.jobTitle}</span>

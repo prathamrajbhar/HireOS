@@ -120,5 +120,55 @@ Return ONLY a valid JSON object matching this schema:
       "explanation": string
     }
   ]
+}
+`;
+}
+
+export interface ParseQuestionBankPromptOptions {
+  roleTitle?: string;
+}
+
+export function buildParseQuestionBankPrompt(
+  documentText: string,
+  options?: ParseQuestionBankPromptOptions
+): string {
+  const roleContext = options?.roleTitle ? `Target Role Context: ${options.roleTitle}\n` : '';
+
+  return `You are an expert assessment examiner and test digitization AI.
+You have been provided with raw text extracted from a user-uploaded Question Bank PDF.
+${roleContext}
+Your objective is to identify and extract all Multiple Choice Questions (MCQs) and questions with answer choices from the document text.
+
+DOCUMENT TEXT:
+${documentText.slice(0, 30000)}
+
+PARSING RULES:
+1. Extract all questions contained in the text.
+2. For each question:
+   - "id": A unique identifier such as "bank_q_1", "bank_q_2", etc.
+   - "question": Clean, complete question text without leading numbering like "1." or "Q1:".
+   - "options": Array of 2 to 5 distinct answer choices as strings. Strip any leading labels like "A.", "B)", "(c)", "1.", etc., so options are clean text.
+   - "correctIndex": The 0-based integer index of the correct answer (0 for first option, 1 for second option, etc.).
+     - If the document contains an answer key, marked answer, or explanation indicating the correct choice, extract and map that exact option index.
+     - If no answer key is indicated in the text, use expert domain knowledge to determine the single correct choice and set its index.
+   - "difficulty": "easy" | "intermediate" | "advanced" based on the complexity and cognitive depth of the question.
+   - "category": Categorize into the most appropriate category, such as "Quantitative Aptitude", "Logical Reasoning", "Verbal Ability", "Data Interpretation", or a specific domain/technical category present in the document.
+   - "explanation": Concise explanation of why the correct choice is right (extract from the document if provided, otherwise provide a brief, clear explanation).
+3. Do NOT invent questions that are not present in the document. Only parse the questions contained in the text.
+4. If there are multiple sections or numbered questions, extract each one as a distinct question object.
+
+Return ONLY a valid JSON object matching this schema:
+{
+  "questions": [
+    {
+      "id": string,
+      "difficulty": "easy" | "intermediate" | "advanced",
+      "category": string,
+      "question": string,
+      "options": string[],
+      "correctIndex": number,
+      "explanation": string
+    }
+  ]
 }`;
 }

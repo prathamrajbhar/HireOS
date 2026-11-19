@@ -10,6 +10,17 @@ interface CandidateDrawerScorecardTabProps {
 export function CandidateDrawerScorecardTab({ app }: CandidateDrawerScorecardTabProps) {
   return (
     <div className="space-y-4">
+      {app.status === 'rejected' && (
+        <div className="p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 space-y-1.5 shadow-2xs">
+          <span className="text-[10px] font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
+            Application Status: Rejected
+          </span>
+          <p className="text-xs text-rose-950 dark:text-rose-200 font-semibold leading-relaxed border-l-2 border-rose-500 pl-3 py-1 bg-white/60 dark:bg-slate-900/60 rounded-r-xl">
+            {app.rejectionReason || app.reasoning || 'Candidate did not meet required threshold.'}
+          </p>
+        </div>
+      )}
+
       {app.scores && (
         <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-[#161f30] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-2xs">
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block border-b border-slate-200/60 dark:border-slate-800 pb-2">

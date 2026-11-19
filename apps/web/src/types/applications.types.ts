@@ -46,6 +46,7 @@ export interface Application {
     confidence: number;
   };
   reasoning?: string;
+  rejectionReason?: string;
   decision?: 'hire' | 'reject' | 'hold';
   transcript?: { question: string; answer: string; score: number; feedback: string }[];
   audioUrl?: string;
@@ -67,4 +68,6 @@ export interface Application {
   noticePeriod?: string;
   expectedSalary?: number;
   workExperience?: { company: string; role: string; duration: string; description?: string }[];
+  parsedResume?: Record<string, unknown>;
+  rawResumeText?: string;
 }

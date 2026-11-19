@@ -91,10 +91,10 @@ export function AssessmentQuestionReviewModal({
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-tight">
-              Review AI-Generated Assessment Questions
+              Review Assessment Questions
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {roleTitle ? `Generated for ${roleTitle}` : 'Customized question set categorized for this role'}
+              {roleTitle ? `Configured for ${roleTitle}` : 'Customized question set categorized for this role'}
             </p>
           </div>
         </div>

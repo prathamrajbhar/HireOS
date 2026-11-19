@@ -138,4 +138,44 @@ export async function generateQuestions(req: Request, res: Response, next: NextF
   }
 }
 
+export async function uploadQuestionBank(req: Request, res: Response, next: NextFunction) {
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ success: false, error: 'A PDF question bank file is required.' });
+    }
+
+    const { roleTitle } = req.body;
+    const { extractTextFromBuffer } = await import('../../services/resume/resume-extractor.service');
+    const rawText = await extractTextFromBuffer(file.buffer, file.originalname, file.mimetype || 'application/pdf');
+
+    if (!rawText || rawText.trim().length < 20) {
+      return res.status(400).json({
+        success: false,
+        error: 'Could not extract readable text from the uploaded PDF. Please make sure the PDF has valid questions.',
+      });
+    }
+
+    const { parseQuestionBankFromText } = await import('../../services/assessment/assessment-generator.service');
+    const questions = await parseQuestionBankFromText(rawText, {
+      roleTitle: typeof roleTitle === 'string' ? roleTitle.trim() : undefined,
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        questions,
+        total: questions.length,
+        breakdown: {
+          easy: questions.filter((q) => q.difficulty === 'easy').length,
+          intermediate: questions.filter((q) => q.difficulty === 'intermediate').length,
+          advanced: questions.filter((q) => q.difficulty === 'advanced').length,
+        },
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 

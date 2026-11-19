@@ -15,6 +15,7 @@ import {
   serializeInterview,
   serializeTranscript,
   type InterviewLike,
+  type EvalLike,
 } from './serializers.interview';
 
 export * from './serializers.interview';
@@ -39,6 +40,11 @@ export function serializeApplication(app: Rec, options?: { scheduledSlots?: stri
   const candidate = isObject(app.candidate) ? app.candidate : undefined;
   const job = isObject(app.job) ? app.job : undefined;
   const evalFirst = firstEvaluation(app.evaluations);
+  const evalList = Array.isArray(app.evaluations) ? app.evaluations : [];
+  const evalReject = evalList.find((e) => isObject(e) && (e as EvalLike).decision === 'reject') as (EvalLike & Rec) | undefined;
+  const evalWithReason = evalList.find((e) => isObject(e) && typeof (e as EvalLike).reasoning === 'string' && (e as EvalLike).reasoning?.trim()) as (EvalLike & Rec) | undefined;
+  const effectiveEval = evalReject || evalFirst || evalWithReason;
+  const effectiveReasoning = typeof effectiveEval?.reasoning === 'string' ? effectiveEval.reasoning : undefined;
   const interview = isObject(app.interview) ? (app.interview as InterviewLike & Rec) : undefined;
 
   const decision =
@@ -108,9 +114,17 @@ export function serializeApplication(app: Rec, options?: { scheduledSlots?: stri
     noticePeriod: typeof candidate?.notice_period === 'string' ? candidate.notice_period : undefined,
     expectedSalary: typeof candidate?.expected_salary === 'number' ? candidate.expected_salary : undefined,
     workExperience: workExperience.length > 0 ? workExperience : undefined,
-    scores: serializeScores(evalFirst),
+    parsedResume: isObject(candidate?.parsed_resume) ? (candidate.parsed_resume as Rec) : undefined,
+    rawResumeText: typeof candidate?.raw_resume_text === 'string' ? candidate.raw_resume_text : undefined,
+    scores: serializeScores(effectiveEval),
     decision,
-    reasoning: typeof evalFirst?.reasoning === 'string' ? evalFirst.reasoning : undefined,
+    reasoning: effectiveReasoning,
+    rejectionReason:
+      app.status === 'rejected' || decision === 'reject' || evalReject
+        ? (effectiveReasoning && effectiveReasoning.trim()
+            ? effectiveReasoning.trim()
+            : 'Candidate did not meet the required stage threshold.')
+        : undefined,
     transcript: serializeTranscript(interview),
     audioUrl: interview?.audio_url || undefined,
     proctorFlags: serializeInterview(interview)?.proctorFlags,

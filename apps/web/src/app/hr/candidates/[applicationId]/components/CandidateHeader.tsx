@@ -34,9 +34,15 @@ export function CandidateHeader({ app }: CandidateHeaderProps) {
               <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight font-display">
                 {app.candidateName}
               </h1>
-              <span className="text-[10px] font-extrabold text-brand-600 dark:text-orange-400 bg-brand-50 dark:bg-orange-950/80 border border-brand-200/60 dark:border-orange-900/60 px-2.5 py-0.5 rounded-full uppercase">
-                Stage: {app.stage}
-              </span>
+              {app.status === 'rejected' ? (
+                <span className="text-[10px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/80 border border-rose-200/60 dark:border-rose-900/60 px-2.5 py-0.5 rounded-full uppercase">
+                  Status: Rejected
+                </span>
+              ) : (
+                <span className="text-[10px] font-extrabold text-brand-600 dark:text-orange-400 bg-brand-50 dark:bg-orange-950/80 border border-brand-200/60 dark:border-orange-900/60 px-2.5 py-0.5 rounded-full uppercase">
+                  Stage: {app.stage}
+                </span>
+              )}
             </div>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{app.candidateEmail}</p>
             <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
