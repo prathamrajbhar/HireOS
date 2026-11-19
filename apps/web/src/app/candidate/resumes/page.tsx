@@ -51,12 +51,14 @@ export default function CandidateResumesPage() {
   const performDelete = async (id: string) => {
     try {
       await apiClient.delete(`/resume-builder/${id}`);
+    } catch (err: unknown) {
+      console.warn('Delete resume non-fatal notice:', err);
+    } finally {
       const remaining = history.filter((h) => h.id !== id);
       queryClient.setQueryData(['resume-history'], { history: remaining });
       if (primaryId === id) {
         setPrimaryId(remaining.length > 0 ? remaining[0].id : null);
       }
-    } finally {
       setDeleteConfirmationId(null);
     }
   };

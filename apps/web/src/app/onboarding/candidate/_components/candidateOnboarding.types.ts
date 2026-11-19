@@ -133,7 +133,11 @@ export interface OnboardingStepProps {
 }
 
 export function buildCandidatePayload(form: CandidateForm) {
-  const toNumber = (v: string) => (v.trim() === '' ? undefined : Number(v.trim()));
+  const toNumber = (v: string) => {
+    if (!v || v.trim() === '') return undefined;
+    const num = Number(v.trim());
+    return isNaN(num) || num < 0 ? undefined : num;
+  };
   const validEducation = form.education?.filter((e) => e.degree.trim() && e.institution.trim());
 
   return {

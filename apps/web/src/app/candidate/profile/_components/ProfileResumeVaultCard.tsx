@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FileText,
   UploadCloud,
@@ -10,6 +10,7 @@ import {
   Sparkles,
   Zap,
 } from '@/lib/lucide-google-icons';
+import { ResumeDeleteModal } from '../../resumes/_components/ResumeDeleteModal';
 
 interface ResumeHistoryItem {
   id: string;
@@ -24,8 +25,10 @@ interface ProfileResumeVaultCardProps {
   resumeUrl: string;
   uploadingResume: boolean;
   generatedResumes: ResumeHistoryItem[];
+  deletingResumeId?: string | null;
   onUploadResume: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDeleteResume: () => void;
+  onDeleteGeneratedResume?: (id: string) => void;
 }
 
 export function ProfileResumeVaultCard({
@@ -34,9 +37,12 @@ export function ProfileResumeVaultCard({
   resumeUrl,
   uploadingResume,
   generatedResumes,
+  deletingResumeId,
   onUploadResume,
   onDeleteResume,
+  onDeleteGeneratedResume,
 }: ProfileResumeVaultCardProps) {
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   return (
     <>
       <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-4">
@@ -146,20 +152,48 @@ export function ProfileResumeVaultCard({
                   </span>
                 </div>
 
-                <a
-                  href={item.resumePdfUrl || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-orange-950/80 text-brand-600 dark:text-orange-400 border border-brand-200 dark:border-orange-900 text-[10px] font-extrabold hover:bg-brand-100 transition-all flex items-center gap-1 cursor-pointer flex-shrink-0"
-                >
-                  <Zap className="h-3 w-3" />
-                  <span>View PDF</span>
-                </a>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <a
+                    href={item.resumePdfUrl || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-orange-950/80 text-brand-600 dark:text-orange-400 border border-brand-200 dark:border-orange-900 text-[10px] font-extrabold hover:bg-brand-100 transition-all flex items-center gap-1 cursor-pointer flex-shrink-0"
+                  >
+                    <Zap className="h-3 w-3" />
+                    <span>View PDF</span>
+                  </a>
+                  {onDeleteGeneratedResume && (
+                    <button
+                      type="button"
+                      disabled={deletingResumeId === item.id}
+                      onClick={() => setDeleteTargetId(item.id)}
+                      className="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-200/40 dark:border-rose-900/40 cursor-pointer transition-colors disabled:opacity-50"
+                      title="Delete Generated Resume"
+                    >
+                      {deletingResumeId === item.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <ResumeDeleteModal
+        isOpen={Boolean(deleteTargetId)}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={() => {
+          if (deleteTargetId && onDeleteGeneratedResume) {
+            onDeleteGeneratedResume(deleteTargetId);
+          }
+          setDeleteTargetId(null);
+        }}
+      />
     </>
   );
 }

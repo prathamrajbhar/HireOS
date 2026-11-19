@@ -93,8 +93,10 @@ export default function CandidateProfile() {
             resumeUrl={form.resumeUrl}
             uploadingResume={form.uploadingResume}
             generatedResumes={form.generatedResumes}
+            deletingResumeId={form.deletingResumeId}
             onUploadResume={form.handleResumeUpload}
             onDeleteResume={form.handleDeleteResume}
+            onDeleteGeneratedResume={form.handleDeleteGeneratedResume}
           />
         </div>
       </div>
