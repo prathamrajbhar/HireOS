@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import type { Application } from '@/types';
+import { formatCompensationLPA } from '@/app/candidate/profile/_utils/profileUtils';
 
 interface ParsedResumeInfo {
   fullName?: string;
@@ -103,6 +104,7 @@ export async function downloadCandidateResumePdf(
   if (location) contactParts.push(location);
   if (typeof app.yearsOfExperience === 'number') contactParts.push(`${app.yearsOfExperience} yrs exp`);
   if (app.noticePeriod) contactParts.push(`Notice: ${app.noticePeriod}`);
+  if (typeof app.expectedSalary === 'number') contactParts.push(`Expected: ${formatCompensationLPA(app.expectedSalary)}`);
 
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(9);

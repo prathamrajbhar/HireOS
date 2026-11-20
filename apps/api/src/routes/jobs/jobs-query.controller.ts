@@ -43,6 +43,9 @@ export async function listJobs(req: Request, res: Response, next: NextFunction) 
         organization: {
           select: { id: true, name: true, logo_url: true, industry: true },
         },
+        _count: {
+          select: { applications: true },
+        },
       },
     });
 

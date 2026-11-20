@@ -50,6 +50,10 @@ export default function HrCreateJob() {
               setMinSalary={form.setMinSalary}
               maxSalary={form.maxSalary}
               setMaxSalary={form.setMaxSalary}
+              orgName={form.orgName}
+              orgLogo={form.orgLogo}
+              isUploadingLogo={form.isUploadingLogo}
+              onUploadLogo={form.handleUploadLogo}
             />
           </section>
 

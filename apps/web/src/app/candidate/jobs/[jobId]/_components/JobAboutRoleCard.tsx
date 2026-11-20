@@ -4,6 +4,7 @@ import React from 'react';
 import { Building2, Check } from '@/lib/lucide-google-icons';
 import { FormattedMarkdown } from '@/components/ui';
 import { Job } from '@/types';
+import { formatFullDate } from '@/lib/dateUtils';
 
 export function JobAboutRoleCard({ job }: { job: Job }) {
   const hasDetailedMarkdown =
@@ -17,7 +18,7 @@ export function JobAboutRoleCard({ job }: { job: Job }) {
           About the Role
         </h2>
         <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
-          Posted on {job.postedDate}
+          Posted on {formatFullDate(job.postedDate)}
         </span>
       </div>
 

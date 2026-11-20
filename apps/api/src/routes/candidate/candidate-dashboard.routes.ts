@@ -60,6 +60,9 @@ candidateDashboardRouter.get(
             organization: {
               select: { id: true, name: true, logo_url: true, industry: true },
             },
+            _count: {
+              select: { applications: true },
+            },
           },
         }),
         prisma.mockSession.findMany({

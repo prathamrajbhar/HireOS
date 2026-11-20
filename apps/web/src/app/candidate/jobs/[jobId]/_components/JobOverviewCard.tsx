@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MapPin, IndianRupee, Briefcase, Calendar } from '@/lib/lucide-google-icons';
+import { formatFullDate } from '@/lib/dateUtils';
 import { Job } from '@/types';
 
 export function JobOverviewCard({ job }: { job: Job }) {
@@ -55,7 +56,7 @@ export function JobOverviewCard({ job }: { job: Job }) {
             <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">
               Date Posted
             </span>
-            <span className="text-slate-800 dark:text-slate-200">{job.postedDate}</span>
+            <span className="text-slate-800 dark:text-slate-200">{formatFullDate(job.postedDate)}</span>
           </div>
         </div>
       </div>

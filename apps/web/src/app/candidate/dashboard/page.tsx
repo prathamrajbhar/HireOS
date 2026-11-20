@@ -55,7 +55,7 @@ export default function CandidateDashboard() {
         </div>
 
         <div>
-          <CandidateJobsSection jobs={safeJobs} />
+          <CandidateJobsSection jobs={safeJobs} applications={safeApps} />
         </div>
       </div>
     </div>

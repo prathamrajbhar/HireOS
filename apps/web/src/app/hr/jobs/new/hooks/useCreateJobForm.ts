@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/contexts/ToastContext';
@@ -49,6 +49,53 @@ export function useCreateJobForm() {
     'decision',
   ]);
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(DEFAULT_ASSESSMENT_CONFIG);
+
+  const [orgName, setOrgName] = useState('');
+  const [orgLogo, setOrgLogo] = useState('');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    apiClient
+      .get<{ organization: { name?: string; logo_url?: string } }>('/organizations/me')
+      .then((res) => {
+        if (!mounted || !res?.organization) return;
+        if (res.organization.name) setOrgName(res.organization.name);
+        if (res.organization.logo_url) setOrgLogo(res.organization.logo_url);
+      })
+      .catch(() => {
+        // Handled gracefully if no org or network issue
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleUploadLogo = async (file: File) => {
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const res = await apiClient.post<{ logoUrl?: string }>('/organizations/logo', formData);
+      if (res?.logoUrl) {
+        setOrgLogo(res.logoUrl);
+        toast({
+          title: 'Logo Uploaded',
+          description: 'Company logo will be displayed on candidate job listings.',
+          variant: 'success',
+        });
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to upload company logo';
+      toast({
+        title: 'Logo Upload Failed',
+        description: message,
+        variant: 'error',
+      });
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
 
   const handleAiAssist = async () => {
     if (!jd) return;
@@ -310,6 +357,10 @@ export function useCreateJobForm() {
     handlePublish,
     isPublishing,
     isSavingDraft,
+    orgName,
+    orgLogo,
+    isUploadingLogo,
+    handleUploadLogo,
   };
 }
 

@@ -7,6 +7,7 @@ import { CompanyLogo } from './CompanyLogo';
 import { Badge } from './Badge';
 import { getJobStatusBadgeClasses } from '@/lib/jobStatus';
 import { MapPin, IndianRupee, Briefcase, CheckCircle2, Clock, Users, ArrowUpRight } from '@/lib/lucide-google-icons';
+import { formatJobPostedDate } from '@/lib/dateUtils';
 
 export interface JobCardProps {
   id: string;
@@ -153,14 +154,14 @@ export function JobCard({
 
       <div className="flex items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1">
         <div className="flex items-center gap-3 text-[10px] text-slate-400 dark:text-slate-400 font-medium">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1" title={postedDate}>
             <Clock className="h-3 w-3" />
-            {postedDate}
+            {formatJobPostedDate(postedDate)}
           </span>
           {applicantsCount !== undefined && (
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" />
-              {applicantsCount} applicants
+              {applicantsCount} {applicantsCount === 1 ? 'applicant' : 'applicants'}
             </span>
           )}
         </div>

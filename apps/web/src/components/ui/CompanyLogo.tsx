@@ -89,7 +89,7 @@ function getBrandGradient(name: string) {
 
 function getInitials(name: string): string {
   if (!name) return 'CO';
-  const parts = name.trim().split(/\s+/);
+  const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
@@ -111,17 +111,17 @@ export function CompanyLogo({ name, logoUrl, size = 'md', className }: CompanyLo
         className
       )}
     >
-      {BuiltInSvg ? (
-        <div className="w-full h-full flex items-center justify-center p-1">
-          <BuiltInSvg className={iconSizes[size]} />
-        </div>
-      ) : logoUrl && !imageError ? (
+      {logoUrl && !imageError ? (
         <img
           src={logoUrl}
           alt={`${name} logo`}
           onError={() => setImageError(true)}
           className="h-full w-full object-contain rounded-lg p-0.5"
         />
+      ) : BuiltInSvg ? (
+        <div className="w-full h-full flex items-center justify-center p-1">
+          <BuiltInSvg className={iconSizes[size]} />
+        </div>
       ) : (
         <div
           className={cn(

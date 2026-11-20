@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Save } from '@/lib/lucide-google-icons';
-import { parseExpectedSalary, convertNumberToIndianWords } from '../_utils/profileUtils';
+import { parseExpectedSalary, formatExpectedSalary, convertNumberToIndianWords } from '../_utils/profileUtils';
 
 interface ProfileExperienceCardProps {
   experienceYears: string;
@@ -51,9 +51,15 @@ export function ProfileExperienceCard({
           </label>
           <input
             type="text"
-            placeholder="e.g. ₹1,200,000"
+            placeholder="e.g. ₹25 Lakhs / yr"
             value={expectedSalary}
             onChange={(e) => setExpectedSalary(e.target.value)}
+            onBlur={() => {
+              const num = parseExpectedSalary(expectedSalary);
+              if (num !== null) {
+                setExpectedSalary(formatExpectedSalary(num));
+              }
+            }}
             className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:border-brand-500 dark:focus:border-orange-500 glass-input"
           />
           {numericSalary !== null && (

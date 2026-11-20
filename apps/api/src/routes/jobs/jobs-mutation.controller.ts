@@ -40,6 +40,14 @@ export async function createJob(req: Request, res: Response, next: NextFunction)
         stages: (validated.stages || undefined) as Prisma.InputJsonValue,
         assessmentConfig: (validated.assessmentConfig || undefined) as Prisma.InputJsonValue,
       },
+      include: {
+        organization: {
+          select: { id: true, name: true, logo_url: true, industry: true },
+        },
+        _count: {
+          select: { applications: true },
+        },
+      },
     });
 
     return res.status(201).json({
@@ -82,6 +90,14 @@ export async function updateJob(req: Request, res: Response, next: NextFunction)
         ...(validated.assessmentConfig && { assessmentConfig: validated.assessmentConfig as Prisma.InputJsonValue }),
         ...(validated.department !== undefined && { department: validated.department ?? null }),
       },
+      include: {
+        organization: {
+          select: { id: true, name: true, logo_url: true, industry: true },
+        },
+        _count: {
+          select: { applications: true },
+        },
+      },
     });
 
     return res.json({
@@ -109,6 +125,14 @@ export async function publishJob(req: Request, res: Response, next: NextFunction
     const updatedJob = await prisma.job.update({
       where: { id: jobId },
       data: { status: 'published' },
+      include: {
+        organization: {
+          select: { id: true, name: true, logo_url: true, industry: true },
+        },
+        _count: {
+          select: { applications: true },
+        },
+      },
     });
 
     try {

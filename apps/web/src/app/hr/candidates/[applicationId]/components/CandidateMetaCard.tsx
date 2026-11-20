@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Application, Job } from '@/types';
+import { formatCompensationLPA } from '@/app/candidate/profile/_utils/profileUtils';
 
 interface CandidateMetaCardProps {
   app: Application;
@@ -49,10 +50,10 @@ export function CandidateMetaCard({ app, job }: CandidateMetaCardProps) {
             <span className="text-slate-800 dark:text-slate-200 block mt-0.5">{app.noticePeriod}</span>
           </div>
         )}
-        {app.expectedSalary && (
+        {app.expectedSalary != null && (
           <div>
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block uppercase">Expected Salary</span>
-            <span className="text-slate-800 dark:text-slate-200 block mt-0.5">${app.expectedSalary.toLocaleString()}</span>
+            <span className="text-slate-800 dark:text-slate-200 block mt-0.5">{formatCompensationLPA(app.expectedSalary)}</span>
           </div>
         )}
       </div>

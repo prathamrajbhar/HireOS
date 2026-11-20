@@ -23,17 +23,33 @@ export const PRESET_ROLES = [
 export const DEFAULT_AVATAR = '/avatar-boy.jpg';
 
 export function parseExpectedSalary(value: string): number | null {
-  const parsed = Number(value.replace(/[^0-9]/g, ''));
+  const parsed = Number(value.replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 export function formatExpectedSalary(value: number | null | undefined): string {
   if (value == null || value <= 0) return '';
-  return `₹${value.toLocaleString()} / yr`;
+  const inLakhs = value >= 1000 ? value / 100000 : value;
+  const formattedNum = Number.isInteger(inLakhs) ? inLakhs.toString() : inLakhs.toFixed(1);
+  return `₹${formattedNum} Lakhs / yr`;
+}
+
+export function formatCompensationLPA(value: number | string | null | undefined): string {
+  if (value == null) return 'N/A';
+  const num = typeof value === 'string' ? Number(value.replace(/[^0-9.]/g, '')) : value;
+  if (!Number.isFinite(num) || num <= 0) return 'N/A';
+
+  const inLakhs = num >= 1000 ? num / 100000 : num;
+  const formattedNum = Number.isInteger(inLakhs) ? inLakhs.toString() : inLakhs.toFixed(1);
+  return `₹${formattedNum} Lakhs / yr`;
 }
 
 export function convertNumberToIndianWords(num: number): string {
   if (num === 0) return 'Zero Rupees';
+
+  // If num < 1000 (e.g. 25), candidate entered 25 Lakhs (LPA).
+  // Convert to full rupees so Indian words conversion speaks in Lakhs.
+  const fullAmount = num < 1000 ? Math.round(num * 100000) : Math.round(num);
 
   const singleDigits = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
   const doubleDigits = [
@@ -66,13 +82,14 @@ export function convertNumberToIndianWords(num: number): string {
     return str.trim();
   };
 
+  let n = fullAmount;
   let result = '';
-  const crore = Math.floor(num / 10000000);
-  num %= 10000000;
-  const lakh = Math.floor(num / 100000);
-  num %= 100000;
-  const thousand = Math.floor(num / 1000);
-  num %= 1000;
+  const crore = Math.floor(n / 10000000);
+  n %= 10000000;
+  const lakh = Math.floor(n / 100000);
+  n %= 100000;
+  const thousand = Math.floor(n / 1000);
+  n %= 1000;
 
   if (crore > 0) {
     result += getWord(crore) + ' Crore ';
@@ -83,8 +100,8 @@ export function convertNumberToIndianWords(num: number): string {
   if (thousand > 0) {
     result += getWord(thousand) + ' Thousand ';
   }
-  if (num > 0) {
-    result += getWord(num) + ' ';
+  if (n > 0) {
+    result += getWord(n) + ' ';
   }
 
   return result.trim() + ' Rupees Only';

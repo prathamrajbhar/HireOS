@@ -3,6 +3,7 @@
 import React from 'react';
 import { FileText, Download, CheckCircle2 } from '@/lib/lucide-google-icons';
 import { Application } from '@/types';
+import { formatCompensationLPA } from '@/app/candidate/profile/_utils/profileUtils';
 
 interface CandidateDrawerResumeTabProps {
   app: Application;
@@ -18,19 +19,27 @@ export function CandidateDrawerResumeTab({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <div className="p-3 rounded-2xl bg-slate-50/80 dark:bg-[#161f30] border border-slate-200/80 dark:border-slate-800">
           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">Experience</span>
-          <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">N/A</span>
+          <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block">
+            {typeof app.yearsOfExperience === 'number' ? `${app.yearsOfExperience} yrs` : 'N/A'}
+          </span>
         </div>
         <div className="p-3 rounded-2xl bg-slate-50/80 dark:bg-[#161f30] border border-slate-200/80 dark:border-slate-800">
           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">Location</span>
-          <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block truncate">N/A</span>
+          <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100 mt-0.5 block truncate">
+            {app.location || 'N/A'}
+          </span>
         </div>
         <div className="p-3 rounded-2xl bg-slate-50/80 dark:bg-[#161f30] border border-slate-200/80 dark:border-slate-800">
           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">Notice Period</span>
-          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">N/A</span>
+          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+            {app.noticePeriod || 'N/A'}
+          </span>
         </div>
         <div className="p-3 rounded-2xl bg-slate-50/80 dark:bg-[#161f30] border border-slate-200/80 dark:border-slate-800">
           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">Expected Comp</span>
-          <span className="text-xs font-extrabold text-brand-600 dark:text-orange-400 mt-0.5 block">N/A</span>
+          <span className="text-xs font-extrabold text-brand-600 dark:text-orange-400 mt-0.5 block">
+            {formatCompensationLPA(app.expectedSalary)}
+          </span>
         </div>
       </div>
 

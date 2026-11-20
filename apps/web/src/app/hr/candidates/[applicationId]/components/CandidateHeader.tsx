@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Clock, LinkedinIcon, GithubIcon } from '@/lib/lucide-google-icons';
 
 import { Application } from '@/types';
+import { formatCompensationLPA } from '@/app/candidate/profile/_utils/profileUtils';
 
 interface CandidateHeaderProps {
   app: Application;
@@ -107,7 +108,7 @@ export function CandidateHeader({ app }: CandidateHeaderProps) {
         <div className="p-4 rounded-2xl bg-white/45 dark:bg-slate-900/60 border border-white/60 dark:border-slate-800 shadow-2xs glass-panel">
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider block">Expected Comp</span>
           <span className="text-sm font-extrabold text-brand-600 dark:text-orange-400 mt-1 block">
-            {typeof app.expectedSalary === 'number' ? `$${app.expectedSalary.toLocaleString()}` : 'N/A'}
+            {formatCompensationLPA(app.expectedSalary)}
           </span>
         </div>
       </div>

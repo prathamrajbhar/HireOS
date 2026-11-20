@@ -82,6 +82,7 @@ export const Trash2 = createMaterialIcon('delete');
 export const TrendingDown = createMaterialIcon('trending_down');
 export const TrendingUp = createMaterialIcon('trending_up');
 export const Trophy = createMaterialIcon('emoji_events');
+export const Upload = createMaterialIcon('upload');
 export const UploadCloud = createMaterialIcon('cloud_upload');
 export const User = createMaterialIcon('person');
 export const UserCheck = createMaterialIcon('how_to_reg');

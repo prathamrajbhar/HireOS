@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Briefcase, Building2, MapPin, Layers, IndianRupee } from '@/lib/lucide-google-icons';
-import { Autocomplete } from '@/components/ui';
+import React, { useRef } from 'react';
+import { Briefcase, Building2, MapPin, Layers, IndianRupee, Upload } from '@/lib/lucide-google-icons';
+import { Autocomplete, CompanyLogo } from '@/components/ui';
 import { SUGGESTED_ROLES } from '@/lib/suggestedOptions';
 
 interface JobBasicsProps {
@@ -18,6 +18,10 @@ interface JobBasicsProps {
   setMinSalary: (val: number) => void;
   maxSalary: number;
   setMaxSalary: (val: number) => void;
+  orgName?: string;
+  orgLogo?: string;
+  isUploadingLogo?: boolean;
+  onUploadLogo?: (file: File) => Promise<void> | void;
 }
 
 const DEPARTMENTS = [
@@ -50,7 +54,12 @@ export default function JobBasicsCard({
   setMinSalary,
   maxSalary,
   setMaxSalary,
+  orgName,
+  orgLogo,
+  isUploadingLogo = false,
+  onUploadLogo,
 }: JobBasicsProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   return (
     <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-6 md:p-7 shadow-sm backdrop-blur-md space-y-6">
       <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3.5">
@@ -179,6 +188,54 @@ export default function JobBasicsCard({
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-200/60 dark:border-slate-800 pt-5">
+        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mb-2.5">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span>Company Logo &amp; Branding</span>
+        </label>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <CompanyLogo name={orgName || 'Company'} logoUrl={orgLogo} size="lg" />
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                {orgName || 'Company Profile'}
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {orgLogo
+                  ? 'Company logo is active and will appear on candidate job cards.'
+                  : 'No custom logo uploaded — candidate side will show company initials as fallback.'}
+              </p>
+            </div>
+          </div>
+          {onUploadLogo && (
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    onUploadLogo(file);
+                    e.target.value = '';
+                  }
+                }}
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="hidden"
+              />
+              <button
+                type="button"
+                disabled={isUploadingLogo}
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-brand-500 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-2xs hover:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                <Upload className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" />
+                <span>{isUploadingLogo ? 'Uploading...' : orgLogo ? 'Change Logo' : 'Upload Company Logo'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

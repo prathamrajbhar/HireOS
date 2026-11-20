@@ -2,17 +2,19 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Job } from '@/types';
+import { Job, Application } from '@/types';
 import { JobCard } from '@/components/ui';
 import { Compass, Search, ArrowRight, Sparkles } from '@/lib/lucide-google-icons';
 
 interface CandidateJobsSectionProps {
   jobs: Job[];
+  applications?: Application[];
 }
 
-export function CandidateJobsSection({ jobs }: CandidateJobsSectionProps) {
+export function CandidateJobsSection({ jobs, applications = [] }: CandidateJobsSectionProps) {
   const safeJobs = Array.isArray(jobs) ? jobs : [];
   const recommendations = safeJobs.slice(0, 3);
+  const appliedJobIds = new Set((applications || []).map((a) => a.jobId));
 
   if (recommendations.length === 0) {
     return (
@@ -75,9 +77,11 @@ export function CandidateJobsSection({ jobs }: CandidateJobsSectionProps) {
             salary={job.salary}
             experienceLevel={job.experienceLevel}
             postedDate={job.postedDate}
+            applicantsCount={job.applicantsCount}
             status={job.status}
             matchScore={idx === 0 ? 92 : idx === 1 ? 84 : 76}
             viewHref={`/candidate/jobs/${job.id}`}
+            hasApplied={appliedJobIds.has(job.id)}
             compact
           />
         ))}
