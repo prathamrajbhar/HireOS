@@ -3,12 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft, Play, Pause, Sliders } from '@/lib/lucide-google-icons';
+import { CompanyLogo } from '@/components/ui';
 
 interface PipelineHeaderProps {
   jobTitle: string;
   pipelineActive: boolean;
   setPipelineActive: (val: boolean) => void;
   onOpenSettings: () => void;
+  orgName?: string;
+  orgLogo?: string;
 }
 
 export default function PipelineHeader({
@@ -16,28 +19,33 @@ export default function PipelineHeader({
   pipelineActive,
   setPipelineActive,
   onOpenSettings,
+  orgName,
+  orgLogo,
 }: PipelineHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-4 font-sans">
-      <div>
-        <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">
-          <Link href="/hr/jobs" className="hover:text-brand-600 dark:hover:text-orange-400 transition-colors">
-            All Jobs
-          </Link>
-          <ChevronRight className="h-3 w-3 text-slate-300 dark:text-slate-600" />
-          <span className="text-slate-600 dark:text-slate-300 block truncate max-w-[200px]">{jobTitle}</span>
-          <ChevronRight className="h-3 w-3 text-slate-300 dark:text-slate-600" />
-          <span className="text-slate-800 dark:text-slate-200 font-extrabold">Recruitment Pipeline</span>
-        </div>
+      <div className="flex items-center gap-3.5 min-w-0">
+        <CompanyLogo name={orgName || 'Company'} logoUrl={orgLogo} size="md" className="flex-shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">
+            <Link href="/hr/jobs" className="hover:text-brand-600 dark:hover:text-orange-400 transition-colors">
+              All Jobs
+            </Link>
+            <ChevronRight className="h-3 w-3 text-slate-300 dark:text-slate-600" />
+            <span className="text-slate-600 dark:text-slate-300 block truncate max-w-[200px]">{jobTitle}</span>
+            <ChevronRight className="h-3 w-3 text-slate-300 dark:text-slate-600" />
+            <span className="text-slate-800 dark:text-slate-200 font-extrabold">Recruitment Pipeline</span>
+          </div>
 
-        <div className="flex items-center gap-2.5">
-          <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight font-display">
-            {jobTitle}
-          </h1>
-          <span
-            title={pipelineActive ? 'Auto-Evaluation Pipeline Active' : 'Pipeline Paused'}
-            className={`h-2.5 w-2.5 rounded-full ${pipelineActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'} block`}
-          />
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight font-display truncate">
+              {jobTitle}
+            </h1>
+            <span
+              title={pipelineActive ? 'Auto-Evaluation Pipeline Active' : 'Pipeline Paused'}
+              className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${pipelineActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'} block`}
+            />
+          </div>
         </div>
       </div>
 

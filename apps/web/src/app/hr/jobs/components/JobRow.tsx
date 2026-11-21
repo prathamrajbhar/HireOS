@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ChevronRight, Trash2, Loader2 } from '@/lib/lucide-google-icons';
 import { getJobStatusBadgeClasses } from '@/lib/jobStatus';
+import { CompanyLogo } from '@/components/ui';
 import { Job } from '@/types';
 
 function formatDate(dateStr?: string) {
@@ -29,10 +30,15 @@ export function JobRow({ job, isUpdating, onStatusChange, onDelete }: JobRowProp
   return (
     <tr className="hover:bg-white/20 dark:hover:bg-slate-800/40 transition-colors">
       <td className="px-6 py-4">
-        <span className="font-bold text-slate-800 dark:text-slate-100 block">{job.title}</span>
-        <span className="text-[10px] text-slate-400 dark:text-slate-400 block mt-0.5">
-          {job.location} • {job.salary}
-        </span>
+        <div className="flex items-center gap-3">
+          <CompanyLogo name={job.orgName || 'Company'} logoUrl={job.orgLogo} size="sm" />
+          <div className="min-w-0">
+            <span className="font-bold text-slate-800 dark:text-slate-100 block truncate">{job.title}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400 block mt-0.5">
+              {job.location} • {job.salary}
+            </span>
+          </div>
+        </div>
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">

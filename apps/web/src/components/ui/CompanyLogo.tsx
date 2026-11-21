@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/cn';
 
 interface CompanyLogoProps {
@@ -98,6 +98,11 @@ function getInitials(name: string): string {
 
 export function CompanyLogo({ name, logoUrl, size = 'md', className }: CompanyLogoProps) {
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [logoUrl]);
+
   const normalizedName = name.toLowerCase().trim();
 
   const BuiltInSvg = brandSvgMap[normalizedName];

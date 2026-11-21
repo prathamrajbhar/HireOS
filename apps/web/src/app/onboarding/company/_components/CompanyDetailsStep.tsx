@@ -32,6 +32,7 @@ export function CompanyDetailsStep({ form, update }: CompanyStepProps) {
     <div className="space-y-6 animate-in fade-in duration-200">
       <CompanyLogoUpload
         logoUrl={form.logoUrl}
+        companyName={form.name}
         onLogoChange={(url) => update('logoUrl', url)}
       />
 

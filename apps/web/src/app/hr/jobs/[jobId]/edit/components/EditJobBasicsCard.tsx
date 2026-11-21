@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Briefcase, Building2, MapPin, Layers, IndianRupee } from '@/lib/lucide-google-icons';
-import { Autocomplete } from '@/components/ui';
+import { Autocomplete, CompanyLogo } from '@/components/ui';
 import { SUGGESTED_ROLES } from '@/lib/suggestedOptions';
 
 interface EditJobBasicsCardProps {
@@ -20,6 +20,8 @@ interface EditJobBasicsCardProps {
   setMaxSalary: (val: number) => void;
   status: 'active' | 'draft' | 'closed';
   setStatus: (val: 'active' | 'draft' | 'closed') => void;
+  orgName?: string;
+  orgLogo?: string;
 }
 
 const DEPARTMENTS = ['Engineering', 'Product Management', 'Design & UX', 'Data & AI', 'Sales & Marketing', 'Operations & People'];
@@ -40,6 +42,8 @@ export function EditJobBasicsCard({
   setMaxSalary,
   status,
   setStatus,
+  orgName,
+  orgLogo,
 }: EditJobBasicsCardProps) {
   return (
     <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 p-6 md:p-7 shadow-sm backdrop-blur-md space-y-6">
@@ -186,6 +190,28 @@ export function EditJobBasicsCard({
                 placeholder="Max Salary"
                 className="w-full pl-7 pr-3 py-2 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
               />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-slate-200/60 dark:border-slate-800 pt-5">
+        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mb-2.5">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span>Company Logo &amp; Branding</span>
+        </label>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <CompanyLogo name={orgName || 'Company'} logoUrl={orgLogo} size="lg" />
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                {orgName || 'Company Profile'}
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {orgLogo
+                  ? 'Company logo is active and displayed across candidate & recruiter portals.'
+                  : `No custom logo uploaded — displaying company initials (${(orgName ? (orgName.trim().split(/\s+/).length >= 2 ? orgName.trim().split(/\s+/)[0][0] + orgName.trim().split(/\s+/)[1][0] : orgName.slice(0, 2)) : 'CO').toUpperCase()}) as fallback.`}
+              </p>
             </div>
           </div>
         </div>

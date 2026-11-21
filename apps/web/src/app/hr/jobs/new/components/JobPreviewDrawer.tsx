@@ -8,6 +8,7 @@ import {
   Sparkles,
   CheckCircle2,
 } from '@/lib/lucide-google-icons';
+import { CompanyLogo } from '@/components/ui';
 import { RubricWeights } from '../hooks/rubricBalancing';
 
 interface JobPreviewProps {
@@ -22,6 +23,8 @@ interface JobPreviewProps {
   rubric: RubricWeights;
   stages: string[];
   minScore: number;
+  orgName?: string;
+  orgLogo?: string;
 }
 
 export function JobPreviewDrawer({
@@ -36,6 +39,8 @@ export function JobPreviewDrawer({
   rubric,
   stages,
   minScore,
+  orgName,
+  orgLogo,
 }: JobPreviewProps) {
   const displayTitle = title.trim() || 'Role Title (e.g. Senior Software Engineer)';
 
@@ -52,13 +57,16 @@ export function JobPreviewDrawer({
       </div>
 
       <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-850/80 p-4 space-y-3.5 shadow-xs">
-        <div>
-          <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest block">
-            {department}
-          </span>
-          <h4 className="text-base font-black text-slate-900 dark:text-slate-100 tracking-tight mt-0.5">
-            {displayTitle}
-          </h4>
+        <div className="flex items-center gap-3">
+          <CompanyLogo name={orgName || 'Company'} logoUrl={orgLogo} size="md" />
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest block truncate">
+              {orgName || department}
+            </span>
+            <h4 className="text-base font-black text-slate-900 dark:text-slate-100 tracking-tight mt-0.5 truncate">
+              {displayTitle}
+            </h4>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300">

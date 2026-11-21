@@ -127,6 +127,8 @@ export default function HrJobPipeline({ params }: { params: Promise<{ jobId: str
         pipelineActive={pipelineActive}
         setPipelineActive={setPipelineActive}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        orgName={job.orgName}
+        orgLogo={job.orgLogo}
       />
 
       <div className={`grid grid-cols-1 ${gridColsClass} gap-4 items-start w-full`}>
