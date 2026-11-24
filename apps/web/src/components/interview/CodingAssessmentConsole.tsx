@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCodingProblem, type SupportedLanguage } from './coding/useCodingProblem';
 import { useCodingExecution } from './coding/useCodingExecution';
+import { useAssessmentTimer } from './coding/useAssessmentTimer';
 import { CodingStateScreen } from './coding/CodingStateScreen';
 import { CodingHeader } from './coding/CodingHeader';
 import { CodingProblemPanel, type CodingLeftTab } from './coding/CodingProblemPanel';
@@ -26,7 +27,7 @@ export default function CodingAssessmentConsole({
   recordingActive = false,
   recordingDurationMs = 0,
 }: CodingConsoleProps) {
-  const { problem, error } = useCodingProblem({ applicationId, sessionId, role, company });
+  const { problem, error, timer, startTimer } = useCodingProblem({ applicationId, sessionId, role, company });
 
   const [language, setLanguage] = useState<SupportedLanguage>('python');
   const [code, setCode] = useState<string>('');
@@ -35,6 +36,18 @@ export default function CodingAssessmentConsole({
   const [strikeCount, setStrikeCount] = useState(0);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+
+  useEffect(() => {
+    if (timer?.isStarted) {
+      setIsStarted(true);
+    }
+  }, [timer?.isStarted]);
+
+  const { formattedTime, isExpired, isWarning } = useAssessmentTimer({
+    expiresAt: timer?.expiresAt,
+    isStarted: isStarted || Boolean(timer?.isStarted),
+    durationSeconds: timer?.durationSeconds || 1800,
+  });
 
   const {
     isRunning,
@@ -46,7 +59,7 @@ export default function CodingAssessmentConsole({
     finalPassRate,
     runCode,
     submitSolution,
-  } = useCodingExecution({ problem, applicationId });
+  } = useCodingExecution({ problem, applicationId, sessionId });
 
   useEffect(() => {
     if (proctoringClient || !problem || submitted || !isStarted) return;
@@ -71,7 +84,18 @@ export default function CodingAssessmentConsole({
     }
   }, [problem, language]);
 
-  const handleStartCodingRound = () => {
+  useEffect(() => {
+    if (submitted && proctoringClient) {
+      proctoringClient.setSuppressViolations(true);
+    }
+  }, [submitted, proctoringClient]);
+
+  const handleStartCodingRound = async () => {
+    await startTimer();
+    if (proctoringClient) {
+      proctoringClient.setSuppressViolations(false);
+      proctoringClient.setSessionActive(true);
+    }
     if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
     }
@@ -131,6 +155,9 @@ export default function CodingAssessmentConsole({
         onLanguageChange={handleLanguageChange}
         onRun={() => runCode(code, language, () => setActiveBottomTab('results'))}
         onSubmit={() => submitSolution(code, language, () => setShowWarningModal(false))}
+        formattedTime={formattedTime}
+        isExpired={isExpired}
+        isWarning={isWarning}
       />
 
       {!submitted ? (

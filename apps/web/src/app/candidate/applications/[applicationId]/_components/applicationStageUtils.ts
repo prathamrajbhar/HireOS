@@ -20,6 +20,22 @@ export function buildApplicationStages(
     'hired',
   ].includes(app.status);
 
+  const cfg = job?.assessmentConfig as Record<string, unknown> | undefined;
+  const hasCoding = cfg
+    ? cfg.coding_enabled !== false && (cfg.coding_enabled === true || Boolean(cfg.codingProblemId))
+    : false;
+
+  const aptitudeAssessment = assessments.find(
+    (a) => a.category === 'aptitude' || a.assessmentName?.toLowerCase().includes('aptitude')
+  );
+  const codingAssessment = assessments.find(
+    (a) => a.category === 'coding' || a.assessmentName?.toLowerCase().includes('coding')
+  );
+
+  const aptitudeDone = aptitudeAssessment?.status === 'completed';
+  const codingDone = codingAssessment?.status === 'completed';
+  const allAssessmentsDone = hasCoding ? aptitudeDone && codingDone : aptitudeDone;
+
   const isAssessmentDone =
     [
       'interview_scheduled',
@@ -31,7 +47,7 @@ export function buildApplicationStages(
       'offered',
       'accepted',
       'hired',
-    ].includes(app.status) || assessments.some((a) => a.status === 'completed');
+    ].includes(app.status) || allAssessmentsDone;
 
   const isInterviewDone = [
     'interviewed',
@@ -106,6 +122,22 @@ export function buildApplicationNextSteps(params: {
     app.status
   );
 
+  const cfg = job?.assessmentConfig as Record<string, unknown> | undefined;
+  const hasCoding = cfg
+    ? cfg.coding_enabled !== false && (cfg.coding_enabled === true || Boolean(cfg.codingProblemId))
+    : false;
+
+  const aptitudeAssessment = assessments.find(
+    (a) => a.category === 'aptitude' || a.assessmentName?.toLowerCase().includes('aptitude')
+  );
+  const codingAssessment = assessments.find(
+    (a) => a.category === 'coding' || a.assessmentName?.toLowerCase().includes('coding')
+  );
+
+  const aptitudeDone = aptitudeAssessment?.status === 'completed';
+  const codingDone = codingAssessment?.status === 'completed';
+  const allAssessmentsDone = hasCoding ? aptitudeDone && codingDone : aptitudeDone;
+
   const allNextSteps = [
     (app.status === 'applied' || app.status === 'screening') &&
       (!job?.stages || job.stages.includes('screening')) && {
@@ -119,17 +151,47 @@ export function buildApplicationNextSteps(params: {
       },
 
     (app.status === 'screening_completed' || app.status === 'assessment') &&
-      (!job?.stages || job.stages.includes('assessment')) && {
-        icon: ClipboardCheck,
-        label: 'Aptitude Assessment',
-        desc:
-          assessments[0]?.status === 'completed'
-            ? `Completed — Score: ${assessments[0].overallScore != null ? `${assessments[0].overallScore}%` : 'Completed'}`
-            : 'Continue your timed assessment',
-        href: `/candidate/applications/${app.id}/assessment`,
-        tone: 'indigo' as const,
-        badge: assessments[0]?.status === 'completed' ? 'Completed' : 'Pending',
-      },
+      (!job?.stages || job.stages.includes('assessment')) &&
+      (() => {
+        if (hasCoding && aptitudeDone && !codingDone) {
+          return {
+            icon: ClipboardCheck,
+            label: 'Live Coding Assessment',
+            desc:
+              codingAssessment?.status === 'in_progress'
+                ? 'Continue your timed live coding challenge'
+                : 'Aptitude test completed. Launch your live coding round',
+            href: `/candidate/applications/${app.id}/assessment?track=coding`,
+            tone: 'indigo' as const,
+            badge: codingAssessment?.status === 'in_progress' ? 'In Progress' : 'Pending',
+          };
+        }
+
+        if (allAssessmentsDone) {
+          return {
+            icon: ClipboardCheck,
+            label: 'Assessment Module',
+            desc: `Completed — Score: ${assessments[0]?.overallScore != null ? `${assessments[0].overallScore}%` : 'Done'}`,
+            href: `/candidate/applications/${app.id}/assessment`,
+            tone: 'indigo' as const,
+            badge: 'Completed',
+          };
+        }
+
+        return {
+          icon: ClipboardCheck,
+          label: hasCoding ? 'Online Assessment & Coding Test' : 'Aptitude Assessment',
+          desc:
+            aptitudeAssessment?.status === 'in_progress'
+              ? 'Continue your timed assessment'
+              : hasCoding
+              ? 'Complete aptitude MCQs and live coding challenges'
+              : 'Continue your timed assessment',
+          href: `/candidate/applications/${app.id}/assessment?track=${hasCoding ? 'comprehensive' : 'aptitude'}`,
+          tone: 'indigo' as const,
+          badge: aptitudeAssessment?.status === 'in_progress' ? 'In Progress' : 'Pending',
+        };
+      })(),
 
     offer &&
       isDecisionDone && {

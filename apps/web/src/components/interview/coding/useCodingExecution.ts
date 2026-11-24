@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { apiClient } from '@/lib/apiClient';
 import type { CodingProblem, SupportedLanguage } from './useCodingProblem';
-import type { TestResult } from './types';
+import type { TestResult, CodingRunResponse, CodingSubmitResponse } from './types';
 
 interface UseCodingExecutionOptions {
   problem: CodingProblem | null;
   applicationId?: string;
+  sessionId?: string;
 }
 
-export function useCodingExecution({ problem, applicationId }: UseCodingExecutionOptions) {
+export function useCodingExecution({ problem, applicationId, sessionId }: UseCodingExecutionOptions) {
   const [isRunning, setIsRunning] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [outputLogs, setOutputLogs] = useState<string[]>([]);
@@ -27,24 +28,27 @@ export function useCodingExecution({ problem, applicationId }: UseCodingExecutio
     setTestResults([]);
 
     try {
-      const res = await apiClient.post<{ stdout_stderr: string; test_results?: TestResult[] }>(
+      const res = await apiClient.post<CodingRunResponse>(
         `/coding/run`,
         {
           code,
           language,
           problemId: problem.id,
+          applicationId,
+          sessionId,
         }
       );
 
+      const stdoutStderr = res?.stdout_stderr;
       setOutputLogs([
-        res.stdout_stderr
-          ? `=== Sandbox Output ===\n${res.stdout_stderr}`
+        stdoutStderr
+          ? `=== Sandbox Output ===\n${stdoutStderr}`
           : 'Code executed with no stdout/stderr output.',
       ]);
-      setTestResults(res.test_results || []);
+      setTestResults(Array.isArray(res?.test_results) ? res.test_results : []);
       onFinish();
     } catch (err: unknown) {
-      setOutputLogs([`[Runtime Sandbox Error] ${(err as Error).message || 'Execution failed'}`]);
+      setOutputLogs([`[Runtime Sandbox Error] ${(err as Error)?.message || 'Execution failed'}`]);
       onFinish();
     } finally {
       setIsRunning(false);
@@ -61,28 +65,25 @@ export function useCodingExecution({ problem, applicationId }: UseCodingExecutio
     setOutputLogs(['Submitting final solution for pipeline score grading...']);
 
     try {
-      const res = await apiClient.post<{
-        test_results?: TestResult[];
-        pass_rate_percent?: number;
-        ai_feedback?: string;
-        complexity?: string;
-      }>(`/coding/submit`, {
+      const res = await apiClient.post<CodingSubmitResponse>(`/coding/submit`, {
         code,
         language,
         problemId: problem.id,
         applicationId,
+        sessionId,
       });
 
-      setTestResults(res.test_results || []);
-      setFinalPassRate(res.pass_rate_percent || 0);
+      if (!res) {
+        throw new Error('Received empty response from server.');
+      }
+
+      setTestResults(Array.isArray(res.test_results) ? res.test_results : []);
+      setFinalPassRate(typeof res.pass_rate_percent === 'number' ? res.pass_rate_percent : 0);
       setComplexityFeedback(res.ai_feedback || res.complexity || 'O(N) Optimization evaluated.');
       setSubmitted(true);
       onSuccess();
-      if (typeof document !== 'undefined' && document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {});
-      }
     } catch (err: unknown) {
-      setOutputLogs([`[Submission Error] ${(err as Error).message || 'Failed to submit solution'}`]);
+      setOutputLogs([`[Submission Error] ${(err as Error)?.message || 'Failed to submit solution'}`]);
     } finally {
       setIsRunning(false);
     }

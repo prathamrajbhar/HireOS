@@ -7,6 +7,7 @@ import { setupWeeklyAnalyticsCron } from './lib/queues/analytics.queue';
 import { envNumber } from './lib/env';
 import { logger } from './lib/logger';
 import { emailWorker } from './workers/email.worker';
+import { codingWorker } from './workers/coding.worker';
 import { emailService } from './services/email/email.service';
 
 const PORT = envNumber('PORT');
@@ -15,6 +16,7 @@ async function bootstrap() {
   try {
     setupWeeklyAnalyticsCron();
     emailWorker.start();
+    codingWorker.start();
     emailService.verifyConnection().catch(() => {});
 
     logger.info('Connecting and pre-warming database connection pool...');
@@ -29,7 +31,10 @@ async function bootstrap() {
 
     const shutdown = async (signal: string) => {
       logger.info(`Received ${signal}. Shutting down API server gracefully...`);
-      await emailWorker.stop().catch(() => {});
+      await Promise.allSettled([
+        emailWorker.stop(),
+        codingWorker.stop(),
+      ]);
       server.close(async () => {
         try {
           await prisma.$disconnect();

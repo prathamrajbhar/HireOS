@@ -11,42 +11,46 @@ import {
   executeCppSubprocess,
   executeJavaSubprocess,
 } from './coding-languages.service';
+import { normalizeTestCases } from './test-case-normalizer';
 
 export * from './coding-executor.types';
+export * from './test-case-normalizer';
 
-const RUNNER_VERSION = '2.0.0-unified-sandbox';
+const RUNNER_VERSION = '2.1.0-async-sandbox';
 
-function runSubprocess(
+async function runSubprocess(
   normalizedLang: string,
   code: string,
   entryPoint: string,
-  args: unknown[]
-): SubprocessExecutionResult {
+  args: unknown[],
+  timeoutMs: number = 3000
+): Promise<SubprocessExecutionResult> {
   if (normalizedLang === 'python' || normalizedLang === 'py' || normalizedLang === 'python3') {
-    return executePythonSubprocess(code, entryPoint, args);
+    return await executePythonSubprocess(code, entryPoint, args, timeoutMs);
   }
   if (normalizedLang === 'javascript' || normalizedLang === 'typescript' || normalizedLang === 'js' || normalizedLang === 'ts') {
-    return executeNodeSubprocess(code, entryPoint, args);
+    return await executeNodeSubprocess(code, entryPoint, args, timeoutMs);
   }
   if (normalizedLang === 'cpp' || normalizedLang === 'c++') {
-    return executeCppSubprocess(code, entryPoint, args);
+    return await executeCppSubprocess(code, entryPoint, args, timeoutMs);
   }
   if (normalizedLang === 'java') {
-    return executeJavaSubprocess(code, entryPoint, args);
+    return await executeJavaSubprocess(code, entryPoint, args, timeoutMs);
   }
-  return executePythonSubprocess(code, entryPoint, args);
+  return await executePythonSubprocess(code, entryPoint, args, timeoutMs);
 }
 
-export function executeCodingSubmission(
+export async function executeCodingSubmission(
   code: string,
   language: string,
-  testCases: TestCaseInput[],
-  entryPoint: string = 'solution'
-): ExecutionSummary {
+  testCases: TestCaseInput[] | unknown[],
+  entryPoint: string = 'solution',
+  maxExecutionTimeMs: number = 30_000
+): Promise<ExecutionSummary> {
   const normalizedLang = (language || 'python').toLowerCase();
   const logs: string[] = [
     `[Unified Sandbox ${RUNNER_VERSION}] Target: ${normalizedLang.toUpperCase()} | Entry Point: ${entryPoint}`,
-    `[Isolation & Caps] CPU Limit: 3.0s | Memory Cap: 256MB | Network: Disabled`,
+    `[Isolation & Caps] Per-Case Limit: 3.0s | Overall Budget: ${(maxExecutionTimeMs / 1000).toFixed(1)}s | Process Tree Termination: Enabled | Environment Sanitized: Yes`,
   ];
 
   if (!code || !code.trim()) {
@@ -61,20 +65,60 @@ export function executeCodingSubmission(
     };
   }
 
+  const safeTestCases = normalizeTestCases(testCases);
   const results: TestExecutionResult[] = [];
   let passedCount = 0;
   let totalTimeMs = 0;
+  const overallStartNs = process.hrtime.bigint();
+  let deadlineExceeded = false;
 
-  for (let index = 0; index < testCases.length; index++) {
-    const testCase = testCases[index];
+  for (let index = 0; index < safeTestCases.length; index++) {
+    const testCase = safeTestCases[index];
     const testCaseName = testCase.name || `Case ${index + 1}`;
     const args = Array.isArray(testCase.args) ? testCase.args : [];
+
+    // Check if overall execution deadline has already expired before starting the test case
+    const currentOverallElapsedMs = Number(process.hrtime.bigint() - overallStartNs) / 1_000_000;
+    const remainingOverallMs = maxExecutionTimeMs - currentOverallElapsedMs;
+
+    if (remainingOverallMs <= 0 || deadlineExceeded) {
+      deadlineExceeded = true;
+      // Stop launching further test cases when the overall deadline is reached
+      results.push({
+        name: testCaseName,
+        args: testCase.args,
+        expected: testCase.expected,
+        actual: 'None',
+        status: 'timed_out',
+        timeMs: 0,
+        errorMessage: `Overall execution deadline reached (${(maxExecutionTimeMs / 1000).toFixed(1)}s limit)`,
+        hidden: Boolean(testCase.hidden),
+      });
+      continue;
+    }
+
+    // Limit individual subprocess timeout to the lesser of 3000ms or remaining overall budget
+    const testTimeoutMs = Math.min(3000, Math.floor(remainingOverallMs));
+    if (testTimeoutMs <= 0) {
+      deadlineExceeded = true;
+      results.push({
+        name: testCaseName,
+        args: testCase.args,
+        expected: testCase.expected,
+        actual: 'None',
+        status: 'timed_out',
+        timeMs: 0,
+        errorMessage: `Overall execution deadline reached (${(maxExecutionTimeMs / 1000).toFixed(1)}s limit)`,
+        hidden: Boolean(testCase.hidden),
+      });
+      continue;
+    }
 
     const startNs = process.hrtime.bigint();
     let executionResult: SubprocessExecutionResult;
 
     try {
-      executionResult = runSubprocess(normalizedLang, code, entryPoint, args);
+      executionResult = await runSubprocess(normalizedLang, code, entryPoint, args, testTimeoutMs);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Execution error';
       executionResult = { actual: null, error: message };
@@ -87,6 +131,10 @@ export function executeCodingSubmission(
     let status: 'passed' | 'failed' | 'error' | 'timed_out' = 'failed';
     if (executionResult.timedOut) {
       status = 'timed_out';
+      const afterTestOverallMs = Number(process.hrtime.bigint() - overallStartNs) / 1_000_000;
+      if (afterTestOverallMs >= maxExecutionTimeMs) {
+        deadlineExceeded = true;
+      }
     } else if (executionResult.error) {
       status = 'error';
     } else if (compareOutputs(executionResult.actual, testCase.expected)) {
@@ -102,14 +150,18 @@ export function executeCodingSubmission(
       status,
       timeMs: Number(elapsedMs.toFixed(2)),
       errorMessage: executionResult.error,
+      hidden: Boolean(testCase.hidden),
     });
   }
 
-  const passRateRatio = testCases.length > 0 ? passedCount / testCases.length : 0;
+  const passRateRatio = safeTestCases.length > 0 ? passedCount / safeTestCases.length : 0;
   const passRate = Math.round(passRateRatio * 100);
-  const allPassed = testCases.length > 0 && passedCount === testCases.length;
+  const allPassed = safeTestCases.length > 0 && passedCount === safeTestCases.length;
 
-  logs.push(`[Execution Complete] ${passedCount}/${testCases.length} test cases passed (${passRate}%).`);
+  if (deadlineExceeded) {
+    logs.push(`[Execution Timed Out] Overall execution deadline of ${(maxExecutionTimeMs / 1000).toFixed(1)}s exceeded.`);
+  }
+  logs.push(`[Execution Complete] ${passedCount}/${safeTestCases.length} test cases passed (${passRate}%).`);
 
   return {
     results,

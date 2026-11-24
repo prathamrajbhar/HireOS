@@ -12,9 +12,15 @@ const connection = new Redis(redisUrl, {
   lazyConnect: false,
 });
 
-connection.on('error', (err: NodeJS.ErrnoException) => {
-  // Suppress noisy ECONNRESET/ECONNREFUSED logs — ioredis retries automatically
-  if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') return;
+connection.on('error', (err: any) => {
+  // Suppress noisy ECONNRESET/ECONNREFUSED logs (including AggregateError) — ioredis retries automatically
+  if (
+    err.code === 'ECONNRESET' ||
+    err.code === 'ECONNREFUSED' ||
+    err.errors?.some((e: any) => e.code === 'ECONNREFUSED')
+  ) {
+    return;
+  }
   console.error('[Redis] Unexpected connection error:', err.message);
 });
 
@@ -88,3 +94,4 @@ export const assessmentQueue = getQueue('assessment');
 export const analyticsQueue = getQueue('analytics');
 export const candidateEmbeddingQueue = getQueue('candidate');
 export const emailQueue = getQueue('email');
+export const codingQueue = getQueue('coding');

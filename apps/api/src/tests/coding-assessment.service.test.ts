@@ -19,8 +19,15 @@ const { mockPrisma } = vi.hoisted(() => ({
     },
     codingSubmission: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       count: vi.fn(),
       create: vi.fn(),
+      update: vi.fn().mockResolvedValue({}),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
+    assessment: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
     },
     $transaction: vi.fn(),
@@ -38,6 +45,20 @@ vi.mock('../lib/prisma', () => ({
   prisma: mockPrisma,
   Prisma: {
     InputJsonValue: null,
+  },
+}));
+
+const mockQueueAdd = vi.fn().mockResolvedValue({ id: 'job-coding-1' });
+
+vi.mock('../lib/bullmq', () => ({
+  getQueue: vi.fn(() => ({
+    add: (...args: any[]) => mockQueueAdd(...args),
+  })),
+  JOB_NAMES: {
+    coding: 'evaluate_coding',
+  },
+  DEFAULT_JOB_OPTIONS: {
+    attempts: 3,
   },
 }));
 
@@ -186,7 +207,7 @@ describe('Coding Bank — selectCodingProblem', () => {
 // ---------------------------------------------------------------------------
 
 describe('Code Executor — executeCodingSubmission', () => {
-  it('returns summary with pass/fail for valid JavaScript submission', () => {
+  it('returns summary with pass/fail for valid JavaScript submission', async () => {
     const code = `
 function twoSum(nums, target) {
   const seen = new Map();
@@ -203,7 +224,7 @@ function twoSum(nums, target) {
       { name: 'Case 2', args: [[3, 2, 4], 6], expected: [1, 2] },
     ];
 
-    const result = executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
+    const result = await executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
 
     expect(result.allPassed).toBe(true);
     expect(result.passRate).toBe(100);
@@ -214,45 +235,45 @@ function twoSum(nums, target) {
     expect(result.runnerVersion).toBeDefined();
   });
 
-  it('returns partial pass when some tests fail', () => {
+  it('returns partial pass when some tests fail', async () => {
     const code = `function twoSum(nums, target) { return []; }`;
     const testCases = [
       { name: 'Pass Case', args: [[2, 7], 9], expected: [] },
       { name: 'Fail Case', args: [[1, 2], 3], expected: [0, 1] },
     ];
 
-    const result = executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
+    const result = await executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
 
     expect(result.allPassed).toBe(false);
     expect(result.passRate).toBe(50);
     expect(result.passRateRatio).toBe(0.5);
   });
 
-  it('handles empty test suite', () => {
+  it('handles empty test suite', async () => {
     const code = `const x = 1;`;
     const testCases: any[] = [];
 
-    const result = executeCodingSubmission(code, 'javascript', testCases, 'solution');
+    const result = await executeCodingSubmission(code, 'javascript', testCases, 'solution');
 
     expect(result.allPassed).toBe(false);
     expect(result.passRate).toBe(0);
     expect(result.results).toHaveLength(0);
   });
 
-  it('handles runtime errors gracefully', () => {
+  it('handles runtime errors gracefully', async () => {
     const code = `function twoSum() { throw new Error('test error'); }`;
     const testCases = [
       { name: 'Error Case', args: [[1]], expected: [0] },
     ];
 
-    const result = executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
+    const result = await executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
 
     expect(result.results).toHaveLength(1);
     expect(result.results[0].status).toBe('error');
     expect(result.results[0].errorMessage).toBeDefined();
   });
 
-  it('supports Python submissions', () => {
+  it('supports Python submissions', async () => {
     const code = `
 def two_sum(nums, target):
     seen = {}
@@ -267,19 +288,19 @@ def two_sum(nums, target):
       { name: 'Python Case', args: [[2, 7, 11, 15], 9], expected: [0, 1] },
     ];
 
-    const result = executeCodingSubmission(code, 'python', testCases, 'two_sum');
+    const result = await executeCodingSubmission(code, 'python', testCases, 'two_sum');
 
     expect(result.results).toHaveLength(1);
     expect(result.results[0].status).toBe('passed');
   });
 
-  it('handles empty code submission', () => {
+  it('handles empty code submission', async () => {
     const code = '';
     const testCases = [
       { name: 'Empty Code', args: [[1, 2], 3], expected: [0, 1] },
     ];
 
-    const result = executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
+    const result = await executeCodingSubmission(code, 'javascript', testCases, 'twoSum');
 
     expect(result.results).toHaveLength(0);
     expect(result.allPassed).toBe(false);
@@ -329,7 +350,9 @@ describe('Submission Queue — enqueueSubmissionExecution', () => {
     mockPrisma.codingSubmission.count.mockResolvedValue(0);
     mockPrisma.$transaction.mockImplementation(async (callback: any) => {
       return callback({
+        $queryRawUnsafe: vi.fn().mockResolvedValue([{ pg_advisory_xact_lock: null }]),
         codingSubmission: {
+          findFirst: vi.fn().mockResolvedValue(null),
           create: vi.fn().mockResolvedValue({
             id: 'sub-created-001',
             idempotency_key: idempotencyKey,
@@ -353,6 +376,14 @@ describe('Submission Queue — enqueueSubmissionExecution', () => {
     expect(result.idempotency_key).toBe(idempotencyKey);
     expect(result.status).toBe('queued');
     expect(result.attempt_number).toBe(1);
+    expect(mockQueueAdd).toHaveBeenCalledWith(
+      'evaluate_coding',
+      expect.objectContaining({
+        submissionId: 'sub-created-001',
+        applicationId: 'app-sub-001',
+      }),
+      expect.any(Object)
+    );
   });
 
   it('returns existing submission when idempotency key matches', async () => {
@@ -379,6 +410,7 @@ describe('Submission Queue — enqueueSubmissionExecution', () => {
 describe('Submission Queue — processSubmissionJob', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPrisma.$transaction.mockImplementation(async (cb: any) => cb(mockPrisma));
   });
 
   it('updates submission status to running and processes test cases', async () => {
@@ -389,6 +421,8 @@ describe('Submission Queue — processSubmissionJob', () => {
       code: 'function solve(x) { return x * 2; }',
       language: 'javascript',
       status: 'queued',
+      created_at: new Date(),
+      ai_feedback: 'assessment:assess-test-1',
       problem: {
         entry_point: 'solve',
         public_tests: [{ name: 'Double 5', args: [5], expected: 10 }],
@@ -396,12 +430,18 @@ describe('Submission Queue — processSubmissionJob', () => {
       },
     };
 
-    mockPrisma.codingSubmission.update.mockResolvedValueOnce({
+    mockPrisma.codingSubmission.findUnique.mockResolvedValue({
       ...submission,
-      status: 'running',
+      status: 'passed',
+      test_results: [{ name: 'Double 5', status: 'passed' }],
+      pass_rate: 100,
     });
-    mockPrisma.codingSubmission.findUnique.mockResolvedValue(submission);
-    mockPrisma.codingSubmission.update.mockResolvedValueOnce({
+    mockPrisma.assessment.findUnique.mockResolvedValue({
+      id: 'assess-test-1',
+      questions: { timer_metadata: { expires_at: new Date(Date.now() + 600_000).toISOString() } },
+    });
+    mockPrisma.codingSubmission.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.codingSubmission.update.mockResolvedValue({
       ...submission,
       status: 'passed',
       test_results: [{ name: 'Double 5', status: 'passed' }],
@@ -421,6 +461,8 @@ describe('Submission Queue — processSubmissionJob', () => {
       code: 'function solve() { return 0; }',
       language: 'javascript',
       status: 'queued',
+      created_at: new Date(),
+      ai_feedback: 'assessment:assess-test-1',
       problem: {
         entry_point: 'solve',
         public_tests: [],
@@ -428,11 +470,13 @@ describe('Submission Queue — processSubmissionJob', () => {
       },
     };
 
-    mockPrisma.codingSubmission.update.mockResolvedValue({
-      ...submission,
-      status: 'running',
-    });
     mockPrisma.codingSubmission.findUnique.mockResolvedValue(submission);
+    mockPrisma.assessment.findUnique.mockResolvedValue({
+      id: 'assess-test-1',
+      questions: { timer_metadata: { expires_at: new Date(Date.now() + 600_000).toISOString() } },
+    });
+    mockPrisma.codingSubmission.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.codingSubmission.update.mockResolvedValue({ ...submission, status: 'errored' });
 
     await expect(processSubmissionJob('sub-default')).rejects.toThrow(
       'has no configured test cases'
@@ -440,10 +484,6 @@ describe('Submission Queue — processSubmissionJob', () => {
   });
 
   it('throws when submission not found', async () => {
-    mockPrisma.codingSubmission.update.mockResolvedValue({
-      id: 'ghost-sub',
-      status: 'running',
-    });
     mockPrisma.codingSubmission.findUnique.mockResolvedValue(null);
 
     await expect(processSubmissionJob('ghost-sub')).rejects.toThrow(

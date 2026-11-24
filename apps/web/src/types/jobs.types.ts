@@ -29,5 +29,7 @@ export interface Job {
     codingProblemId: string;
     passingScore: number;
     mcqDistribution?: Record<string, number>;
+    coding_enabled?: boolean;
+    aptitude_enabled?: boolean;
   };
 }

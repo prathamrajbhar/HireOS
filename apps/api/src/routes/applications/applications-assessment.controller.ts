@@ -34,10 +34,27 @@ export async function getCodingAssessment(req: Request, res: Response) {
   ok(res, await applicationService.getCodingAssessment(req.params.id as string, req.user!.userId));
 }
 
+export async function startCodingAssessment(req: Request, res: Response) {
+  ok(res, await applicationService.startCodingAssessment(req.params.id as string, req.user!.userId));
+}
+
 export async function submitCoding(req: Request, res: Response) {
   ok(res, await applicationService.submitCoding(req.params.id as string, req.user!.userId, req.body));
 }
 
 export async function getCodingSubmission(req: Request, res: Response) {
-  ok(res, await applicationService.getCodingSubmission(req.params.submissionId as string));
+  const user = {
+    userId: req.user!.userId,
+    role: req.user!.role,
+    orgId: req.user!.orgId,
+    email: req.user!.email,
+  };
+  ok(
+    res,
+    await applicationService.getCodingSubmission(
+      req.params.id as string,
+      req.params.submissionId as string,
+      user
+    )
+  );
 }

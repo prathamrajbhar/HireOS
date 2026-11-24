@@ -25,7 +25,7 @@ export interface AssessmentResult {
   applicationId: string;
   candidateName: string;
   assessmentName: string;
-  category: 'aptitude' | 'psychometric';
+  category: 'aptitude' | 'psychometric' | 'coding';
   status: 'not_started' | 'in_progress' | 'completed';
   completedDate?: string;
   durationMinutes: number;

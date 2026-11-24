@@ -9,7 +9,7 @@ function CandidateAssessmentContent({ params }: { params: Promise<{ applicationI
   const { applicationId } = use(params);
   const searchParams = useSearchParams();
 
-  const track = searchParams.get('track') || 'aptitude';
+  const track = searchParams.get('track') || 'comprehensive';
 
   return (
     <UnifiedAssessmentSession

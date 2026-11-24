@@ -13,6 +13,7 @@ export interface TestExecutionResult {
   status: 'passed' | 'failed' | 'error' | 'timed_out';
   timeMs: number;
   errorMessage?: string;
+  hidden?: boolean;
 }
 
 export interface ExecutionSummary {

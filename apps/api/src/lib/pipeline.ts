@@ -31,12 +31,19 @@ function boolFlag(cfg: Record<string, unknown>, key: string, defaultValue: boole
   return defaultValue;
 }
 
-function enabledModalities(job: JobLike): { aptitude: boolean; coding: boolean } {
+export function enabledModalities(job: JobLike): { aptitude: boolean; coding: boolean } {
   const cfg = isObject(job.assessmentConfig) ? job.assessmentConfig : {};
   const thr = isObject(job.thresholds) ? job.thresholds : {};
+  const hasCodingProblem =
+    typeof cfg.codingProblemId === 'string' && cfg.codingProblemId.trim().length > 0;
+  const hasCodingThreshold =
+    typeof thr.coding_min_score === 'number' || typeof thr.coding_passing_score === 'number';
+
+  const codingDefault = hasCodingProblem || hasCodingThreshold;
+
   return {
     aptitude: boolFlag(cfg, 'aptitude_enabled', true) || boolFlag(thr, 'aptitude_enabled', false),
-    coding: boolFlag(cfg, 'coding_enabled', false) || boolFlag(thr, 'coding_enabled', false),
+    coding: boolFlag(cfg, 'coding_enabled', codingDefault) || boolFlag(thr, 'coding_enabled', false),
   };
 }
 

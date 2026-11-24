@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma';
 import type { Rec } from '../../lib/serializers';
-import { advanceAssessmentStage } from '../../lib/pipeline';
+import { advanceAssessmentStage, enabledModalities } from '../../lib/pipeline';
 import { notFound, forbidden } from '../../lib/http-errors';
 import type { AppUserCtx } from './application-scheduling.service';
 
@@ -125,6 +125,25 @@ export async function getApplication(appId: string, user: AppUserCtx) {
         : undefined;
     if (output && Array.isArray(output.slots)) {
       scheduledSlots = output.slots.filter((slotItem): slotItem is string => typeof slotItem === 'string');
+    }
+  }
+
+  if (application.job) {
+    const enabled = enabledModalities(application.job as any);
+    const evalRow = application.evaluations?.[0];
+    const codingDone = evalRow != null && typeof evalRow.coding_score === 'number';
+
+    if (
+      enabled.coding &&
+      !codingDone &&
+      application.status === 'interview_scheduled' &&
+      (!application.interview || application.interview.status === 'scheduled')
+    ) {
+      await prisma.application.update({
+        where: { id: application.id },
+        data: { status: 'assessment' },
+      });
+      application.status = 'assessment';
     }
   }
 

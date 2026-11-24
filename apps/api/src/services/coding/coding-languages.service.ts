@@ -1,14 +1,23 @@
-import { spawnSync } from 'child_process';
 import type { SubprocessExecutionResult } from './coding-executor.types';
 import { executeCppSubprocess, executeJavaSubprocess } from './coding-compiled.service';
+import { spawnAsyncWithTreeTermination } from './process-manager';
 
 export { executeCppSubprocess, executeJavaSubprocess };
 
-export function executePythonSubprocess(
+export async function executePythonSubprocess(
   code: string,
   entryPoint: string,
-  args: unknown[]
-): SubprocessExecutionResult {
+  args: unknown[],
+  timeoutMs: number = 3000
+): Promise<SubprocessExecutionResult> {
+  if (timeoutMs <= 0) {
+    return {
+      actual: null,
+      timedOut: true,
+      error: 'Python execution budget exhausted before launch',
+    };
+  }
+
   const runnerScript = `
 import sys, json
 
@@ -39,51 +48,65 @@ except Exception as e:
 
   try {
     const inputJson = JSON.stringify({ code, entryPoint, args });
-    let proc = spawnSync('python3', ['-c', runnerScript], {
+    const executionTimeout = timeoutMs;
+
+    let result = await spawnAsyncWithTreeTermination('python3', ['-c', runnerScript], {
       input: inputJson,
-      timeout: 3000,
-      encoding: 'utf-8',
+      timeoutMs: executionTimeout,
     });
 
-    if (proc.error && (proc.error as NodeJS.ErrnoException).code === 'ENOENT') {
-      proc = spawnSync('python', ['-c', runnerScript], {
+    if (result.error && (result.error as NodeJS.ErrnoException).code === 'ENOENT') {
+      result = await spawnAsyncWithTreeTermination('python', ['-c', runnerScript], {
         input: inputJson,
-        timeout: 3000,
-        encoding: 'utf-8',
+        timeoutMs: executionTimeout,
       });
     }
 
-    if (proc.error) {
-      if ((proc.error as NodeJS.ErrnoException).code === 'ETIMEDOUT') {
-        return { actual: null, timedOut: true, error: 'Python process timed out (3.0s limit)' };
-      }
-      return { actual: null, error: `Process error: ${proc.error.message}` };
+    if (result.timedOut) {
+      return {
+        actual: null,
+        timedOut: true,
+        error: `Python process timed out (${(executionTimeout / 1000).toFixed(1)}s limit)`,
+      };
     }
 
-    if (proc.stdout) {
-      const lines = proc.stdout.trim().split('\n');
+    if (result.error) {
+      return { actual: null, error: `Process error: ${result.error.message}` };
+    }
+
+    if (result.stdout) {
+      const lines = result.stdout.trim().split('\n');
       const lastLine = lines.pop() || '{}';
       try {
         const parsed = JSON.parse(lastLine) as { error?: string; result?: unknown };
         if (parsed.error) return { actual: null, error: parsed.error };
         return { actual: parsed.result };
       } catch (err) {
-        return { actual: null, error: `Output parsing failed: ${proc.stdout}` };
+        return { actual: null, error: `Output parsing failed: ${result.stdout}` };
       }
     }
 
-    return { actual: null, error: proc.stderr ? proc.stderr.trim() : 'Python process execution failed' };
+    return { actual: null, error: result.stderr ? result.stderr.trim() : 'Python process execution failed' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Python execution failed';
     return { actual: null, error: message };
   }
 }
 
-export function executeNodeSubprocess(
+export async function executeNodeSubprocess(
   code: string,
   entryPoint: string,
-  args: unknown[]
-): SubprocessExecutionResult {
+  args: unknown[],
+  timeoutMs: number = 3000
+): Promise<SubprocessExecutionResult> {
+  if (timeoutMs <= 0) {
+    return {
+      actual: null,
+      timedOut: true,
+      error: 'Node execution budget exhausted before launch',
+    };
+  }
+
   const runnerScript = `
 const fs = require('fs');
 
@@ -122,32 +145,38 @@ process.stdin.on('end', () => {
 
   try {
     const inputJson = JSON.stringify({ code, entryPoint, args });
-    const proc = spawnSync('node', ['-e', runnerScript], {
+    const executionTimeout = timeoutMs;
+
+    const result = await spawnAsyncWithTreeTermination('node', ['-e', runnerScript], {
       input: inputJson,
-      timeout: 3000,
-      encoding: 'utf-8',
+      timeoutMs: executionTimeout,
     });
 
-    if (proc.error) {
-      if ((proc.error as NodeJS.ErrnoException).code === 'ETIMEDOUT') {
-        return { actual: null, timedOut: true, error: 'Node process timed out (3.0s limit)' };
-      }
-      return { actual: null, error: `Process error: ${proc.error.message}` };
+    if (result.timedOut) {
+      return {
+        actual: null,
+        timedOut: true,
+        error: `Node process timed out (${(executionTimeout / 1000).toFixed(1)}s limit)`,
+      };
     }
 
-    if (proc.stdout) {
-      const lines = proc.stdout.trim().split('\n');
+    if (result.error) {
+      return { actual: null, error: `Process error: ${result.error.message}` };
+    }
+
+    if (result.stdout) {
+      const lines = result.stdout.trim().split('\n');
       const lastLine = lines.pop() || '{}';
       try {
         const parsed = JSON.parse(lastLine) as { error?: string; result?: unknown };
         if (parsed.error) return { actual: null, error: parsed.error };
         return { actual: parsed.result };
       } catch (err) {
-        return { actual: null, error: `Output parsing failed: ${proc.stdout}` };
+        return { actual: null, error: `Output parsing failed: ${result.stdout}` };
       }
     }
 
-    return { actual: null, error: proc.stderr ? proc.stderr.trim() : 'Node execution failed' };
+    return { actual: null, error: result.stderr ? result.stderr.trim() : 'Node execution failed' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Node execution failed';
     return { actual: null, error: message };

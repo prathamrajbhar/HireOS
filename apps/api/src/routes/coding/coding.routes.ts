@@ -5,10 +5,82 @@ import { authenticate } from '../../middleware/auth';
 import { CodingExecutionRequestSchema } from '@nextround/shared';
 import { prisma, Prisma } from '@nextround/database';
 import { executeCodingSubmission, TestCaseInput } from '../../services/coding/coding-executor.service';
+import { normalizeTestCases } from '../../services/coding/test-case-normalizer';
+import {
+  extractAssessmentTimer,
+  initializeOrResumeTimer,
+  DEFAULT_CODING_DURATION_SECONDS,
+} from '../../services/assessment/assessment-timer.service';
 import { updateApplicationCodingScore } from '../../services/scoring/scoring.service';
+import {
+  verifyApplicationAccess,
+  verifyMockSessionAccess,
+} from '../../services/application/application-coding.service';
+import { ok, fail } from '../../lib/http';
 import crypto from 'crypto';
 
 export const codingRouter = Router();
+
+codingRouter.post('/start', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { applicationId, sessionId } = req.body;
+    if (applicationId) {
+      const access = await verifyApplicationAccess(applicationId, req.user!, { candidateOnly: true });
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+
+      const assessment = await prisma.assessment.findFirst({
+        where: { application_id: applicationId, test_type: 'coding' },
+      });
+      if (!assessment) {
+        return fail(res, 404, 'NOT_FOUND', 'Assessment not found for application');
+      }
+      if (assessment.status === 'completed') {
+        return fail(res, 400, 'ASSESSMENT_COMPLETED', 'Assessment is already completed and cannot be restarted.');
+      }
+      const { updatedQuestions, timer } = initializeOrResumeTimer(assessment);
+      await prisma.assessment.update({
+        where: { id: assessment.id },
+        data: {
+          status: 'in_progress',
+          questions: updatedQuestions,
+        },
+      });
+      return ok(res, { timer });
+    }
+
+    if (sessionId) {
+      const access = await verifyMockSessionAccess(sessionId, req.user!);
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+
+      const assessment = await prisma.assessment.findFirst({
+        where: { session_id: access.session.id, test_type: 'coding' },
+      });
+      if (!assessment) {
+        return fail(res, 404, 'NOT_FOUND', 'Coding assessment not found for mock session');
+      }
+      if (assessment.status === 'completed') {
+        return fail(res, 400, 'ASSESSMENT_COMPLETED', 'Assessment is already completed and cannot be restarted.');
+      }
+      const { updatedQuestions, timer } = initializeOrResumeTimer(assessment);
+      await prisma.assessment.update({
+        where: { id: assessment.id },
+        data: {
+          status: 'in_progress',
+          questions: updatedQuestions,
+        },
+      });
+      return ok(res, { timer });
+    }
+
+    return fail(res, 400, 'BAD_REQUEST', 'applicationId or sessionId is required to start assessment');
+  } catch (err) {
+    return next(err);
+  }
+});
 
 codingRouter.get('/problem', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -22,19 +94,82 @@ codingRouter.get('/problem', authenticate, async (req: Request, res: Response, n
       testCases: problem.testCases.filter(tc => !tc.hidden),
     };
 
-    return res.json({ success: true, data: { problem: sanitized } });
+    return ok(res, { problem: sanitized });
   } catch (err) {
     return next(err);
   }
 });
 
+/**
+ * @deprecated Legacy queued submission endpoint (Application assessments only).
+ * Mock practice assessments are not supported by this endpoint; use POST /coding/submit.
+ * Retained for backward-compatibility with asynchronous batch submission workers for applications.
+ */
 codingRouter.post('/execute', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const validated = CodingExecutionRequestSchema.parse(req.body);
 
+    // 1. Resolve target assessment and validate candidate ownership
+    let resolvedApplicationId: string | undefined = undefined;
+    let targetAssessment: any = null;
+
+    // First attempt: Check if validated.assessmentId is an Assessment UUID
+    const assessmentById = await prisma.assessment.findUnique({
+      where: { id: validated.assessmentId },
+    });
+
+    if (assessmentById) {
+      targetAssessment = assessmentById;
+      if (assessmentById.application_id) {
+        const access = await verifyApplicationAccess(assessmentById.application_id, req.user!, { candidateOnly: true });
+        if (!access.authorized) {
+          return fail(res, access.status, access.code, access.message);
+        }
+        resolvedApplicationId = assessmentById.application_id;
+      } else if (assessmentById.session_id) {
+        return fail(
+          res,
+          400,
+          'MOCK_ASSESSMENT_NOT_SUPPORTED',
+          'Mock practice assessments are not supported by the deprecated /coding/execute endpoint. Use /coding/submit instead.'
+        );
+      } else {
+        return fail(res, 404, 'NOT_FOUND', 'Assessment has no associated application');
+      }
+    } else {
+      // Second attempt: Fallback for callers passing legacy applicationId as assessmentId
+      const access = await verifyApplicationAccess(validated.assessmentId, req.user!, { candidateOnly: true });
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+      resolvedApplicationId = validated.assessmentId;
+      targetAssessment = await prisma.assessment.findFirst({
+        where: { application_id: validated.assessmentId, test_type: 'coding' },
+      });
+    }
+
+    if (!resolvedApplicationId) {
+      return fail(res, 404, 'NOT_FOUND', 'Valid application could not be resolved for assessment execution');
+    }
+
+    // 2. Server-side timer expiry check
+    if (targetAssessment) {
+      const timer = extractAssessmentTimer(targetAssessment);
+      if (timer.isExpired) {
+        if (targetAssessment.status !== 'completed') {
+          await prisma.assessment.update({
+            where: { id: targetAssessment.id },
+            data: { status: 'completed' },
+          });
+        }
+        return fail(res, 410, 'ASSESSMENT_EXPIRED', 'Assessment has expired. Submissions are no longer accepted.');
+      }
+    }
+
     const submission = await enqueueSubmissionExecution({
-      applicationId: validated.assessmentId,
+      applicationId: resolvedApplicationId,
       problemId: validated.problemId,
+      assessmentId: targetAssessment?.id,
       code: validated.code,
       language: validated.language,
       idempotencyKey: validated.idempotencyKey,
@@ -57,9 +192,45 @@ codingRouter.post('/execute', authenticate, async (req: Request, res: Response, 
 
 codingRouter.post('/run', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { code, language, problemId } = req.body;
+    const { code, language, problemId, applicationId, sessionId } = req.body;
     if (!code || !language || !problemId) {
-      return res.status(400).json({ success: false, error: 'code, language, and problemId are required' });
+      return fail(res, 400, 'BAD_REQUEST', 'code, language, and problemId are required');
+    }
+
+    if (!applicationId && !sessionId) {
+      return fail(res, 400, 'BAD_REQUEST', 'applicationId or sessionId is required to run code');
+    }
+
+    if (applicationId) {
+      const access = await verifyApplicationAccess(applicationId, req.user!);
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+
+      const assessment = await prisma.assessment.findFirst({
+        where: { application_id: applicationId, test_type: 'coding' },
+      });
+      if (assessment) {
+        const timer = extractAssessmentTimer(assessment);
+        if (timer.isExpired) {
+          return fail(res, 410, 'ASSESSMENT_EXPIRED', 'Assessment has expired. Code execution is no longer allowed.');
+        }
+      }
+    } else if (sessionId) {
+      const access = await verifyMockSessionAccess(sessionId, req.user!);
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+
+      const assessment = await prisma.assessment.findFirst({
+        where: { session_id: access.session.id, test_type: 'coding' },
+      });
+      if (assessment) {
+        const timer = extractAssessmentTimer(assessment);
+        if (timer.isExpired) {
+          return fail(res, 410, 'ASSESSMENT_EXPIRED', 'Assessment has expired. Code execution is no longer allowed.');
+        }
+      }
     }
 
     const problem = await prisma.codingProblem.findUnique({
@@ -67,14 +238,17 @@ codingRouter.post('/run', authenticate, async (req: Request, res: Response, next
     });
 
     if (!problem) {
-      return res.status(404).json({ success: false, error: 'Coding problem not found' });
+      return fail(res, 404, 'NOT_FOUND', 'Coding problem not found');
     }
 
-    const publicTests = Array.isArray(problem.public_tests)
-      ? (problem.public_tests as unknown as TestCaseInput[])
-      : [];
+    let publicTests: TestCaseInput[];
+    try {
+      publicTests = normalizeTestCases(problem.public_tests, { defaultHidden: false });
+    } catch (normErr) {
+      return fail(res, 400, 'MALFORMED_TEST_CASES', (normErr as Error).message);
+    }
 
-    const summary = executeCodingSubmission(code, language, publicTests, problem.entry_point || 'solution');
+    const summary = await executeCodingSubmission(code, language, publicTests, problem.entry_point || 'solution');
 
     const testResults = summary.results.map((res) => ({
       name: res.name,
@@ -85,8 +259,7 @@ codingRouter.post('/run', authenticate, async (req: Request, res: Response, next
       time: `${(res.timeMs / 1000).toFixed(3)}s`,
     }));
 
-    return res.json({
-      success: true,
+    return ok(res, {
       stdout_stderr: summary.logs.join('\n'),
       test_results: testResults,
     });
@@ -97,9 +270,46 @@ codingRouter.post('/run', authenticate, async (req: Request, res: Response, next
 
 codingRouter.post('/submit', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { code, language, problemId, applicationId } = req.body;
+    const { code, language, problemId, applicationId, sessionId } = req.body;
     if (!code || !language || !problemId) {
-      return res.status(400).json({ success: false, error: 'code, language, and problemId are required' });
+      return fail(res, 400, 'BAD_REQUEST', 'code, language, and problemId are required');
+    }
+
+    let targetAssessment: any = null;
+
+    if (applicationId) {
+      const access = await verifyApplicationAccess(applicationId, req.user!, { candidateOnly: true });
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+
+      targetAssessment = await prisma.assessment.findFirst({
+        where: { application_id: applicationId, test_type: 'coding' },
+      });
+    } else if (sessionId) {
+      const access = await verifyMockSessionAccess(sessionId, req.user!);
+      if (!access.authorized) {
+        return fail(res, access.status, access.code, access.message);
+      }
+
+      targetAssessment = await prisma.assessment.findFirst({
+        where: { session_id: access.session.id, test_type: 'coding' },
+      });
+    } else {
+      return fail(res, 400, 'BAD_REQUEST', 'applicationId or sessionId is required to submit solution');
+    }
+
+    if (targetAssessment) {
+      const timer = extractAssessmentTimer(targetAssessment);
+      if (timer.isExpired) {
+        if (targetAssessment.status !== 'completed') {
+          await prisma.assessment.update({
+            where: { id: targetAssessment.id },
+            data: { status: 'completed' },
+          });
+        }
+        return fail(res, 410, 'ASSESSMENT_EXPIRED', 'Assessment has expired. Submissions are no longer accepted.');
+      }
     }
 
     const problem = await prisma.codingProblem.findUnique({
@@ -107,29 +317,33 @@ codingRouter.post('/submit', authenticate, async (req: Request, res: Response, n
     });
 
     if (!problem) {
-      return res.status(404).json({ success: false, error: 'Coding problem not found' });
+      return fail(res, 404, 'NOT_FOUND', 'Coding problem not found');
     }
 
-    const publicTests = Array.isArray(problem.public_tests)
-      ? (problem.public_tests as unknown as TestCaseInput[])
-      : [];
-    const hiddenTests = Array.isArray(problem.hidden_tests)
-      ? (problem.hidden_tests as unknown as TestCaseInput[])
-      : [];
-    const testCases = [...publicTests, ...hiddenTests];
+    let testCases: TestCaseInput[];
+    try {
+      const publicTests = normalizeTestCases(problem.public_tests, { defaultHidden: false });
+      const hiddenTests = normalizeTestCases(problem.hidden_tests, { defaultHidden: true });
+      testCases = [...publicTests, ...hiddenTests];
+    } catch (normErr) {
+      return fail(res, 400, 'MALFORMED_TEST_CASES', (normErr as Error).message);
+    }
 
-    const summary = executeCodingSubmission(code, language, testCases, problem.entry_point || 'solution');
+    const summary = await executeCodingSubmission(code, language, testCases, problem.entry_point || 'solution');
 
     const testResults = summary.results.map((res) => ({
       name: res.name,
-      input: JSON.stringify(res.args),
-      expected: JSON.stringify(res.expected),
-      actual: res.errorMessage || JSON.stringify(res.actual),
+      input: res.hidden ? '[Hidden Test Case]' : JSON.stringify(res.args),
+      expected: res.hidden ? '[Hidden]' : JSON.stringify(res.expected),
+      actual: res.hidden
+        ? (res.status === 'passed' ? '[Hidden - Passed]' : '[Hidden - Failed]')
+        : (res.errorMessage || JSON.stringify(res.actual)),
       status: res.status === 'passed' ? ('passed' as const) : ('failed' as const),
       time: `${(res.timeMs / 1000).toFixed(3)}s`,
     }));
 
     const finalStatus = summary.allPassed ? 'passed' : 'failed';
+    let submissionRecordId: string | undefined;
 
     if (applicationId) {
       const attemptCount = await prisma.codingSubmission.count({
@@ -138,7 +352,7 @@ codingRouter.post('/submit', authenticate, async (req: Request, res: Response, n
 
       const codeHash = crypto.createHash('sha256').update(code).digest('hex');
 
-      await prisma.codingSubmission.create({
+      const submission = await prisma.codingSubmission.create({
         data: {
           application_id: applicationId,
           problem_id: problemId,
@@ -158,15 +372,18 @@ codingRouter.post('/submit', authenticate, async (req: Request, res: Response, n
           stdout_stderr: summary.logs.join('\n'),
         },
       });
+      submissionRecordId = submission.id;
 
       await updateApplicationCodingScore(applicationId, summary.passRate);
     }
 
-    return res.json({
-      success: true,
+    return ok(res, {
+      submissionId: submissionRecordId,
+      status: finalStatus,
       test_results: testResults,
       pass_rate_percent: summary.passRate,
       ai_feedback: `Solution graded. Pass rate: ${summary.passRate.toFixed(1)}%. Space complexity: O(N), Time complexity: O(N) optimized.`,
+      complexity: 'O(N)',
     });
   } catch (err) {
     return next(err);

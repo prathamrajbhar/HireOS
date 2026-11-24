@@ -133,7 +133,7 @@ export function UnifiedStageRenderer({
           recordingActive={recordingActive}
           recordingDurationMs={recordingDurationMs}
           onComplete={(score) => {
-            if (track === 'comprehensive') {
+            if (track === 'comprehensive' && !applicationId) {
               onStageComplete(score, {
                 completedStageName: 'Live Coding Round',
                 completedScore: score,

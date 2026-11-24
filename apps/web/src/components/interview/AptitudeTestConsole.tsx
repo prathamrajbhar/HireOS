@@ -74,10 +74,10 @@ export function AptitudeTestConsole({
   const displayResumeFullscreen = onResumeFullscreen ?? localResumeFS;
 
   useEffect(() => {
-    if (submitted && typeof document !== 'undefined' && document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+    if (submitted && proctoringClient) {
+      proctoringClient.setSuppressViolations(true);
     }
-  }, [submitted]);
+  }, [submitted, proctoringClient]);
 
   if (submitted) {
     const isEliminated = displayStrikeCount >= MAX_STRIKES;
