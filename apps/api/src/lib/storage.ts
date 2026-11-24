@@ -17,9 +17,20 @@ const isLocalStorage =
   process.env.AWS_ENDPOINT_URL.includes('localhost') ||
   process.env.AWS_ENDPOINT_URL.includes('127.0.0.1');
 
-const uploadsDir = path.resolve(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+const primaryUploadsDir = path.resolve(__dirname, '../../uploads');
+const fallbackUploadsDir = path.resolve(__dirname, '../../../../uploads');
+const cwdUploadsDir = path.resolve(process.cwd(), 'uploads');
+const cwdAppsApiUploadsDir = path.resolve(process.cwd(), 'apps/api/uploads');
+
+const targetDirs = Array.from(new Set([primaryUploadsDir, fallbackUploadsDir, cwdUploadsDir, cwdAppsApiUploadsDir]));
+for (const d of targetDirs) {
+  try {
+    if (!fs.existsSync(d)) {
+      fs.mkdirSync(d, { recursive: true });
+    }
+  } catch {
+    // ignore
+  }
 }
 
 const endpoint = process.env.AWS_ENDPOINT_URL || undefined;
@@ -72,12 +83,18 @@ export async function uploadFile(
   const normalizedKey = normalizeKey(key);
 
   if (isLocalStorage) {
-    const filePath = path.join(uploadsDir, normalizedKey);
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    for (const d of targetDirs) {
+      try {
+        const filePath = path.join(d, normalizedKey);
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        await fs.promises.writeFile(filePath, body);
+      } catch {
+        // ignore secondary target failure
+      }
     }
-    await fs.promises.writeFile(filePath, body);
     const appUrl = (process.env.API_BASE_URL || 'http://localhost:4000/api/v1').replace(/\/api\/v1\/?$/, '');
     return `${appUrl}/uploads/${normalizedKey}`;
   }
@@ -135,9 +152,15 @@ export async function deleteFile(key: string): Promise<void> {
   const normalizedKey = normalizeKey(key);
 
   if (isLocalStorage) {
-    const filePath = path.join(uploadsDir, normalizedKey);
-    if (fs.existsSync(filePath)) {
-      await fs.promises.unlink(filePath).catch(() => {});
+    for (const d of targetDirs) {
+      try {
+        const filePath = path.join(d, normalizedKey);
+        if (fs.existsSync(filePath)) {
+          await fs.promises.unlink(filePath).catch(() => {});
+        }
+      } catch {
+        // ignore
+      }
     }
     return;
   }

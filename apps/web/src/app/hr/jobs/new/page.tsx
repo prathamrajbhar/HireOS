@@ -133,6 +133,8 @@ export default function HrCreateJob() {
             rubric={form.rubric}
             stages={form.stages}
             minScore={form.minScore}
+            orgName={form.orgName}
+            orgLogo={form.orgLogo}
           />
         </div>
       </div>

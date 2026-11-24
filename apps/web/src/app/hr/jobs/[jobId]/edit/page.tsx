@@ -66,6 +66,8 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
               setMaxSalary={form.setMaxSalary}
               status={form.status}
               setStatus={form.setStatus}
+              orgName={form.orgName}
+              orgLogo={form.orgLogo}
             />
           </section>
 

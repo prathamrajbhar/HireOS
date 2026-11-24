@@ -3,14 +3,16 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import { UploadCloud, Check, Loader2, X, Building2 } from '@/lib/lucide-google-icons';
+import { CompanyLogo } from '@/components/ui';
 import { apiClient } from '@/lib/apiClient';
 
 interface CompanyLogoUploadProps {
   logoUrl?: string;
   onLogoChange: (url?: string) => void;
+  companyName?: string;
 }
 
-export function CompanyLogoUpload({ logoUrl, onLogoChange }: CompanyLogoUploadProps) {
+export function CompanyLogoUpload({ logoUrl, onLogoChange, companyName }: CompanyLogoUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -95,23 +97,15 @@ export function CompanyLogoUpload({ logoUrl, onLogoChange }: CompanyLogoUploadPr
       />
 
       <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md">
-        <div className="relative h-16 w-16 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-950 flex items-center justify-center shrink-0 shadow-inner">
-          {activeDisplayUrl && !imageError ? (
-            <Image
-              src={activeDisplayUrl}
-              alt="Company Logo"
-              fill
-              sizes="64px"
-              className="object-contain p-1.5"
-              unoptimized
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <Building2 className="h-7 w-7 text-slate-600" />
-          )}
-
+        <div className="relative shrink-0">
+          <CompanyLogo
+            name={companyName || 'Company'}
+            logoUrl={activeDisplayUrl && !imageError ? activeDisplayUrl : undefined}
+            size="xl"
+            className="rounded-2xl shadow-inner border-slate-700/80"
+          />
           {uploading && (
-            <div className="absolute inset-0 bg-slate-950/80 flex items-center justify-center backdrop-blur-xs">
+            <div className="absolute inset-0 bg-slate-950/80 rounded-2xl flex items-center justify-center backdrop-blur-xs">
               <Loader2 className="h-5 w-5 animate-spin text-orange-400" />
             </div>
           )}

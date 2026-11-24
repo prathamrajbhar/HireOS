@@ -30,6 +30,8 @@ export function useEditJobForm(jobId: string) {
   const [minSalary, setMinSalary] = useState(1300000);
   const [maxSalary, setMaxSalary] = useState(1800000);
   const [status, setStatus] = useState<'active' | 'draft' | 'closed'>('active');
+  const [orgName, setOrgName] = useState<string>('');
+  const [orgLogo, setOrgLogo] = useState<string>('');
 
   const [jd, setJd] = useState('');
   const [assisting, setAssisting] = useState(false);
@@ -74,6 +76,8 @@ export function useEditJobForm(jobId: string) {
           setLocationType(normalizeLocationType(data.location));
           setExperienceLevel(normalizeExperienceLevel(data.experienceLevel));
           setStatus(data.status === 'published' ? 'active' : (data.status as 'active' | 'draft' | 'closed') || 'active');
+          if (data.orgName) setOrgName(data.orgName);
+          if (data.orgLogo) setOrgLogo(data.orgLogo);
 
           const { minSalary: minS, maxSalary: maxS } = parseSalaryRange(data.salary);
           setMinSalary(minS);
@@ -317,5 +321,7 @@ export function useEditJobForm(jobId: string) {
     handleGenerateJd,
     handleAiAssist,
     handleUpdate,
+    orgName,
+    orgLogo,
   };
 }
