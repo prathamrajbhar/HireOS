@@ -12,6 +12,8 @@ import { CodingSubmissionSummary } from './coding/CodingSubmissionSummary';
 import { ProctoringWarningModal } from './ProctoringWarningModal';
 import { CodingStartCard } from './coding/CodingStartCard';
 import { RecordingBadge } from './RecordingBadge';
+import { DemoAiSolveButton } from './coding/DemoAiSolveButton';
+import { siteConfig } from '@/lib/config';
 import type { CodingConsoleProps } from './coding/codingConsole.types';
 
 export default function CodingAssessmentConsole({
@@ -187,6 +189,10 @@ export default function CodingAssessmentConsole({
           onReview={() => setSubmitted(false)}
           onComplete={onComplete}
         />
+      )}
+
+      {siteConfig.demoAiSolve && !submitted && (
+        <DemoAiSolveButton problemId={problem.id} language={language} onSolution={setCode} />
       )}
 
       <ProctoringWarningModal

@@ -5,12 +5,8 @@ import type {
   SubprocessExecutionResult,
 } from './coding-executor.types';
 import { compareOutputs } from './coding-executor.types';
-import {
-  executePythonSubprocess,
-  executeNodeSubprocess,
-  executeCppSubprocess,
-  executeJavaSubprocess,
-} from './coding-languages.service';
+import { executePythonSubprocess, executeNodeSubprocess } from './coding-languages.service';
+import { prepareCompiledRunner, type CompiledRunner } from './coding-compiled.service';
 import { normalizeTestCases } from './test-case-normalizer';
 
 export * from './coding-executor.types';
@@ -18,26 +14,30 @@ export * from './test-case-normalizer';
 
 const RUNNER_VERSION = '2.1.0-async-sandbox';
 
-async function runSubprocess(
-  normalizedLang: string,
+const PYTHON_ALIASES = new Set(['python', 'py', 'python3']);
+const JAVASCRIPT_ALIASES = new Set(['javascript', 'js']);
+const TYPESCRIPT_ALIASES = new Set(['typescript', 'ts']);
+const CPP_ALIASES = new Set(['cpp', 'c++']);
+const COMPILE_BUDGET_CAP_MS = 20_000;
+
+export const SUPPORTED_LANGUAGES = [
+  ...PYTHON_ALIASES,
+  ...JAVASCRIPT_ALIASES,
+  ...TYPESCRIPT_ALIASES,
+  ...CPP_ALIASES,
+  'java',
+];
+
+async function runInterpretedCase(
+  language: string,
   code: string,
   entryPoint: string,
   args: unknown[],
-  timeoutMs: number = 3000
+  timeoutMs: number
 ): Promise<SubprocessExecutionResult> {
-  if (normalizedLang === 'python' || normalizedLang === 'py' || normalizedLang === 'python3') {
-    return await executePythonSubprocess(code, entryPoint, args, timeoutMs);
-  }
-  if (normalizedLang === 'javascript' || normalizedLang === 'typescript' || normalizedLang === 'js' || normalizedLang === 'ts') {
-    return await executeNodeSubprocess(code, entryPoint, args, timeoutMs);
-  }
-  if (normalizedLang === 'cpp' || normalizedLang === 'c++') {
-    return await executeCppSubprocess(code, entryPoint, args, timeoutMs);
-  }
-  if (normalizedLang === 'java') {
-    return await executeJavaSubprocess(code, entryPoint, args, timeoutMs);
-  }
-  return await executePythonSubprocess(code, entryPoint, args, timeoutMs);
+  if (PYTHON_ALIASES.has(language)) return executePythonSubprocess(code, entryPoint, args, timeoutMs);
+  const isTs = TYPESCRIPT_ALIASES.has(language);
+  return executeNodeSubprocess(code, entryPoint, args, timeoutMs, isTs);
 }
 
 export async function executeCodingSubmission(
@@ -65,6 +65,18 @@ export async function executeCodingSubmission(
     };
   }
 
+  if (!SUPPORTED_LANGUAGES.includes(normalizedLang)) {
+    return {
+      results: [],
+      passRate: 0,
+      passRateRatio: 0,
+      allPassed: false,
+      totalTimeMs: 0,
+      logs: [...logs, `[Execution Error] Unsupported language '${language}'. Supported: python, javascript, typescript, java, cpp.`],
+      runnerVersion: RUNNER_VERSION,
+    };
+  }
+
   const safeTestCases = normalizeTestCases(testCases);
   const results: TestExecutionResult[] = [];
   let passedCount = 0;
@@ -72,10 +84,43 @@ export async function executeCodingSubmission(
   const overallStartNs = process.hrtime.bigint();
   let deadlineExceeded = false;
 
+  // Compiled languages are built once; each test case then only pays for process start-up.
+  let compiled: CompiledRunner | null = null;
+  let buildFailure: { error: string; timedOut?: boolean } | null = null;
+  const isCompiled = CPP_ALIASES.has(normalizedLang) || normalizedLang === 'java';
+  if (isCompiled && safeTestCases.length > 0) {
+    const compileBudgetMs = Math.min(COMPILE_BUDGET_CAP_MS, maxExecutionTimeMs);
+    const prepared = await prepareCompiledRunner(
+      normalizedLang === 'java' ? 'java' : 'cpp',
+      code,
+      entryPoint,
+      safeTestCases,
+      compileBudgetMs
+    );
+    if ('runner' in prepared) compiled = prepared.runner;
+    else buildFailure = prepared;
+  }
+  const buildElapsedMs = Number(process.hrtime.bigint() - overallStartNs) / 1_000_000;
+
+  try {
   for (let index = 0; index < safeTestCases.length; index++) {
     const testCase = safeTestCases[index];
     const testCaseName = testCase.name || `Case ${index + 1}`;
     const args = Array.isArray(testCase.args) ? testCase.args : [];
+
+    if (buildFailure) {
+      results.push({
+        name: testCaseName,
+        args: testCase.args,
+        expected: testCase.expected,
+        actual: buildFailure.error,
+        status: buildFailure.timedOut ? 'timed_out' : 'error',
+        timeMs: 0,
+        errorMessage: buildFailure.error,
+        hidden: Boolean(testCase.hidden),
+      });
+      continue;
+    }
 
     // Check if overall execution deadline has already expired before starting the test case
     const currentOverallElapsedMs = Number(process.hrtime.bigint() - overallStartNs) / 1_000_000;
@@ -118,7 +163,9 @@ export async function executeCodingSubmission(
     let executionResult: SubprocessExecutionResult;
 
     try {
-      executionResult = await runSubprocess(normalizedLang, code, entryPoint, args, testTimeoutMs);
+      executionResult = compiled
+        ? await compiled.run(index, testTimeoutMs)
+        : await runInterpretedCase(normalizedLang, code, entryPoint, args, testTimeoutMs);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Execution error';
       executionResult = { actual: null, error: message };
@@ -154,6 +201,10 @@ export async function executeCodingSubmission(
     });
   }
 
+  } finally {
+    compiled?.dispose();
+  }
+
   const passRateRatio = safeTestCases.length > 0 ? passedCount / safeTestCases.length : 0;
   const passRate = Math.round(passRateRatio * 100);
   const allPassed = safeTestCases.length > 0 && passedCount === safeTestCases.length;
@@ -161,6 +212,7 @@ export async function executeCodingSubmission(
   if (deadlineExceeded) {
     logs.push(`[Execution Timed Out] Overall execution deadline of ${(maxExecutionTimeMs / 1000).toFixed(1)}s exceeded.`);
   }
+  if (isCompiled) logs.push(`[Build] ${buildFailure ? 'failed' : 'ok'} in ${buildElapsedMs.toFixed(0)}ms`);
   logs.push(`[Execution Complete] ${passedCount}/${safeTestCases.length} test cases passed (${passRate}%).`);
 
   return {

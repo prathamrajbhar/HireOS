@@ -1,184 +1,170 @@
 import type { SubprocessExecutionResult } from './coding-executor.types';
-import { executeCppSubprocess, executeJavaSubprocess } from './coding-compiled.service';
 import { spawnAsyncWithTreeTermination } from './process-manager';
+import { ERROR_MARKER, RESULT_MARKER, candidateMethodNames, parseMarkedResult } from './coding-harness';
 
-export { executeCppSubprocess, executeJavaSubprocess };
+const PYTHON_RUNNER = `
+import sys, json, inspect
 
-export async function executePythonSubprocess(
-  code: string,
-  entryPoint: string,
-  args: unknown[],
-  timeoutMs: number = 3000
-): Promise<SubprocessExecutionResult> {
-  if (timeoutMs <= 0) {
-    return {
-      actual: null,
-      timedOut: true,
-      error: 'Python execution budget exhausted before launch',
-    };
-  }
+MARK = ${JSON.stringify(RESULT_MARKER)}
+real_out = sys.stdout
+sys.stdout = sys.stderr  # candidate prints must never corrupt the result channel
+sys.setrecursionlimit(20000)
 
-  const runnerScript = `
-import sys, json
+def _default(o):
+    if isinstance(o, (set, frozenset)):
+        return sorted(o)
+    return str(o)
+
+def emit(payload):
+    real_out.write(MARK + json.dumps(payload, default=_default, allow_nan=False) + "\\n")
+    real_out.flush()
+
+def fail(message):
+    real_out.write(MARK + json.dumps(None) + "\\n")
+    real_out.write("@@NR_ERROR@@" + message + "\\n")
+    real_out.flush()
 
 payload = json.loads(sys.stdin.read())
-code_str = payload["code"]
-entry_fn = payload["entryPoint"]
+names = payload["names"]
 fn_args = payload["args"]
 
-scope = {}
+scope = {"__name__": "candidate_solution"}
 try:
-    exec(code_str, scope)
-    fn = scope.get(entry_fn) or globals().get(entry_fn)
-    if not fn:
-        for val in scope.values():
-            if callable(val) and not getattr(val, "__name__", "").startswith("_"):
-                fn = val
-                break
+    exec(compile(payload["code"], "<candidate>", "exec"), scope)
 
-    if not fn:
-        print(json.dumps({"error": f"Entry point function '{entry_fn}' not found in candidate code."}))
-        sys.exit(0)
+    fn = next((scope[n] for n in names if callable(scope.get(n))), None)
 
-    res = fn(*fn_args)
-    print(json.dumps({"result": res}))
-except Exception as e:
-    print(json.dumps({"error": f"{type(e).__name__}: {str(e)}"}))
+    if fn is None and inspect.isclass(scope.get("Solution")):
+        inst = scope["Solution"]()
+        fn = next((getattr(inst, n) for n in names if callable(getattr(inst, n, None))), None)
+
+    if fn is None:
+        user_fns = [v for v in scope.values() if inspect.isfunction(v) and v.__code__.co_filename == "<candidate>"]
+        if len(user_fns) == 1:
+            fn = user_fns[0]
+
+    if fn is None:
+        fail("Entry point function '" + names[0] + "' not found in your code. Keep the function name from the starter code.")
+    else:
+        emit(fn(*fn_args))
+except BaseException as e:
+    fail(type(e).__name__ + ": " + str(e))
 `;
 
+const NODE_RUNNER = `
+const MARK = ${JSON.stringify(RESULT_MARKER)};
+let raw = '';
+process.stdin.on('data', (c) => { raw += c; });
+process.stdin.on('end', async () => {
+  const realLog = console.log;
+  console.log = console.info = console.debug = (...a) => console.error(...a);
+  const out = (value, error) => {
+    let line = MARK + JSON.stringify(value === undefined ? null : value) + '\\n';
+    if (error) line += '@@NR_ERROR@@' + error + '\\n';
+    process.stdout.write(line);
+  };
   try {
-    const inputJson = JSON.stringify({ code, entryPoint, args });
-    const executionTimeout = timeoutMs;
-
-    let result = await spawnAsyncWithTreeTermination('python3', ['-c', runnerScript], {
-      input: inputJson,
-      timeoutMs: executionTimeout,
-    });
-
-    if (result.error && (result.error as NodeJS.ErrnoException).code === 'ENOENT') {
-      result = await spawnAsyncWithTreeTermination('python', ['-c', runnerScript], {
-        input: inputJson,
-        timeoutMs: executionTimeout,
-      });
-    }
-
-    if (result.timedOut) {
-      return {
-        actual: null,
-        timedOut: true,
-        error: `Python process timed out (${(executionTimeout / 1000).toFixed(1)}s limit)`,
-      };
-    }
-
-    if (result.error) {
-      return { actual: null, error: `Process error: ${result.error.message}` };
-    }
-
-    if (result.stdout) {
-      const lines = result.stdout.trim().split('\n');
-      const lastLine = lines.pop() || '{}';
-      try {
-        const parsed = JSON.parse(lastLine) as { error?: string; result?: unknown };
-        if (parsed.error) return { actual: null, error: parsed.error };
-        return { actual: parsed.result };
-      } catch (err) {
-        return { actual: null, error: `Output parsing failed: ${result.stdout}` };
+    const payload = JSON.parse(raw);
+    let source = payload.code;
+    if (payload.typescript) {
+      const mod = require('node:module');
+      if (typeof mod.stripTypeScriptTypes === 'function') {
+        source = mod.stripTypeScriptTypes(source, { mode: 'strip' });
       }
     }
+    const names = payload.names;
+    const lookups = names.map((n) => 'typeof ' + n + ' !== "undefined" ? ' + n + ' : undefined').join(', ');
+    const solutionClass = 'typeof Solution !== "undefined" ? Solution : undefined';
+    const exportsObj = {};
+    const moduleObj = { exports: exportsObj };
+    const body = source + '\\nreturn { found: [' + lookups + '], cls: ' + solutionClass + ' };';
+    const found = new Function('exports', 'module', 'require', body)(exportsObj, moduleObj, require);
 
-    return { actual: null, error: result.stderr ? result.stderr.trim() : 'Python process execution failed' };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Python execution failed';
-    return { actual: null, error: message };
-  }
-}
-
-export async function executeNodeSubprocess(
-  code: string,
-  entryPoint: string,
-  args: unknown[],
-  timeoutMs: number = 3000
-): Promise<SubprocessExecutionResult> {
-  if (timeoutMs <= 0) {
-    return {
-      actual: null,
-      timedOut: true,
-      error: 'Node execution budget exhausted before launch',
-    };
-  }
-
-  const runnerScript = `
-const fs = require('fs');
-
-let rawPayload = '';
-process.stdin.on('data', chunk => { rawPayload += chunk; });
-process.stdin.on('end', () => {
-  try {
-    const payload = JSON.parse(rawPayload);
-    const codeStr = payload.code;
-    const entryFn = payload.entryPoint;
-    const fnArgs = payload.args;
-
-    const cleanCode = codeStr
-      .replace(/((?:const|let|var)\\s+[a-zA-Z0-9_]+)\\s*:\\s*[a-zA-Z0-9_<>\\[\\]\\s,|&{}]+(?=\\s*=)/g, '$1')
-      .replace(/([a-zA-Z0-9_]+)\\s*:\\s*[a-zA-Z0-9_<>\\[\\]\\s,|&{}]+(?=[,\\)])/g, '$1')
-      .replace(/\\)\\s*:\\s*[a-zA-Z0-9_<>\\[\\]\\s,|&{}]+(?=\\s*\\{)/g, ')')
-      .replace(/\\s+as\\s+[a-zA-Z0-9_<>\\[\\]]+/g, '');
-
-    const exports = {};
-    const module = { exports };
-    const fnWrapper = new Function('exports', 'module', 'require', cleanCode + '\\nreturn typeof ' + entryFn + ' !== "undefined" ? ' + entryFn + ' : (module.exports.' + entryFn + ' || module.exports);');
-    const fn = fnWrapper(exports, module, require);
-
-    if (typeof fn !== 'function') {
-      console.log(JSON.stringify({ error: "Entry point function '" + entryFn + "' not found." }));
-      process.exit(0);
+    let fn = found.found.find((f) => typeof f === 'function');
+    if (!fn) fn = names.map((n) => moduleObj.exports[n] || exportsObj[n]).find((f) => typeof f === 'function');
+    if (!fn && typeof found.cls === 'function') {
+      const inst = new found.cls();
+      const m = names.find((n) => typeof inst[n] === 'function');
+      if (m) fn = inst[m].bind(inst);
     }
-
-    const result = fn(...fnArgs);
-    console.log(JSON.stringify({ result }));
+    if (!fn) {
+      out(null, "Entry point function '" + names[0] + "' not found in your code. Keep the function name from the starter code.");
+      return;
+    }
+    out(await fn(...payload.args));
   } catch (err) {
-    console.log(JSON.stringify({ error: err.name + ': ' + err.message }));
+    out(null, (err && err.name ? err.name : 'Error') + ': ' + (err && err.message ? err.message : String(err)));
   }
 });
 `;
 
-  try {
-    const inputJson = JSON.stringify({ code, entryPoint, args });
-    const executionTimeout = timeoutMs;
+function interpretMarkedOutput(stdout: string, stderr: string, label: string): SubprocessExecutionResult {
+  const errAt = stdout.lastIndexOf(ERROR_MARKER);
+  if (errAt !== -1) {
+    const end = stdout.indexOf('\n', errAt);
+    return { actual: null, error: stdout.slice(errAt + ERROR_MARKER.length, end === -1 ? undefined : end) };
+  }
 
-    const result = await spawnAsyncWithTreeTermination('node', ['-e', runnerScript], {
-      input: inputJson,
-      timeoutMs: executionTimeout,
-    });
+  const parsed = parseMarkedResult(stdout);
+  if (parsed) return parsed;
+
+  const detail = stderr.trim().split('\n').slice(-4).join('\n');
+  return { actual: null, error: detail || `${label} process produced no result` };
+}
+
+async function runInterpreted(
+  label: string,
+  commands: string[],
+  argsFor: (cmd: string) => string[],
+  payload: Record<string, unknown>,
+  timeoutMs: number
+): Promise<SubprocessExecutionResult> {
+  if (timeoutMs <= 0) {
+    return { actual: null, timedOut: true, error: `${label} execution budget exhausted before launch` };
+  }
+
+  try {
+    const input = JSON.stringify(payload);
+    let result = await spawnAsyncWithTreeTermination(commands[0], argsFor(commands[0]), { input, timeoutMs });
+    for (const fallback of commands.slice(1)) {
+      if (!(result.error && (result.error as NodeJS.ErrnoException).code === 'ENOENT')) break;
+      result = await spawnAsyncWithTreeTermination(fallback, argsFor(fallback), { input, timeoutMs });
+    }
 
     if (result.timedOut) {
-      return {
-        actual: null,
-        timedOut: true,
-        error: `Node process timed out (${(executionTimeout / 1000).toFixed(1)}s limit)`,
-      };
+      return { actual: null, timedOut: true, error: `${label} process timed out (${(timeoutMs / 1000).toFixed(1)}s limit)` };
     }
-
-    if (result.error) {
-      return { actual: null, error: `Process error: ${result.error.message}` };
-    }
-
-    if (result.stdout) {
-      const lines = result.stdout.trim().split('\n');
-      const lastLine = lines.pop() || '{}';
-      try {
-        const parsed = JSON.parse(lastLine) as { error?: string; result?: unknown };
-        if (parsed.error) return { actual: null, error: parsed.error };
-        return { actual: parsed.result };
-      } catch (err) {
-        return { actual: null, error: `Output parsing failed: ${result.stdout}` };
-      }
-    }
-
-    return { actual: null, error: result.stderr ? result.stderr.trim() : 'Node execution failed' };
+    if (result.error) return { actual: null, error: `Process error: ${result.error.message}` };
+    return interpretMarkedOutput(result.stdout, result.stderr, label);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Node execution failed';
-    return { actual: null, error: message };
+    return { actual: null, error: error instanceof Error ? error.message : `${label} execution failed` };
   }
+}
+
+export function executePythonSubprocess(
+  code: string,
+  entryPoint: string,
+  args: unknown[],
+  timeoutMs: number = 3000
+): Promise<SubprocessExecutionResult> {
+  return runInterpreted('Python', ['python3', 'python'], () => ['-c', PYTHON_RUNNER], {
+    code,
+    names: candidateMethodNames(entryPoint),
+    args,
+  }, timeoutMs);
+}
+
+export function executeNodeSubprocess(
+  code: string,
+  entryPoint: string,
+  args: unknown[],
+  timeoutMs: number = 3000,
+  typescript: boolean = false
+): Promise<SubprocessExecutionResult> {
+  return runInterpreted('Node', ['node'], () => ['-e', NODE_RUNNER], {
+    code,
+    names: candidateMethodNames(entryPoint),
+    args,
+    typescript,
+  }, timeoutMs);
 }

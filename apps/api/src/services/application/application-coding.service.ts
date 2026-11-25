@@ -162,7 +162,22 @@ export async function submitCoding(
   const rawTestCases = currentProblem.testCases || [];
   const testCasesToRun = normalizeTestCases(rawTestCases);
 
-  const execSummary = await executeCodingSubmission(code || '', language || 'python', testCasesToRun);
+  // Problems stored before entryPoint was persisted fall back to the problem row.
+  let entryPoint = currentProblem.entryPoint;
+  if (!entryPoint && currentProblem.id) {
+    const row = await prisma.codingProblem.findUnique({
+      where: { id: currentProblem.id },
+      select: { entry_point: true },
+    });
+    entryPoint = row?.entry_point || undefined;
+  }
+
+  const execSummary = await executeCodingSubmission(
+    code || '',
+    language || 'python',
+    testCasesToRun,
+    entryPoint || 'solution'
+  );
 
   const submission = await prisma.codingSubmission.create({
     data: {

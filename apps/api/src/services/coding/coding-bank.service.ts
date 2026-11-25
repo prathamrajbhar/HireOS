@@ -9,6 +9,7 @@ export interface SelectedCodingProblem {
   category: string;
   difficulty: string;
   description: string;
+  entryPoint: string;
   starterCode: Record<string, string>;
   testCases: Array<{
     input: unknown;
@@ -64,6 +65,7 @@ export async function selectCodingProblem(
     category: problem.category,
     difficulty: problem.difficulty,
     description: problem.description,
+    entryPoint: problem.entry_point || 'solution',
     starterCode: (problem.starter_code as Record<string, string>) ?? {},
     testCases: [
       ...publicTests.map((testCase) => ({ ...testCase, hidden: false })),

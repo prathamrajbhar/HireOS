@@ -1,170 +1,136 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import type { SubprocessExecutionResult } from './coding-executor.types';
+import type { SubprocessExecutionResult, TestCaseInput } from './coding-executor.types';
 import { spawnAsyncWithTreeTermination } from './process-manager';
+import {
+  parseMarkedResult,
+  HarnessError,
+  buildCppProgram,
+  buildJavaMain,
+  candidateMethodNames,
+  findSignature,
+} from './coding-harness';
 
-export async function executeCppSubprocess(
+export type CompiledLanguage = 'cpp' | 'java';
+
+export interface CompiledRunner {
+  /** Runs one test case (by index) of the already-compiled program. */
+  run(index: number, timeoutMs: number): Promise<SubprocessExecutionResult>;
+  dispose(): void;
+}
+
+export type PrepareResult =
+  | { runner: CompiledRunner }
+  | { error: string; timedOut?: boolean };
+
+function firstLines(text: string, count = 3): string {
+  return text.split('\n').filter((l) => l.trim()).slice(0, count).join('\n') || 'Build failed';
+}
+
+/**
+ * Compiles the candidate's solution together with a generated harness once, so every test case
+ * only pays for process start-up. Compile budget is separate from the per-case run budget.
+ */
+export async function prepareCompiledRunner(
+  language: CompiledLanguage,
   code: string,
-  _entryPoint: string,
-  _args: unknown[],
-  timeoutMs: number = 3000
-): Promise<SubprocessExecutionResult> {
-  const totalBudgetMs = timeoutMs;
-  if (totalBudgetMs <= 0) {
-    return {
-      actual: null,
-      timedOut: true,
-      error: 'C++ execution budget exhausted before launch',
-    };
+  entryPoint: string,
+  testCases: TestCaseInput[],
+  compileBudgetMs: number
+): Promise<PrepareResult> {
+  const label = language === 'cpp' ? 'C++' : 'Java';
+  if (compileBudgetMs <= 0) {
+    return { error: `${label} execution budget exhausted before launch`, timedOut: true };
   }
 
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nextround-cpp-'));
-  const srcPath = path.join(tmpDir, 'solution.cpp');
-  const binPath = path.join(tmpDir, process.platform === 'win32' ? 'solution.exe' : 'solution');
-
-  const wrapper = `
-#include <iostream>
-#include <vector>
-#include <string>
-#include <algorithm>
-using namespace std;
-
-${code}
-
-int main() {
-    cout << "{\\"result\\":\\"Passed\\"}" << endl;
-    return 0;
-}
-`;
-
-  const startNs = process.hrtime.bigint();
-
+  let sources: { files: Record<string, string>; compile: [string, string[]]; run: (dir: string, i: number) => [string, string[]] };
   try {
-    fs.writeFileSync(srcPath, wrapper, 'utf-8');
-
-    // Compile step budget: up to 60% of total budget or remaining
-    const compileBudget = Math.max(1, Math.floor(totalBudgetMs * 0.6));
-    const compileProc = await spawnAsyncWithTreeTermination(
-      'g++',
-      ['-O2', srcPath, '-o', binPath],
-      { timeoutMs: compileBudget }
-    );
-
-    if (compileProc.timedOut) {
-      return { actual: null, timedOut: true, error: 'C++ compilation timed out' };
+    const sig = findSignature(code, language, candidateMethodNames(entryPoint));
+    const cases = testCases.map((tc) => ({ name: tc.name, args: tc.args }));
+    if (language === 'cpp') {
+      sources = {
+        files: { 'solution.cpp': buildCppProgram(code, sig, cases) },
+        compile: ['g++', ['-O2', '-std=c++17', 'solution.cpp', '-o', 'solution']],
+        run: (dir, i) => [path.join(dir, 'solution'), [String(i)]],
+      };
+    } else {
+      sources = {
+        files: { 'Solution.java': code, 'Main.java': buildJavaMain(sig, cases) },
+        compile: ['javac', ['-encoding', 'UTF-8', '-nowarn', 'Solution.java', 'Main.java']],
+        run: (dir, i) => ['java', ['-Xss64m', '-XX:+UseSerialGC', '-XX:TieredStopAtLevel=1', '-cp', dir, 'Main', String(i)]],
+      };
     }
-
-    if (compileProc.error) {
-      return { actual: null, error: `CompileError: ${compileProc.error.message}` };
-    }
-
-    if (compileProc.exitCode !== 0) {
-      const errLine = compileProc.stderr.split('\n')[0] || 'Build failed';
-      return { actual: null, error: `CompileError: ${errLine}` };
-    }
-
-    const compileElapsedMs = Number(process.hrtime.bigint() - startNs) / 1_000_000;
-    const remainingRunBudget = Math.max(0, Math.floor(totalBudgetMs - compileElapsedMs));
-
-    if (remainingRunBudget <= 0) {
-      return { actual: null, timedOut: true, error: 'C++ execution timed out (compile budget exhausted total limit)' };
-    }
-
-    const runProc = await spawnAsyncWithTreeTermination(binPath, [], { timeoutMs: remainingRunBudget });
-    if (runProc.timedOut) {
-      return { actual: null, timedOut: true, error: 'C++ execution timed out' };
-    }
-
-    if (runProc.exitCode === 0 && runProc.stdout) {
-      try {
-        const parsed = JSON.parse(runProc.stdout.trim()) as { result?: unknown };
-        return { actual: parsed.result };
-      } catch {
-        return { actual: runProc.stdout.trim() };
-      }
-    }
-
-    return { actual: null, error: runProc.stderr ? runProc.stderr.trim() : 'C++ execution failed' };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'C++ execution failed';
-    return { actual: null, error: message };
-  } finally {
+    if (error instanceof HarnessError) return { error: `CompileError: ${error.message}` };
+    throw error;
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `nextround-${language}-`));
+  const dispose = () => {
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     } catch {}
-  }
-}
-
-export async function executeJavaSubprocess(
-  code: string,
-  _entryPoint: string,
-  _args: unknown[],
-  timeoutMs: number = 3000
-): Promise<SubprocessExecutionResult> {
-  const totalBudgetMs = timeoutMs;
-  if (totalBudgetMs <= 0) {
-    return {
-      actual: null,
-      timedOut: true,
-      error: 'Java execution budget exhausted before launch',
-    };
-  }
-
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nextround-java-'));
-  const srcPath = path.join(tmpDir, 'Solution.java');
-
-  const startNs = process.hrtime.bigint();
+  };
 
   try {
-    fs.writeFileSync(srcPath, code, 'utf-8');
-
-    const compileBudget = Math.max(1, Math.floor(totalBudgetMs * 0.6));
-    const compileProc = await spawnAsyncWithTreeTermination(
-      'javac',
-      [srcPath],
-      { timeoutMs: compileBudget }
-    );
-
-    if (compileProc.timedOut) {
-      return { actual: null, timedOut: true, error: 'Java compilation timed out' };
+    for (const [name, content] of Object.entries(sources.files)) {
+      fs.writeFileSync(path.join(tmpDir, name), content, 'utf-8');
     }
 
-    if (compileProc.error) {
-      return { actual: null, error: `CompileError: ${compileProc.error.message}` };
-    }
-
-    if (compileProc.exitCode !== 0) {
-      const errLine = compileProc.stderr.split('\n')[0] || 'Java build failed';
-      return { actual: null, error: `CompileError: ${errLine}` };
-    }
-
-    const compileElapsedMs = Number(process.hrtime.bigint() - startNs) / 1_000_000;
-    const remainingRunBudget = Math.max(0, Math.floor(totalBudgetMs - compileElapsedMs));
-
-    if (remainingRunBudget <= 0) {
-      return { actual: null, timedOut: true, error: 'Java execution timed out (compile budget exhausted total limit)' };
-    }
-
-    const runProc = await spawnAsyncWithTreeTermination('java', ['-cp', tmpDir, 'Solution'], {
-      timeoutMs: remainingRunBudget,
+    const [compileCmd, compileArgs] = sources.compile;
+    const compile = await spawnAsyncWithTreeTermination(compileCmd, compileArgs, {
+      cwd: tmpDir,
+      timeoutMs: compileBudgetMs,
     });
 
-    if (runProc.timedOut) {
-      return { actual: null, timedOut: true, error: 'Java execution timed out' };
+    if (compile.timedOut) {
+      dispose();
+      return { error: `${label} compilation timed out`, timedOut: true };
     }
-
-    if (runProc.exitCode === 0 && runProc.stdout) {
-      return { actual: 'Passed' };
+    if (compile.error) {
+      dispose();
+      const missing = (compile.error as NodeJS.ErrnoException).code === 'ENOENT';
+      return {
+        error: missing
+          ? `${label} toolchain (${compileCmd}) is not installed on the execution server.`
+          : `CompileError: ${compile.error.message}`,
+      };
     }
-
-    return { actual: null, error: runProc.stderr ? runProc.stderr.trim() : 'Java execution failed' };
+    if (compile.exitCode !== 0) {
+      dispose();
+      return { error: `CompileError: ${firstLines(compile.stderr || compile.stdout)}` };
+    }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Java execution failed';
-    return { actual: null, error: message };
-  } finally {
-    try {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    } catch {}
+    dispose();
+    return { error: error instanceof Error ? error.message : `${label} compilation failed` };
   }
+
+  const runner: CompiledRunner = {
+    async run(index, timeoutMs) {
+      if (timeoutMs <= 0) {
+        return { actual: null, timedOut: true, error: `${label} execution budget exhausted before launch` };
+      }
+      const [cmd, args] = sources.run(tmpDir, index);
+      const proc = await spawnAsyncWithTreeTermination(cmd, args, { cwd: tmpDir, timeoutMs });
+      if (proc.timedOut) {
+        return { actual: null, timedOut: true, error: `${label} process timed out (${(timeoutMs / 1000).toFixed(1)}s limit)` };
+      }
+      if (proc.error) return { actual: null, error: `Process error: ${proc.error.message}` };
+
+      const marked = parseMarkedResult(proc.stdout);
+      if (marked) return marked;
+
+      const detail = firstLines(proc.stderr, 4);
+      return {
+        actual: null,
+        error:
+          proc.exitCode === 0
+            ? 'Solution did not return a value.'
+            : `RuntimeError (exit ${proc.exitCode}): ${proc.stderr.trim() ? detail : 'process crashed'}`,
+      };
+    },
+    dispose,
+  };
+  return { runner };
 }

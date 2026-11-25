@@ -17,7 +17,7 @@ import {
   parseDmtfDateToEpochMs,
 } from '../services/coding/process-manager';
 import * as processManagerModule from '../services/coding/process-manager';
-import { executeCppSubprocess } from '../services/coding/coding-compiled.service';
+import { prepareCompiledRunner } from '../services/coding/coding-compiled.service';
 import child_process from 'child_process';
 import { EventEmitter } from 'events';
 
@@ -610,55 +610,62 @@ describe('Phase 9E.1C — Execution Manager & Process Lifecycle Hardening', () =
     });
   });
 
-  describe('9. C++ Execution Budget & Timeout Fixture', () => {
-    it('7. Benign C++ fixture compiles and executes successfully with expected result', async () => {
-      // Mock spawnAsyncWithTreeTermination specifically for executeCppSubprocess test
+  describe('9. Compiled-language Execution Budget & Timeout Fixture', () => {
+    const cppCode = 'class Solution { public: int solution() { return 42; } };';
+    const cases = [{ name: 'c1', args: [], expected: 42 }];
+
+    it('compiles once and returns the value the harness prints', async () => {
       const spawnSpy = vi.spyOn(processManagerModule, 'spawnAsyncWithTreeTermination').mockImplementation((async (cmd: string) => {
-        if (cmd === 'g++') {
-          return { stdout: '', stderr: '', exitCode: 0, timedOut: false };
-        }
-        // Simulated compiled binary execution
-        return { stdout: '{"result":"Passed"}', stderr: '', exitCode: 0, timedOut: false };
+        if (cmd === 'g++') return { stdout: '', stderr: '', exitCode: 0, timedOut: false };
+        return { stdout: 'noise@@NR_RESULT@@42\n', stderr: '', exitCode: 0, timedOut: false };
       }) as any);
 
-      const code = `int solution() { return 42; }`;
-      const result = await executeCppSubprocess(code, 'solution', [], 3000);
+      const prepared = await prepareCompiledRunner('cpp', cppCode, 'solution', cases, 3000);
+      expect('runner' in prepared).toBe(true);
+      if (!('runner' in prepared)) return;
 
+      const first = await prepared.runner.run(0, 1000);
+      const second = await prepared.runner.run(0, 1000);
+      prepared.runner.dispose();
+
+      const compileCalls = spawnSpy.mock.calls.filter(([cmd]) => cmd === 'g++');
       spawnSpy.mockRestore();
 
-      expect(result.actual).toBe('Passed');
-      expect(result.timedOut).toBeUndefined();
+      expect(first.actual).toBe(42);
+      expect(second.actual).toBe(42);
+      expect(compileCalls).toHaveLength(1);
     });
 
-    it('7. Infinite loop C++ fixture times out and terminates without allowing CompileError', async () => {
+    it('infinite loop fixture times out and is not reported as a CompileError', async () => {
       const spawnSpy = vi.spyOn(processManagerModule, 'spawnAsyncWithTreeTermination').mockImplementation((async (cmd: string) => {
-        if (cmd === 'g++') {
-          // Compilation succeeds
-          return { stdout: '', stderr: '', exitCode: 0, timedOut: false };
-        }
-        // Binary execution times out
+        if (cmd === 'g++') return { stdout: '', stderr: '', exitCode: 0, timedOut: false };
         return { stdout: '', stderr: '', exitCode: null, timedOut: true };
       }) as any);
 
-      const code = `void solution() { while(true) {} }`;
-      const result = await executeCppSubprocess(code, 'solution', [], 800);
-
+      const prepared = await prepareCompiledRunner('cpp', cppCode, 'solution', cases, 3000);
+      if (!('runner' in prepared)) throw new Error('expected a runner');
+      const result = await prepared.runner.run(0, 800);
+      prepared.runner.dispose();
       spawnSpy.mockRestore();
 
       expect(result.actual).toBeNull();
       expect(result.timedOut).toBe(true);
-      expect(result.error).toBe('C++ execution timed out');
-      // CompileError must NOT be an acceptable result for a test proving timeout behavior
+      expect(result.error).toContain('timed out');
       expect(result.error).not.toContain('CompileError');
     });
 
-    it('immediately aborts C++ execution when budget is <= 0', async () => {
-      const code = `void solution() {}`;
-      const result = await executeCppSubprocess(code, 'solution', [], 0);
+    it('surfaces compiler diagnostics as a CompileError', async () => {
+      const spawnSpy = vi.spyOn(processManagerModule, 'spawnAsyncWithTreeTermination').mockImplementation((async () => ({
+        stdout: '', stderr: "solution.cpp:3:5: error: 'x' was not declared", exitCode: 1, timedOut: false,
+      })) as any);
+      const prepared = await prepareCompiledRunner('cpp', cppCode, 'solution', cases, 3000);
+      spawnSpy.mockRestore();
+      expect(prepared).toMatchObject({ error: expect.stringContaining('CompileError') });
+    });
 
-      expect(result.actual).toBeNull();
-      expect(result.timedOut).toBe(true);
-      expect(result.error).toContain('budget exhausted');
+    it('immediately aborts when the compile budget is <= 0', async () => {
+      const prepared = await prepareCompiledRunner('cpp', cppCode, 'solution', cases, 0);
+      expect(prepared).toMatchObject({ timedOut: true, error: expect.stringContaining('budget exhausted') });
     });
   });
 
