@@ -42,6 +42,10 @@ export async function submitCoding(req: Request, res: Response) {
   ok(res, await applicationService.submitCoding(req.params.id as string, req.user!.userId, req.body));
 }
 
+export async function disqualifyAssessment(req: Request, res: Response) {
+  ok(res, await applicationService.disqualifyFromAssessment(req.params.id as string, req.user!.userId));
+}
+
 export async function getCodingSubmission(req: Request, res: Response) {
   const user = {
     userId: req.user!.userId,

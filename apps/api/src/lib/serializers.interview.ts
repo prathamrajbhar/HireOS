@@ -2,6 +2,7 @@ import { Rec, isObject, toIso } from './serializers.common';
 
 export interface EvalLike {
   id?: string;
+  stage?: string | null;
   resume_score?: number | null;
   interview_score?: number | null;
   aptitude_score?: number | null;

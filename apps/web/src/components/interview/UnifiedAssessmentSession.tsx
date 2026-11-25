@@ -5,6 +5,7 @@ import { useInterviewSession } from '@/hooks/useInterviewSession';
 import InterviewCheckScreen from '@/components/interview/InterviewCheckScreen';
 import { useAssessmentDetails } from '@/components/interview/useAssessmentDetails';
 import { useAssessmentCompletion } from '@/components/interview/useAssessmentCompletion';
+import { disqualifyAssessment } from '@/lib/interview/assessmentApi';
 import { useProctoringSession } from '@/lib/proctoring/useProctoringSession';
 import { getProctoringFlagMessage } from '@/lib/proctoring/flagMessages';
 import { useToast } from '@/contexts/ToastContext';
@@ -104,12 +105,14 @@ export function UnifiedAssessmentSession({
         toast({ title: msg.title, description: msg.description, variant: msg.variant });
       }
     },
-    onDisqualified: () => {
-      if (track === 'comprehensive') {
+    onDisqualified: async () => {
+      if (isInterviewTrack) {
         onEliminate();
-      } else {
-        handleCompleteWithProctor(0);
+        return;
       }
+      // Aptitude/coding rounds: reject the application on the server before leaving.
+      if (applicationId) await disqualifyAssessment(applicationId);
+      await handleCompleteWithProctor(0);
     },
   });
 

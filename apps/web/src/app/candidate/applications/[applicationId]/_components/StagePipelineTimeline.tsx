@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Layers, Check } from '@/lib/lucide-google-icons';
+import { Layers, Check, X } from '@/lib/lucide-google-icons';
 
 interface Stage {
   name: string;
   desc: string;
   date: string;
   done: boolean;
+  failed?: boolean;
 }
 
 interface StagePipelineTimelineProps {
@@ -39,19 +40,31 @@ export function StagePipelineTimeline({ stages, onStageClick }: StagePipelineTim
           >
             <div
               className={`h-8 w-8 rounded-full border-2 flex items-center justify-center font-extrabold text-xs shadow-2xs transition-all flex-shrink-0 ${
-                st.done
+                st.failed
+                  ? 'bg-red-500 border-red-600 dark:bg-red-600 dark:border-red-500 text-white'
+                  : st.done
                   ? 'bg-emerald-500 border-emerald-600 dark:bg-emerald-600 dark:border-emerald-500 text-white'
                   : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500'
               }`}
             >
-              {st.done ? <Check className="h-4 w-4 stroke-[3]" /> : idx + 1}
+              {st.failed ? (
+                <X className="h-4 w-4 stroke-[3]" />
+              ) : st.done ? (
+                <Check className="h-4 w-4 stroke-[3]" />
+              ) : (
+                idx + 1
+              )}
             </div>
 
             <div className="min-w-0 flex-1 pt-0.5">
               <div className="flex items-center justify-between gap-2">
                 <h4
                   className={`text-sm font-extrabold font-display ${
-                    st.done ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'
+                    st.failed
+                      ? 'text-red-600 dark:text-red-400'
+                      : st.done
+                      ? 'text-slate-900 dark:text-slate-100'
+                      : 'text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   {st.name}
@@ -60,6 +73,9 @@ export function StagePipelineTimeline({ stages, onStageClick }: StagePipelineTim
                   <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                     {st.date}
                   </span>
+                )}
+                {st.failed && (
+                  <span className="text-[10px] font-bold text-red-500 dark:text-red-400">Not passed</span>
                 )}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal leading-relaxed">

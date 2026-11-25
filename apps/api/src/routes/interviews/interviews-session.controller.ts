@@ -136,8 +136,10 @@ export async function endInterview(req: Request, res: Response, next: NextFuncti
       },
     });
 
-    await prisma.application.update({
-      where: { id: interview.application_id },
+    // Only a scheduled interview can advance the application. Without this guard, ending a
+    // session from an earlier stage (e.g. a disqualified assessment) skipped the pipeline.
+    await prisma.application.updateMany({
+      where: { id: interview.application_id, status: 'interview_scheduled' },
       data: { status: 'interviewed' },
     });
 
