@@ -57,6 +57,7 @@ export function UnifiedAssessmentSession({
     startSession,
     setStage,
     submitAnswer,
+    closeVoiceSession,
     onEliminate,
   } = useInterviewSession({
     company: targetCompany,
@@ -117,6 +118,7 @@ export function UnifiedAssessmentSession({
   });
 
   const handleCompleteWithProctor = async (score?: number) => {
+    closeVoiceSession(); // first: the agent must go quiet before fullscreen/proctoring teardown awaits
     suppressViolations(true);
     if (typeof document !== 'undefined' && document.fullscreenElement) {
       try {

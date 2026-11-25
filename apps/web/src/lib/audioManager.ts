@@ -8,6 +8,22 @@ let _audioStopped = false;
 // onEnd of the clip currently playing; lets interruptAudio() complete the turn instead of stranding it
 let pendingOnEnd: (() => void) | null = null;
 
+/** Lets a streaming player (see voiceStream.ts) take part in stop/interrupt without a circular import. */
+export interface PlaybackController {
+  stop(): void;
+  interrupt(): void;
+}
+let playbackController: PlaybackController | null = null;
+
+export function registerPlaybackController(controller: PlaybackController | null) {
+  playbackController = controller;
+}
+
+/** Re-arms speech callbacks after a stopAudio(); called when a new playback session begins. */
+export function beginPlayback() {
+  _audioStopped = false;
+}
+
 function trackOnEnd(onEnd?: () => void): (() => void) | undefined {
   if (!onEnd) {
     pendingOnEnd = null;
@@ -127,6 +143,7 @@ export function playSpeechSynthesis(text: string, onEnd?: () => void) {
 }
 
 export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
+  playbackController?.stop();  // a streamed reply must never overlap a one-shot clip
   _audioStopped = false;  // Mark as active before starting any playback
   lastText = text;
   if (audioUrl) {
@@ -185,12 +202,14 @@ export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
  */
 export function interruptAudio() {
   const finish = pendingOnEnd;
+  playbackController?.interrupt();  // first: stopAudio() below would cancel the stream silently
   stopAudio();
   finish?.();
 }
 
 export function stopAudio() {
   pendingOnEnd = null;  // Navigation/teardown: callbacks must NOT fire
+  playbackController?.stop();
   if (typeof window !== 'undefined') {
     _audioStopped = true;  // Signal all callbacks to abort before we tear down
     try {

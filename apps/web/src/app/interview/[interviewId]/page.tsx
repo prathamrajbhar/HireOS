@@ -47,6 +47,7 @@ export default function LiveInterviewRoom({
     startSession,
     submitAnswer,
     wrapUp,
+    closeVoiceSession,
     onEliminate: eliminateInterview,
   } = useInterviewSession({
     company: companyName,
@@ -86,6 +87,7 @@ export default function LiveInterviewRoom({
   });
 
   const handleEndSession = async () => {
+    closeVoiceSession(); // first: the agent must go quiet before fullscreen/proctoring teardown awaits
     suppressViolations(true);
     if (typeof document !== 'undefined' && document.fullscreenElement) {
       try {
