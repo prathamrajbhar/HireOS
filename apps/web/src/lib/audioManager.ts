@@ -5,6 +5,40 @@ let lastText = '';
 let currentBlobUrl: string | null = null;
 // Set to true by stopAudio() so any dangling onEnd/onerror callbacks know to bail out
 let _audioStopped = false;
+// onEnd of the clip currently playing; lets interruptAudio() complete the turn instead of stranding it
+let pendingOnEnd: (() => void) | null = null;
+
+/** Lets a streaming player (see voiceStream.ts) take part in stop/interrupt without a circular import. */
+export interface PlaybackController {
+  stop(): void;
+  interrupt(): void;
+}
+let playbackController: PlaybackController | null = null;
+
+export function registerPlaybackController(controller: PlaybackController | null) {
+  playbackController = controller;
+}
+
+/** Re-arms speech callbacks after a stopAudio(); called when a new playback session begins. */
+export function beginPlayback() {
+  _audioStopped = false;
+}
+
+function trackOnEnd(onEnd?: () => void): (() => void) | undefined {
+  if (!onEnd) {
+    pendingOnEnd = null;
+    return undefined;
+  }
+  let fired = false;
+  const once = () => {
+    if (fired) return;
+    fired = true;
+    if (pendingOnEnd === once) pendingOnEnd = null;
+    onEnd();
+  };
+  pendingOnEnd = once;
+  return once;
+}
 
 function revokeCurrentBlobUrl() {
   if (currentBlobUrl) {
@@ -109,6 +143,7 @@ export function playSpeechSynthesis(text: string, onEnd?: () => void) {
 }
 
 export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
+  playbackController?.stop();  // a streamed reply must never overlap a one-shot clip
   _audioStopped = false;  // Mark as active before starting any playback
   lastText = text;
   if (audioUrl) {
@@ -117,6 +152,7 @@ export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
 
   stopAudio();
   _audioStopped = false;  // Reset again after stopAudio clears the flag
+  onEnd = trackOnEnd(onEnd);
 
   if (audioUrl) {
     try {
@@ -160,7 +196,20 @@ export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
   }
 }
 
+/**
+ * Stops playback because the candidate started talking. Unlike stopAudio(), the clip's onEnd is
+ * still delivered once, so callers' "AI is speaking" state is reset and the turn can continue.
+ */
+export function interruptAudio() {
+  const finish = pendingOnEnd;
+  playbackController?.interrupt();  // first: stopAudio() below would cancel the stream silently
+  stopAudio();
+  finish?.();
+}
+
 export function stopAudio() {
+  pendingOnEnd = null;  // Navigation/teardown: callbacks must NOT fire
+  playbackController?.stop();
   if (typeof window !== 'undefined') {
     _audioStopped = true;  // Signal all callbacks to abort before we tear down
     try {

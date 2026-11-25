@@ -974,7 +974,7 @@ Output: [1, 2]
     ],
     hidden_tests: [
       { input: [[-1, -2, -3, -4, -5], -8], expected: [2, 4], description: 'Negative integers' },
-      { input: [[1000000, -999999, 0, 1], 1], expected: [2, 3], description: 'Zero and large values' },
+      { input: [[1000000, -999999, 0, 5], 1], expected: [0, 1], description: 'Zero and large values' },
       { input: [[0, 4, 3, 0], 0], expected: [0, 3], description: 'Zero target' },
     ],
     reference_solution: {

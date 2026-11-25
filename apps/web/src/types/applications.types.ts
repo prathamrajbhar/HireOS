@@ -28,6 +28,7 @@ export interface Application {
   orgName: string;
   status: ApplicationStatus;
   stage: 'Sourced' | 'Screened' | 'Assessment' | 'Interview' | 'HR Round' | 'Panel' | 'Decision';
+  failedStage?: 'screening' | 'assessment' | 'interview' | 'hr_round' | 'decision';
   hrRoundStatus?: HRRoundStatus;
   hrRoundScheduledAt?: string;
   hrRoundCompletedAt?: string;

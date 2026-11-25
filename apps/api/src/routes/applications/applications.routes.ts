@@ -28,6 +28,7 @@ import {
   getCodingAssessment,
   startCodingAssessment,
   submitCoding,
+  disqualifyAssessment,
   getCodingSubmission,
 } from './applications-assessment.controller';
 import {
@@ -58,6 +59,7 @@ applicationRouter.post('/:id/assessment/aptitude', authenticate, requireRole('ca
 applicationRouter.get('/:id/assessment/coding', authenticate, requireRole('candidate'), asyncHandler(getCodingAssessment));
 applicationRouter.post('/:id/assessment/coding/start', authenticate, requireRole('candidate'), asyncHandler(startCodingAssessment));
 applicationRouter.post('/:id/assessment/coding', authenticate, requireRole('candidate'), asyncHandler(submitCoding));
+applicationRouter.post('/:id/assessment/disqualify', authenticate, requireRole('candidate'), asyncHandler(disqualifyAssessment));
 applicationRouter.get('/:id/assessment/coding/:submissionId', authenticate, asyncHandler(getCodingSubmission));
 
 applicationRouter.post('/:id/reschedule', authenticate, requireRole('candidate'), asyncHandler(requestReschedule));

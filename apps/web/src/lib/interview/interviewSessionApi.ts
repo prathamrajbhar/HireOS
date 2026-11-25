@@ -45,11 +45,12 @@ export async function requestAiTurn(params: {
   candidateResume?: string;
   candidateContext?: Record<string, unknown>;
   conversationHistory: { speaker: string; text: string }[];
-}): Promise<{ text: string; audioUrl?: string; stage?: string; analysis?: unknown; turnRecord?: unknown }> {
+}, signal?: AbortSignal): Promise<{ text: string; audioUrl?: string; stage?: string; analysis?: unknown; turnRecord?: unknown }> {
   const res = await fetch(`${siteConfig.aiServiceUrl}/api/v1/ai/interview/respond`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
+    signal,
   });
 
   if (!res.ok) {

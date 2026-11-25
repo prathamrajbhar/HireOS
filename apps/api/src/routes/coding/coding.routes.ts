@@ -18,6 +18,7 @@ import {
 } from '../../services/application/application-coding.service';
 import { ok, fail } from '../../lib/http';
 import crypto from 'crypto';
+import { DEMO_SOLUTIONS, DEMO_LANGUAGES, type DemoLanguage } from '../../data/demo-solutions';
 
 export const codingRouter = Router();
 
@@ -387,5 +388,38 @@ codingRouter.post('/submit', authenticate, async (req: Request, res: Response, n
     });
   } catch (err) {
     return next(err);
+  }
+});
+
+/**
+ * Presentation-only "AI solve": returns a verified reference solution so a demo never depends on
+ * LLM quota. On by default; set DEMO_AI_SOLVE=false to disable (404).
+ */
+codingRouter.get('/problems/:problemId/demo-solution', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (process.env.DEMO_AI_SOLVE === 'false') {
+      return fail(res, 404, 'NOT_FOUND', 'Not found');
+    }
+    if (req.user!.role !== 'candidate') {
+      return fail(res, 403, 'FORBIDDEN', 'Forbidden: requires candidate role');
+    }
+
+    const language = String(req.query.language || '').toLowerCase() as DemoLanguage;
+    if (!DEMO_LANGUAGES.includes(language)) {
+      return fail(res, 400, 'INVALID_LANGUAGE', `Language must be one of: ${DEMO_LANGUAGES.join(', ')}`);
+    }
+
+    const problem = await prisma.codingProblem.findUnique({
+      where: { id: String(req.params.problemId) },
+      select: { slug: true },
+    });
+    const solution = problem ? DEMO_SOLUTIONS[problem.slug]?.[language] : undefined;
+    if (!solution) {
+      return fail(res, 404, 'NOT_FOUND', 'No demo solution available for this problem');
+    }
+
+    return ok(res, { code: solution, language });
+  } catch (error) {
+    return next(error);
   }
 });

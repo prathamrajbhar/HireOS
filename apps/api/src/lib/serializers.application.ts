@@ -9,6 +9,7 @@ import {
   toIso,
   toDatePart,
 } from './serializers.common';
+import { resolveFailedStage } from './failed-stage';
 import {
   firstEvaluation,
   serializeScores,
@@ -102,6 +103,7 @@ export function serializeApplication(app: Rec, options?: { scheduledSlots?: stri
     orgName: orgName(job),
     status: app.status,
     stage: statusToStage(typeof app.status === 'string' ? app.status : undefined),
+    failedStage: resolveFailedStage(app.status, app.hr_round_status, effectiveEval?.stage),
     hrRoundStatus: typeof app.hr_round_status === 'string' ? app.hr_round_status.toUpperCase() : undefined,
     hrRoundScheduledAt: toIso(app.hr_round_scheduled_at),
     hrRoundCompletedAt: toIso(app.hr_round_completed_at),

@@ -9,13 +9,21 @@ from pydantic import BaseModel, Field
 from agents.interviewer_agent import run_interviewer_agent, InterviewerState
 from workers.resume_builder_worker import process_resume_builder_job
 
-from services.stt_tts.stt_service import transcribe_audio_bytes
-from services.stt_tts.tts_service import generate_tts_audio_base64, stream_sentence_tts
+from services.stt_tts.stt_service import SttUnavailableError, transcribe_audio_bytes
+from services.stt_tts.tts_service import (
+    generate_tts_audio_base64,
+    split_sentences,
+    stream_sentence_tts,
+    synthesize_ordered,
+    to_data_uri,
+)
 from core.config import settings
 
 logger = logging.getLogger("voice_routes")
 
 voice_router = APIRouter(prefix="/api/v1/ai/interview", tags=["voice-interview"])
+
+MAX_TRANSCRIBE_BYTES = 10 * 1024 * 1024
 
 class GenerateResumeRequest(BaseModel):
     sessionId: str
@@ -34,6 +42,7 @@ class TranscribeRequest(BaseModel):
 class TranscribeResponse(BaseModel):
     transcript: str
     confidence: Optional[float] = None
+    no_speech: bool = False
 
 class InterviewRespondRequest(BaseModel):
     interviewId: str
@@ -73,6 +82,7 @@ class TTSResponse(BaseModel):
 async def transcribe_audio(
     request: Request,
     file: Optional[UploadFile] = File(None),
+    language: str = "en",
 ):
     logger.info("Voice: Received audio transcription request")
 
@@ -97,13 +107,18 @@ async def transcribe_audio(
     if not audio_bytes or len(audio_bytes) == 0:
         raise HTTPException(status_code=400, detail="No audio provided.")
 
-    transcript, confidence = transcribe_audio_bytes(audio_bytes, filename=filename)
-    return TranscribeResponse(transcript=transcript, confidence=confidence)
+    if len(audio_bytes) > MAX_TRANSCRIBE_BYTES:
+        raise HTTPException(status_code=413, detail="Audio too large. Keep answers under a few minutes.")
 
-@voice_router.post("/respond", response_model=InterviewRespondResponse)
-async def generate_interview_response(request: InterviewRespondRequest):
-    logger.info(f"Voice: Generating turn response for interview {request.interviewId}, stage {request.stage}")
+    try:
+        transcript, confidence = await asyncio.to_thread(
+            transcribe_audio_bytes, audio_bytes, filename, language
+        )
+    except SttUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return TranscribeResponse(transcript=transcript, confidence=confidence, no_speech=not transcript)
 
+def _interviewer_state(request: InterviewRespondRequest) -> InterviewerState:
     state: InterviewerState = {
         "interview_id": request.interviewId,
         "application_id": request.applicationId or request.interviewId,
@@ -118,32 +133,79 @@ async def generate_interview_response(request: InterviewRespondRequest):
     }
     if request.requiredSkills:
         state["required_skills"] = request.requiredSkills
+    return state
 
-    output_state = await asyncio.to_thread(run_interviewer_agent, state)
 
-    ai_text = output_state.get("latest_ai_response")
-    if not ai_text:
+async def _run_interviewer_turn(request: InterviewRespondRequest) -> Dict[str, Any]:
+    """Runs the interviewer agent for one turn; raises 503 if the LLM produced nothing."""
+    output_state = await asyncio.to_thread(run_interviewer_agent, _interviewer_state(request))
+    if not output_state.get("latest_ai_response"):
         raise HTTPException(status_code=503, detail="Interviewer LLM returned no response. Try again in a moment.")
-    next_stage = output_state.get("current_stage", request.stage)
-    is_complete = bool(output_state.get("is_complete", False))
-    scorecard = output_state.get("final_scorecard")
-    analysis = output_state.get("last_analysis")
+    return output_state
+
+
+def _turn_fields(request: InterviewRespondRequest, output_state: Dict[str, Any]) -> Dict[str, Any]:
     turn_records = output_state.get("turn_records") or []
-    turn_record = turn_records[-1] if turn_records else None
+    return {
+        "text": output_state["latest_ai_response"],
+        "stage": output_state.get("current_stage", request.stage),
+        "isComplete": bool(output_state.get("is_complete", False)),
+        "scorecard": output_state.get("final_scorecard"),
+        "analysis": output_state.get("last_analysis"),
+        "turnRecord": turn_records[-1] if turn_records else None,
+        "evaluatedSkills": output_state.get("evaluated_skills") or [],
+        "remainingSkills": output_state.get("skills_to_evaluate") or [],
+        "currentSkill": output_state.get("current_skill"),
+    }
 
-    audio_url = await generate_tts_audio_base64(ai_text, voice=request.voice or "en-US-ChristopherNeural")
 
-    return InterviewRespondResponse(
-        text=ai_text,
-        audioUrl=audio_url,
-        stage=next_stage,
-        isComplete=is_complete,
-        scorecard=scorecard,
-        analysis=analysis,
-        turnRecord=turn_record,
-        evaluatedSkills=output_state.get("evaluated_skills") or [],
-        remainingSkills=output_state.get("skills_to_evaluate") or [],
-        currentSkill=output_state.get("current_skill"),
+def _sse(event: str, payload: Dict[str, Any]) -> str:
+    return f"event: {event}\ndata: {json.dumps(payload)}\n\n"
+
+
+@voice_router.post("/respond", response_model=InterviewRespondResponse)
+async def generate_interview_response(request: InterviewRespondRequest):
+    logger.info(f"Voice: Generating turn response for interview {request.interviewId}, stage {request.stage}")
+
+    output_state = await _run_interviewer_turn(request)
+    fields = _turn_fields(request, output_state)
+    audio_url = await generate_tts_audio_base64(fields["text"], voice=request.voice or "en-US-ChristopherNeural")
+    return InterviewRespondResponse(audioUrl=audio_url, **fields)
+
+@voice_router.post("/respond-stream")
+async def stream_interview_response(request: InterviewRespondRequest):
+    """Server-sent events: the reply text first, then each sentence's audio as soon as it is ready.
+
+    The LLM runs before the stream opens, so its failures are ordinary HTTP errors. If the client
+    disconnects (candidate ended or left), the generator is cancelled and pending synthesis stops.
+    """
+    logger.info(f"Voice: Streaming turn response for interview {request.interviewId}, stage {request.stage}")
+
+    output_state = await _run_interviewer_turn(request)
+    fields = _turn_fields(request, output_state)
+    sentences = split_sentences(fields["text"])
+
+    async def events():
+        yield _sse("turn", {**fields, "sentences": sentences})
+        try:
+            async for part in synthesize_ordered(fields["text"], voice=request.voice or "en-US-ChristopherNeural"):
+                yield _sse("audio", {
+                    "index": part.index,
+                    "sentence": part.sentence,
+                    "audio": to_data_uri(part.audio),
+                    "is_final": part.is_final,
+                })
+            yield _sse("done", {})
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            logger.error(f"Voice: streaming synthesis failed: {e}", exc_info=True)
+            yield _sse("error", {"message": "Voice synthesis failed."})
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 @voice_router.post("/tts", response_model=TTSResponse)
@@ -157,25 +219,8 @@ async def generate_tts(request: TTSRequest):
 
 @voice_router.post("/voice-stream")
 async def voice_stream_response(request: InterviewRespondRequest):
-    state: InterviewerState = {
-        "interview_id": request.interviewId,
-        "application_id": request.applicationId or request.interviewId,
-        "current_stage": request.stage,
-        "turn_number": request.turnNumber,
-        "job_title": request.jobTitle,
-        "latest_candidate_response": request.transcript,
-        "conversation_history": request.conversationHistory or [],
-        "candidate_resume": request.candidateResume,
-        "candidate_context": request.candidateContext,
-        "job_rubric": request.jobRubric,
-    }
-    if request.requiredSkills:
-        state["required_skills"] = request.requiredSkills
-
-    output_state = await asyncio.to_thread(run_interviewer_agent, state)
-    ai_text = output_state.get("latest_ai_response")
-    if not ai_text:
-        raise HTTPException(status_code=503, detail="Interviewer LLM returned no response. Try again in a moment.")
+    output_state = await _run_interviewer_turn(request)
+    ai_text = output_state["latest_ai_response"]
 
     async def event_generator():
         async for chunk in stream_sentence_tts(ai_text, voice=request.voice or "en-US-ChristopherNeural"):

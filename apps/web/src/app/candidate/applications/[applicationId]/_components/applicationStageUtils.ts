@@ -1,114 +1,10 @@
 import { Application, AssessmentResult, Job, Offer, OnboardingRecord } from '@/types';
 import { Gift, ClipboardCheck, UserPlus, Sparkles } from '@/lib/lucide-google-icons';
+import { isDecisionDone, summarizeAssessments } from './applicationStages';
 
-export function buildApplicationStages(
-  app: Application,
-  job?: Job | null,
-  assessments: AssessmentResult[] = []
-) {
-  const isScreenedDone = [
-    'screening_completed',
-    'assessment',
-    'interview_scheduled',
-    'interviewed',
-    'voice_screen',
-    'evaluation',
-    'hr_round',
-    'decided',
-    'offered',
-    'accepted',
-    'hired',
-  ].includes(app.status);
+export { buildApplicationStages } from './applicationStages';
+export type { ApplicationStage } from './applicationStages';
 
-  const cfg = job?.assessmentConfig as Record<string, unknown> | undefined;
-  const hasCoding = cfg
-    ? cfg.coding_enabled !== false && (cfg.coding_enabled === true || Boolean(cfg.codingProblemId))
-    : false;
-
-  const aptitudeAssessment = assessments.find(
-    (a) => a.category === 'aptitude' || a.assessmentName?.toLowerCase().includes('aptitude')
-  );
-  const codingAssessment = assessments.find(
-    (a) => a.category === 'coding' || a.assessmentName?.toLowerCase().includes('coding')
-  );
-
-  const aptitudeDone = aptitudeAssessment?.status === 'completed';
-  const codingDone = codingAssessment?.status === 'completed';
-  const allAssessmentsDone = hasCoding ? aptitudeDone && codingDone : aptitudeDone;
-
-  const isAssessmentDone =
-    [
-      'interview_scheduled',
-      'interviewed',
-      'voice_screen',
-      'evaluation',
-      'hr_round',
-      'decided',
-      'offered',
-      'accepted',
-      'hired',
-    ].includes(app.status) || allAssessmentsDone;
-
-  const isInterviewDone = [
-    'interviewed',
-    'voice_screen',
-    'evaluation',
-    'hr_round',
-    'decided',
-    'offered',
-    'accepted',
-    'hired',
-  ].includes(app.status);
-
-  const isHrRoundDone =
-    app.hrRoundStatus === 'PASSED' ||
-    ['decided', 'offered', 'accepted', 'hired'].includes(app.status);
-
-  const isDecisionDone = ['decided', 'offered', 'accepted', 'hired', 'rejected'].includes(
-    app.status
-  );
-
-  return [
-    {
-      name: 'Applied',
-      desc: 'Application received and resume queue matching active.',
-      date: app.appliedDate,
-      done: true,
-    },
-    (!job?.stages || job.stages.includes('screening')) && {
-      name: 'Screened',
-      desc: 'AI Screening Agent completed parsing and qualification matching.',
-      date: isScreenedDone ? app.appliedDate : '',
-      done: isScreenedDone,
-    },
-    (!job?.stages || job.stages.includes('assessment')) && {
-      name: 'Assessment',
-      desc: 'Completed Aptitude Test & Coding Assessment module.',
-      date: isAssessmentDone ? assessments[0]?.completedDate || app.appliedDate : '',
-      done: isAssessmentDone,
-    },
-    (!job?.stages || job.stages.includes('voice_screen')) && {
-      name: 'Interview',
-      desc: 'Completed voice conversational session with Interviewer Agent.',
-      date: isInterviewDone ? app.appliedDate : '',
-      done: isInterviewDone,
-    },
-    (!job?.stages || job.stages.includes('panel') || job.stages.includes('hr_round')) && {
-      name: 'HR Round',
-      desc: 'Live 1:1 human video call evaluation with HR representative.',
-      date: isHrRoundDone
-        ? app.hrRoundCompletedAt || app.hrRoundScheduledAt || app.appliedDate
-        : app.hrRoundScheduledAt || '',
-      done: isHrRoundDone,
-    },
-    {
-      name: 'Decision',
-      desc: 'Final structured scoring compiled. Outcome determined.',
-      date: isDecisionDone ? app.appliedDate : '',
-      done: isDecisionDone,
-    },
-  ].filter(Boolean) as { name: string; desc: string; date: string; done: boolean }[];
-}
 
 export function buildApplicationNextSteps(params: {
   app: Application;
@@ -118,25 +14,9 @@ export function buildApplicationNextSteps(params: {
   onboarding?: OnboardingRecord | null;
 }) {
   const { app, job, assessments, offer, onboarding } = params;
-  const isDecisionDone = ['decided', 'offered', 'accepted', 'hired', 'rejected'].includes(
-    app.status
-  );
-
-  const cfg = job?.assessmentConfig as Record<string, unknown> | undefined;
-  const hasCoding = cfg
-    ? cfg.coding_enabled !== false && (cfg.coding_enabled === true || Boolean(cfg.codingProblemId))
-    : false;
-
-  const aptitudeAssessment = assessments.find(
-    (a) => a.category === 'aptitude' || a.assessmentName?.toLowerCase().includes('aptitude')
-  );
-  const codingAssessment = assessments.find(
-    (a) => a.category === 'coding' || a.assessmentName?.toLowerCase().includes('coding')
-  );
-
-  const aptitudeDone = aptitudeAssessment?.status === 'completed';
-  const codingDone = codingAssessment?.status === 'completed';
-  const allAssessmentsDone = hasCoding ? aptitudeDone && codingDone : aptitudeDone;
+  const decisionDone = isDecisionDone(app.status);
+  const { hasCoding, aptitude: aptitudeAssessment, coding: codingAssessment, aptitudeDone, codingDone, allDone: allAssessmentsDone } =
+    summarizeAssessments(job, assessments);
 
   const allNextSteps = [
     (app.status === 'applied' || app.status === 'screening') &&
@@ -194,7 +74,7 @@ export function buildApplicationNextSteps(params: {
       })(),
 
     offer &&
-      isDecisionDone && {
+      decisionDone && {
         icon: Gift,
         label: 'Review Your Offer',
         desc: `${offer.status === 'accepted' ? 'Accepted' : 'Action needed'} — ${offer.baseSalary} base salary`,
@@ -204,7 +84,7 @@ export function buildApplicationNextSteps(params: {
       },
 
     onboarding &&
-      isDecisionDone && {
+      decisionDone && {
         icon: UserPlus,
         label: 'Onboarding Checklist',
         desc: `${onboarding.progressPercent}% complete — starts ${onboarding.startDate}`,

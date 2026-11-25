@@ -4,11 +4,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Message, InterviewPhase } from '@/components/interview/console/types';
 import {
   fetchInterviewContext,
-  requestAiTurn,
-  requestInitialAiTurn,
   endInterviewSession,
   InterviewContextData,
 } from '@/lib/interview/interviewSessionApi';
+import { requestAiTurnStream, type AiTurn, type AiTurnParams } from '@/lib/interview/aiTurnStream';
+import { runAiTurn } from '@/lib/interview/aiTurn';
+import { createVoiceLifecycle } from '@/lib/interview/voiceLifecycle';
+import { voiceStream } from '@/lib/voiceStream';
 import {
   createEliminationResult,
   evaluateCompletedInterview,
@@ -19,7 +21,7 @@ import {
   UseInterviewSessionProps,
   ProctorTelemetryState,
 } from '@/lib/interview/interviewSession.types';
-import { playAudio, stopAudio, unlockAudio } from '@/lib/audioManager';
+import { stopAudio, unlockAudio } from '@/lib/audioManager';
 import { useInterviewSpeech } from '@/lib/interview/useInterviewSpeech';
 
 export type { Message, InterviewPhase };
@@ -63,21 +65,42 @@ export function useInterviewSession({
     return () => clearInterval(timer);
   }, [stage, showWarningModal]);
 
+  // The agent's voice belongs to this lifecycle: closing it silences the speaker and makes every
+  // reply still in flight harmless. Exit paths must call it first, before any await.
+  const [lifecycle] = useState(() => createVoiceLifecycle());
+
   useEffect(() => {
+    lifecycle.reopen(); // React StrictMode runs cleanup and then setup again
+    const onPageHide = () => lifecycle.close();
+    window.addEventListener('pagehide', onPageHide);
     return () => {
-      stopAudio();
+      window.removeEventListener('pagehide', onPageHide);
+      lifecycle.close();
     };
-  }, []);
+  }, [lifecycle]);
+
+  const closeVoiceSession = useCallback(() => lifecycle.close(), [lifecycle]);
+
+  const speakTurn = useCallback(
+    (params: AiTurnParams, onReply: (turn: AiTurn) => void) =>
+      runAiTurn(
+        params,
+        lifecycle.beginTurn().signal,
+        { onTurn: onReply, onSpeaking: setIsAiSpeaking },
+        { stream: requestAiTurnStream, voice: voiceStream, isAlive: lifecycle.isAlive }
+      ),
+    [lifecycle]
+  );
 
   const handleComplete = useCallback(async () => {
-    stopAudio();
+    lifecycle.close();
     await endInterviewSession(interviewId, messagesRef.current);
     const results = evaluateCompletedInterview(role, transcriptData.current);
     onComplete(results);
-  }, [interviewId, onComplete, role]);
+  }, [lifecycle, interviewId, onComplete, role]);
 
   const submitAnswer = useCallback(async (text: string) => {
-    if (!text.trim() || isAnalyzing) return;
+    if (!text.trim() || isAnalyzing || !lifecycle.isAlive()) return;
 
     stopAudio();
     setIsAiSpeaking(false);
@@ -89,46 +112,41 @@ export function useInterviewSession({
     setAiRespondError(null);
 
     try {
-      const turnStage = getTurnStage(phase);
-      const response = await requestAiTurn({
-        interviewId,
-        transcript: text,
-        turnNumber: messagesRef.current.length + 1,
-        stage: turnStage,
-        jobTitle: contextDataRef.current.jobTitle,
-        candidateResume: contextDataRef.current.candidateResume,
-        candidateContext: contextDataRef.current.candidateContext,
-        conversationHistory: messagesRef.current.map((m) => ({ speaker: m.role, text: m.content })),
-      });
-
-      transcriptData.current.push({
-        question: lastAiQuestion.current || `Response for the ${role} role`,
-        answer: text,
-        feedback: '',
-      });
-      lastAiQuestion.current = response.text;
-      setPhase(deriveNextInterviewPhase(response.stage));
-
-      setMessages((prev) => [
-        ...prev,
+      await speakTurn(
         {
-          id: `ai-${Date.now()}`,
-          role: 'ai',
-          content: response.text,
-          timestamp: new Date().toLocaleTimeString(),
-          analysis: response.analysis as Message['analysis'],
-          turnRecord: response.turnRecord as Message['turnRecord'],
+          interviewId,
+          transcript: text,
+          turnNumber: messagesRef.current.length + 1,
+          stage: getTurnStage(phase),
+          jobTitle: contextDataRef.current.jobTitle,
+          candidateResume: contextDataRef.current.candidateResume,
+          candidateContext: contextDataRef.current.candidateContext,
+          conversationHistory: messagesRef.current.map((m) => ({ speaker: m.role, text: m.content })),
         },
-      ]);
-      setIsAnalyzing(false);
-
-      if (response.text) {
-        setIsAiSpeaking(true);
-        playAudio(response.text, response.audioUrl, () => {
-          setIsAiSpeaking(false);
-        });
-      }
+        (turn) => {
+          transcriptData.current.push({
+            question: lastAiQuestion.current || `Response for the ${role} role`,
+            answer: text,
+            feedback: '',
+          });
+          lastAiQuestion.current = turn.text;
+          setPhase(deriveNextInterviewPhase(turn.stage));
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `ai-${Date.now()}`,
+              role: 'ai',
+              content: turn.text,
+              timestamp: new Date().toLocaleTimeString(),
+              analysis: turn.analysis as Message['analysis'],
+              turnRecord: turn.turnRecord as Message['turnRecord'],
+            },
+          ]);
+          setIsAnalyzing(false);
+        }
+      );
     } catch (err) {
+      if (!lifecycle.isAlive()) return; // the candidate already left; nothing to show or retry
       setAiRespondError(err instanceof Error ? err.message : 'Network error contacting AI service.');
       setMessages((prev) => [
         ...prev,
@@ -141,17 +159,19 @@ export function useInterviewSession({
       ]);
       setIsAnalyzing(false);
       setIsAiSpeaking(false);
-      setTimeout(handleComplete, 1200);
+      setTimeout(() => lifecycle.isAlive() && handleComplete(), 1200);
     }
-  }, [handleComplete, interviewId, isAnalyzing, phase, role]);
+  }, [handleComplete, interviewId, isAnalyzing, lifecycle, phase, role, speakTurn]);
 
   const {
     candidateSpeechText,
     setCandidateSpeechText,
   } = useInterviewSpeech({
+    active: stage === 'session',
     micActive,
     isAiSpeaking,
     isAnalyzing,
+    aiSpeechText: [...messages].reverse().find((m) => m.role === 'ai')?.content,
     onFinalTranscript: submitAnswer,
     onError: (errText) => setAiRespondError(errText),
   });
@@ -168,27 +188,31 @@ export function useInterviewSession({
 
     contextDataRef.current = await fetchInterviewContext(interviewId, role);
     await fsPromise;
+    if (!lifecycle.isAlive()) return; // left during device checks / fullscreen: never start the agent
 
     try {
-      const response = await requestInitialAiTurn(interviewId, contextDataRef.current);
-      lastAiQuestion.current = response.text;
-      setMessages([
+      const context = contextDataRef.current;
+      await speakTurn(
         {
-          id: 'ai-init',
-          role: 'ai',
-          content: response.text,
-          timestamp: new Date().toLocaleTimeString(),
+          interviewId,
+          transcript: '',
+          turnNumber: 0,
+          stage: 'intro',
+          jobTitle: context.jobTitle,
+          candidateResume: context.candidateResume,
+          candidateContext: context.candidateContext,
+          conversationHistory: [],
         },
-      ]);
-      setIsAnalyzing(false);
-
-      if (response.text) {
-        setIsAiSpeaking(true);
-        playAudio(response.text, response.audioUrl, () => {
-          setIsAiSpeaking(false);
-        });
-      }
+        (turn) => {
+          lastAiQuestion.current = turn.text;
+          setMessages([
+            { id: 'ai-init', role: 'ai', content: turn.text, timestamp: new Date().toLocaleTimeString() },
+          ]);
+          setIsAnalyzing(false);
+        }
+      );
     } catch (err) {
+      if (!lifecycle.isAlive()) return;
       setAiRespondError(err instanceof Error ? err.message : 'Network error contacting AI service.');
       setMessages([
         {
@@ -211,7 +235,7 @@ export function useInterviewSession({
   };
 
   const handleEliminateCandidate = async () => {
-    stopAudio();
+    lifecycle.close();
     await endInterviewSession(interviewId, messagesRef.current);
     onComplete(createEliminationResult(messagesRef.current));
   };
@@ -233,6 +257,7 @@ export function useInterviewSession({
     startSession,
     submitAnswer,
     wrapUp: handleComplete,
+    closeVoiceSession,
     toggleMic: () => setMicActive((p) => !p),
     toggleCam: () => setCamActive((p) => !p),
     setStage,

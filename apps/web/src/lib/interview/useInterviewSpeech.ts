@@ -1,183 +1,99 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  SpeechRecognitionClass,
-  SpeechRecognitionEvent,
-  SpeechRecognitionErrorEvent,
-  SpeechRecognitionInstance,
-} from '@/app/candidate/resume-builder/_hooks/speechRecognition.types';
-import { stopAudio } from '@/lib/audioManager';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { interruptAudio } from '@/lib/audioManager';
+import { browserMicDeps } from './stt/browserDeps';
+import { MicCapture, type CapturedUtterance } from './stt/micCapture';
+import { micErrorMessage } from './stt/sttErrors';
+import { transcribeUtterance } from './stt/sttApi';
+import { processUtterance } from './stt/utteranceProcessor';
+import { useReportOnce } from './useReportOnce';
+
+export type SpeechStatus = 'off' | 'listening' | 'transcribing';
 
 interface UseInterviewSpeechProps {
+  /** The interview session has started (the mic stays closed on the device-check screen). */
+  active: boolean;
   micActive: boolean;
   isAiSpeaking: boolean;
   isAnalyzing: boolean;
+  /** What the AI is currently saying; used to ignore the mic hearing the AI through the speakers. */
+  aiSpeechText?: string;
   onFinalTranscript: (text: string) => void;
   onError?: (msg: string) => void;
 }
 
+/**
+ * Candidate voice input: records each spoken answer in the browser and transcribes it with the
+ * server's Whisper endpoint, then submits the text as the candidate's turn.
+ */
 export function useInterviewSpeech({
+  active,
   micActive,
   isAiSpeaking,
   isAnalyzing,
+  aiSpeechText = '',
   onFinalTranscript,
   onError,
 }: UseInterviewSpeechProps) {
   const [candidateSpeechText, setCandidateSpeechText] = useState('');
-  const candidateSpeechTextRef = useRef('');
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-  const recognitionActiveRef = useRef(false);
-  const speechStartRef = useRef(0);
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [transcribing, setTranscribing] = useState(false);
+  const captureRef = useRef<MicCapture | null>(null);
+  const busyRef = useRef(false);
+  const reportOnce = useReportOnce(onError);
 
-  const isAiSpeakingRef = useRef(isAiSpeaking);
-  const isAnalyzingRef = useRef(isAnalyzing);
-  const micActiveRef = useRef(micActive);
-
+  const latest = useRef({ aiSpeechText, onFinalTranscript, reportOnce });
   useEffect(() => {
-    candidateSpeechTextRef.current = candidateSpeechText;
-  }, [candidateSpeechText]);
+    latest.current = { aiSpeechText, onFinalTranscript, reportOnce };
+  }, [aiSpeechText, onFinalTranscript, reportOnce]);
 
-  useEffect(() => {
-    isAiSpeakingRef.current = isAiSpeaking;
-  }, [isAiSpeaking]);
-
-  useEffect(() => {
-    isAnalyzingRef.current = isAnalyzing;
-  }, [isAnalyzing]);
-
-  useEffect(() => {
-    micActiveRef.current = micActive;
-  }, [micActive]);
-
-  const clearSilenceTimer = useCallback(() => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
+  const handleUtterance = useCallback(async (utterance: CapturedUtterance) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setTranscribing(true);
+    try {
+      await processUtterance(utterance, {
+        transcribe: transcribeUtterance,
+        getAiText: () => latest.current.aiSpeechText,
+        onFinal: (text) => {
+          setCandidateSpeechText(text);
+          latest.current.onFinalTranscript(text);
+        },
+        onError: (message) => latest.current.reportOnce(message),
+      });
+    } finally {
+      busyRef.current = false;
+      setTranscribing(false);
     }
   }, []);
 
-  const stopSpeechRecognition = useCallback(() => {
-    clearSilenceTimer();
-    recognitionActiveRef.current = false;
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {}
-      recognitionRef.current = null;
-    }
-  }, [clearSilenceTimer]);
-
-  const startSpeechRecognition = useCallback(() => {
-    if (!SpeechRecognitionClass || !micActiveRef.current) return;
-    if (recognitionActiveRef.current) return;
-
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {}
-    }
-
-    try {
-      const recognition = new SpeechRecognitionClass();
-      recognitionRef.current = recognition;
-      recognitionActiveRef.current = true;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      recognition.onstart = () => {
-        speechStartRef.current = Date.now();
-      };
-
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
-        clearSilenceTimer();
-
-        let interimTranscript = '';
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-        const displayTranscript = (finalTranscript || interimTranscript).trim();
-        if (displayTranscript) {
-          setCandidateSpeechText(displayTranscript);
-        }
-
-        // If AI is currently speaking and user starts talking clearly, interrupt AI playback
-        if (isAiSpeakingRef.current) {
-          const elapsed = Date.now() - (speechStartRef.current || 0);
-          const isSubstantial = displayTranscript.length >= 4;
-          if (elapsed > 600 && isSubstantial) {
-            stopAudio();
-          }
-        }
-
-        // Auto-submit on natural pause/silence when candidate finished speaking
-        if (!isAiSpeakingRef.current && !isAnalyzingRef.current && displayTranscript.length >= 2) {
-          silenceTimerRef.current = setTimeout(() => {
-            const spoken = candidateSpeechTextRef.current.trim();
-            if (spoken.length >= 2 && !isAnalyzingRef.current && !isAiSpeakingRef.current) {
-              setCandidateSpeechText('');
-              candidateSpeechTextRef.current = '';
-              onFinalTranscript(spoken);
-            }
-          }, 2500);
-        }
-      };
-
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        if (
-          event.error === 'aborted' ||
-          event.error === 'no-speech' ||
-          event.error === 'network'
-        ) {
-          return;
-        }
-        if (event.error === 'not-allowed') {
-          onError?.('Microphone permission denied. Please allow mic access or type your response.');
-        }
-      };
-
-      recognition.onend = () => {
-        recognitionActiveRef.current = false;
-        // If mic is still active and session is not analyzing, restart recognition
-        if (micActiveRef.current && !isAnalyzingRef.current) {
-          try {
-            recognitionRef.current?.start();
-            recognitionActiveRef.current = true;
-          } catch {}
-        }
-      };
-
-      recognition.start();
-    } catch {
-      recognitionActiveRef.current = false;
-    }
-  }, [clearSilenceTimer, onFinalTranscript, onError]);
+  const micOpen = active && micActive;
 
   useEffect(() => {
-    if (!micActive || isAnalyzing) {
-      stopSpeechRecognition();
-    } else {
-      startSpeechRecognition();
-    }
-
+    if (!micOpen) return;
+    const capture = new MicCapture(browserMicDeps, {
+      onUtterance: (u) => void handleUtterance(u),
+      onBargeIn: () => interruptAudio(), // resets "AI is speaking" so the answer can be submitted
+      onError: (code) => latest.current.reportOnce(micErrorMessage(code)),
+    });
+    captureRef.current = capture;
+    void capture.start();
     return () => {
-      stopSpeechRecognition();
+      capture.stop();
+      captureRef.current = null;
     };
-  }, [micActive, isAnalyzing, isAiSpeaking, startSpeechRecognition, stopSpeechRecognition]);
+  }, [micOpen, handleUtterance]);
 
-  return {
-    candidateSpeechText,
-    setCandidateSpeechText,
-    startSpeechRecognition,
-    stopSpeechRecognition,
-    isRecognitionActive: () => recognitionActiveRef.current,
-  };
+  const listening = micOpen && !isAnalyzing && !transcribing;
+  useEffect(() => {
+    captureRef.current?.setListening(listening);
+  }, [listening, micOpen]);
+
+  useEffect(() => {
+    captureRef.current?.setAiSpeaking(isAiSpeaking);
+  }, [isAiSpeaking, micOpen]);
+
+  const speechStatus: SpeechStatus = !micOpen ? 'off' : transcribing ? 'transcribing' : 'listening';
+
+  return { candidateSpeechText, setCandidateSpeechText, speechStatus };
 }
