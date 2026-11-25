@@ -100,7 +100,7 @@ export function useCreateJobForm() {
   const handleAiAssist = async () => {
     if (!jd) return;
     setAssisting(true);
-    setAssistStep('Analyzing job description with Gemini AI...');
+    setAssistStep('Analyzing job description with Groq AI...');
 
     try {
       const res = await apiClient.post<{

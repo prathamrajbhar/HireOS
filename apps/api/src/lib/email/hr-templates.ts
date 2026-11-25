@@ -6,11 +6,11 @@ export function buildWelcomeHREmail(params: {
   dashboardUrl: string;
 }): { subject: string; html: string; text: string } {
   const org = params.orgName ? ` at ${params.orgName}` : '';
-  const title = `Welcome to NextRound${org}`;
-  const subject = `Welcome to NextRound — Your Hiring Workspace is Ready`;
+  const title = `Welcome to HireOS${org}`;
+  const subject = `Welcome to HireOS — Your Hiring Workspace is Ready`;
   const contentHtml = `
     <p style="margin:0 0 14px 0;">Hello <strong>${escapeHtml(params.name)}</strong>,</p>
-    <p style="margin:0 0 14px 0;">Your HR recruiter workspace has been created${params.orgName ? ` for <strong>${escapeHtml(params.orgName)}</strong>` : ''}. NextRound empowers your team to configure hiring rubrics, schedule autonomous voice assessments, and review AI candidate evaluations with zero human bottlenecks.</p>
+    <p style="margin:0 0 14px 0;">Your HR recruiter workspace has been created${params.orgName ? ` for <strong>${escapeHtml(params.orgName)}</strong>` : ''}. HireOS empowers your team to configure hiring rubrics, schedule autonomous voice assessments, and review AI candidate evaluations with zero human bottlenecks.</p>
     <p style="margin:0;">You can access your recruiter dashboard below to create job requisitions, configure assessment criteria, or invite team members.</p>
   `;
   const secondaryText = 'If you did not create this workspace, please reach out to support immediately.';
@@ -23,7 +23,7 @@ export function buildWelcomeHREmail(params: {
     },
     secondaryText,
   });
-  const text = `Hello ${params.name},\n\nWelcome to NextRound. Your HR workspace is ready.\n\nOpen your dashboard here: ${params.dashboardUrl}\n\nNextRound Team`;
+  const text = `Hello ${params.name},\n\nWelcome to HireOS. Your HR workspace is ready.\n\nOpen your dashboard here: ${params.dashboardUrl}\n\nHireOS Team`;
   return { subject, html, text };
 }
 
@@ -36,7 +36,7 @@ export function buildMemberInviteEmail(params: {
 }): { subject: string; html: string; text: string } {
   const org = params.organizationName || 'your organization';
   const title = `Invitation to join ${org}`;
-  const subject = `Invitation to join ${org} on NextRound`;
+  const subject = `Invitation to join ${org} on HireOS`;
   const inviterText = params.invitedByEmail ? ` by <strong>${escapeHtml(params.invitedByEmail)}</strong>` : '';
 
   const passwordBlock = params.temporaryPassword
@@ -65,8 +65,8 @@ export function buildMemberInviteEmail(params: {
     : '';
 
   const contentHtml = `
-    <p style="margin:0 0 14px 0;">You have been invited${inviterText} to collaborate on NextRound as part of <strong>${escapeHtml(org)}</strong>.</p>
-    <p style="margin:0 0 14px 0;">NextRound enables talent acquisition teams to build pipelines, review AI candidate evaluations, and manage autonomous assessment rounds seamlessly.</p>
+    <p style="margin:0 0 14px 0;">You have been invited${inviterText} to collaborate on HireOS as part of <strong>${escapeHtml(org)}</strong>.</p>
+    <p style="margin:0 0 14px 0;">HireOS enables talent acquisition teams to build pipelines, review AI candidate evaluations, and manage autonomous assessment rounds seamlessly.</p>
     ${passwordBlock}
     <p style="margin:0;">Click below to sign in and set up your workspace access.</p>
   `;
@@ -84,7 +84,7 @@ export function buildMemberInviteEmail(params: {
     ? `\n--- ACCESS CREDENTIALS ---\nEmail: ${params.recipientEmail || ''}\nTemporary Password: ${params.temporaryPassword}\n(You will be required to choose a new password on your first sign-in)\n--------------------------\n`
     : '';
 
-  const text = `You have been invited to join ${org} on NextRound.
+  const text = `You have been invited to join ${org} on HireOS.
 ${textPassword}
 Sign in: ${params.inviteUrl}`;
   return { subject, html, text };

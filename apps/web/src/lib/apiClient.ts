@@ -1,13 +1,18 @@
 import { fetchApi, clearApiCache, type FetchApiOptions } from './api-fetcher';
 import { AppError, type AppErrorCode } from './errors';
 
-async function request<T>(endpoint: string, options: FetchApiOptions = {}): Promise<T> {
+interface ApiRequestOptions extends FetchApiOptions {
+  retryOnFailure?: boolean;
+}
+
+async function request<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
+  const { retryOnFailure, ...fetchOptions } = options;
   let attempts = 0;
-  const maxAttempts = 2;
+  const maxAttempts = retryOnFailure === false ? 1 : 2;
 
   while (attempts < maxAttempts) {
     attempts++;
-    const result = await fetchApi<T>(endpoint, options);
+    const result = await fetchApi<T>(endpoint, fetchOptions);
 
     if (result.success) {
       return result.data as T;
@@ -42,13 +47,13 @@ function serializeBody(body: unknown): BodyInit | undefined {
 }
 
 export const apiClient = {
-  get: <T>(endpoint: string, options?: FetchApiOptions) => request<T>(endpoint, { method: 'GET', ...options }),
-  post: <T>(endpoint: string, body?: unknown, options?: FetchApiOptions) =>
+  get: <T>(endpoint: string, options?: ApiRequestOptions) => request<T>(endpoint, { method: 'GET', ...options }),
+  post: <T>(endpoint: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(endpoint, { method: 'POST', body: serializeBody(body), ...options }),
-  put: <T>(endpoint: string, body?: unknown, options?: FetchApiOptions) =>
+  put: <T>(endpoint: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(endpoint, { method: 'PUT', body: serializeBody(body), ...options }),
-  patch: <T>(endpoint: string, body?: unknown, options?: FetchApiOptions) =>
+  patch: <T>(endpoint: string, body?: unknown, options?: ApiRequestOptions) =>
     request<T>(endpoint, { method: 'PATCH', body: serializeBody(body), ...options }),
-  delete: <T>(endpoint: string, options?: FetchApiOptions) => request<T>(endpoint, { method: 'DELETE', ...options }),
+  delete: <T>(endpoint: string, options?: ApiRequestOptions) => request<T>(endpoint, { method: 'DELETE', ...options }),
   clearCache: clearApiCache,
 };

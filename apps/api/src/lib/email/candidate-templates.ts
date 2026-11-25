@@ -4,15 +4,15 @@ export function buildWelcomeCandidateEmail(params: {
   name: string;
   loginUrl: string;
 }): { subject: string; html: string; text: string } {
-  const title = `Welcome to NextRound, ${params.name}`;
-  const subject = 'Welcome to NextRound — Your Profile is Active';
+  const title = `Welcome to HireOS, ${params.name}`;
+  const subject = 'Welcome to HireOS — Your Profile is Active';
   const contentHtml = `
     <p style="margin:0 0 14px 0;">Hello <strong>${escapeHtml(params.name)}</strong>,</p>
-    <p style="margin:0 0 14px 0;">Congratulations on completing your candidate onboarding profile! Your profile is now active on the NextRound platform.</p>
+    <p style="margin:0 0 14px 0;">Congratulations on completing your candidate onboarding profile! Your profile is now active on the HireOS platform.</p>
     <p style="margin:0 0 14px 0;">You can now participate in role-specific voice assessments, complete technical evaluation challenges, and track all your applications with full transparency.</p>
     <p style="margin:0;">Head over to your candidate dashboard below to explore active job openings, schedule practice sessions, or test your audio and video setup.</p>
   `;
-  const secondaryText = 'If you did not create an account on NextRound, please disregard this email or notify security.';
+  const secondaryText = 'If you did not create an account on HireOS, please disregard this email or notify security.';
   const html = renderProfessionalEmailLayout({
     title,
     contentHtml,
@@ -22,7 +22,7 @@ export function buildWelcomeCandidateEmail(params: {
     },
     secondaryText,
   });
-  const text = `Hello ${params.name},\n\nCongratulations on completing your profile! Your candidate account is active.\n\nAccess your dashboard here: ${params.loginUrl}\n\nNextRound Team`;
+  const text = `Hello ${params.name},\n\nCongratulations on completing your profile! Your candidate account is active.\n\nAccess your dashboard here: ${params.loginUrl}\n\nHireOS Team`;
   return { subject, html, text };
 }
 
@@ -31,10 +31,10 @@ export function buildPasswordResetEmail(params: {
   expiresInHours?: number;
 }): { subject: string; html: string; text: string } {
   const title = 'Reset Your Password';
-  const subject = 'NextRound — Password Reset Request';
+  const subject = 'HireOS — Password Reset Request';
   const hours = params.expiresInHours || 1;
   const contentHtml = `
-    <p style="margin:0 0 14px 0;">We received a request to reset the password for your NextRound account.</p>
+    <p style="margin:0 0 14px 0;">We received a request to reset the password for your HireOS account.</p>
     <p style="margin:0 0 14px 0;">Click the button below to choose a new password. For security, this link will expire in <strong>${hours} hour${hours > 1 ? 's' : ''}</strong>.</p>
   `;
   const secondaryText = 'If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.';
@@ -47,7 +47,7 @@ export function buildPasswordResetEmail(params: {
     },
     secondaryText,
   });
-  const text = `Reset your NextRound password using the link below (valid for ${hours} hour):
+  const text = `Reset your HireOS password using the link below (valid for ${hours} hour):
 ${params.resetUrl}
 
 If you did not make this request, please ignore this email.`;
@@ -60,7 +60,7 @@ export function buildApplicationReceivedEmail(params: {
   orgName?: string;
   dashboardUrl?: string;
 }): { subject: string; html: string; text: string } {
-  const org = params.orgName || 'NextRound Hiring Network';
+  const org = params.orgName || 'HireOS Hiring Network';
   const title = 'Application Received';
   const subject = `Application Received: ${params.jobTitle} at ${org}`;
   const contentHtml = `
@@ -86,7 +86,7 @@ export function buildApplicationReceivedEmail(params: {
 
 Thank you for applying for ${params.jobTitle} at ${org}. Your application has been received and is being screened.
 
-NextRound Team`;
+HireOS Team`;
   return { subject, html, text };
 }
 
@@ -128,7 +128,7 @@ export function buildConstructiveRejectionEmail(params: {
 
 Thank you for applying for ${params.jobTitle}. ${params.rejectionFeedback}
 
-NextRound Team`;
+HireOS Team`;
   return { subject, html, text };
 }
 

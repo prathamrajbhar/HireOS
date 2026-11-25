@@ -6,7 +6,7 @@
 - **Documentation**: Full specs in `docs/` — `prd.md` (product), `architecture.md` (system), `features.md` (feature specs + agent triggers), `api.md` (all REST endpoints), `screens.md` (all screens + components), `schema.md` (Prisma schema), `agents.md` (per-agent LangGraph specs).
 
 ## Stack (LOCKED — do not substitute)
-- **Frontend**: Next.js 16.3.0 (App Router), React 19.2.8, TypeScript 7.0.2 native (via `@typescript/native` alias; `typescript` = 6.0.2 API shim for JS-API tooling), Tailwind CSS 4.3.3, Lucide React 1.31, WebRTC, MediaPipe (client-side CV)
+- **Frontend**: Next.js 16.3.0 (App Router), React 19.2.8, TypeScript 7.0.2 native (via `@typescript/native` alias; `typescript` = 6.0.2 API shim for JS-API toolingnm), Tailwind CSS 4.3.3, Lucide React 1.31, WebRTC, MediaPipe (client-side CV)
 - **Backend API**: Express.js 5.2.1, TypeScript 7.0.2, Zod 4.4.3, Prisma ORM 7.9.1, PostgreSQL 16 + pgvector, Custom JWT
 - **AI Service**: Python 3.13, FastAPI 0.141.1, Uvicorn 0.52.1, LangGraph 1.2.10, Gemini API (`google-genai` SDK 2.17.0), Groq API 1.6.0 (Whisper-large-v3 STT), Piper/Coqui TTS
 - **Infra & Queues**: Turborepo 2.10.9, BullMQ 6.0.9 + Redis 8, Nodemailer 9.0.5, Native File Storage

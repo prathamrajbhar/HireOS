@@ -7,7 +7,7 @@ export function buildInterviewSchedulingEmail(params: {
   portalUrl: string;
 }): { subject: string; html: string; text: string } {
   const title = 'Voice Interview Invitation';
-  const subject = `NextRound: Next Steps for ${params.jobTitle}`;
+  const subject = `HireOS: Next Steps for ${params.jobTitle}`;
 
   const slotsListHtml = params.slots.map((slotItem) => `
     <li style="margin-bottom:8px;font-size:14px;color:#1e293b;">
@@ -51,7 +51,7 @@ export function buildOfferLetterEmail(params: {
   signUrl: string;
 }): { subject: string; html: string; text: string } {
   const title = `Offer of Employment: ${params.jobTitle}`;
-  const subject = `Offer Letter: ${params.jobTitle} at NextRound`;
+  const subject = `Offer Letter: ${params.jobTitle} at HireOS`;
   const contentHtml = `
     <p style="margin:0 0 14px 0;">Hello <strong>${escapeHtml(params.candidateName)}</strong>,</p>
     <p style="margin:0 0 14px 0;">Following your successful interviews and evaluations, we are pleased to extend an official offer of employment for the position of <strong>${escapeHtml(params.jobTitle)}</strong>.</p>
@@ -129,6 +129,6 @@ export function buildInterviewConfirmationEmail(params: {
       url: params.sessionUrl,
     },
   });
-  const text = `Hello ${params.candidateName},\n\nYour interview for ${params.jobTitle} is confirmed for ${params.scheduledAt}.\nAccess the interview room: ${params.sessionUrl}\n\nNextRound Team`;
+  const text = `Hello ${params.candidateName},\n\nYour interview for ${params.jobTitle} is confirmed for ${params.scheduledAt}.\nAccess the interview room: ${params.sessionUrl}\n\nHireOS Team`;
   return { subject, html, text };
 }
