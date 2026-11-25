@@ -5,6 +5,24 @@ let lastText = '';
 let currentBlobUrl: string | null = null;
 // Set to true by stopAudio() so any dangling onEnd/onerror callbacks know to bail out
 let _audioStopped = false;
+// onEnd of the clip currently playing; lets interruptAudio() complete the turn instead of stranding it
+let pendingOnEnd: (() => void) | null = null;
+
+function trackOnEnd(onEnd?: () => void): (() => void) | undefined {
+  if (!onEnd) {
+    pendingOnEnd = null;
+    return undefined;
+  }
+  let fired = false;
+  const once = () => {
+    if (fired) return;
+    fired = true;
+    if (pendingOnEnd === once) pendingOnEnd = null;
+    onEnd();
+  };
+  pendingOnEnd = once;
+  return once;
+}
 
 function revokeCurrentBlobUrl() {
   if (currentBlobUrl) {
@@ -117,6 +135,7 @@ export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
 
   stopAudio();
   _audioStopped = false;  // Reset again after stopAudio clears the flag
+  onEnd = trackOnEnd(onEnd);
 
   if (audioUrl) {
     try {
@@ -160,7 +179,18 @@ export function playAudio(text: string, audioUrl?: string, onEnd?: () => void) {
   }
 }
 
+/**
+ * Stops playback because the candidate started talking. Unlike stopAudio(), the clip's onEnd is
+ * still delivered once, so callers' "AI is speaking" state is reset and the turn can continue.
+ */
+export function interruptAudio() {
+  const finish = pendingOnEnd;
+  stopAudio();
+  finish?.();
+}
+
 export function stopAudio() {
+  pendingOnEnd = null;  // Navigation/teardown: callbacks must NOT fire
   if (typeof window !== 'undefined') {
     _audioStopped = true;  // Signal all callbacks to abort before we tear down
     try {

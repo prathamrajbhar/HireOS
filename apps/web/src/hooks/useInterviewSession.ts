@@ -149,9 +149,11 @@ export function useInterviewSession({
     candidateSpeechText,
     setCandidateSpeechText,
   } = useInterviewSpeech({
+    active: stage === 'session',
     micActive,
     isAiSpeaking,
     isAnalyzing,
+    aiSpeechText: [...messages].reverse().find((m) => m.role === 'ai')?.content,
     onFinalTranscript: submitAnswer,
     onError: (errText) => setAiRespondError(errText),
   });

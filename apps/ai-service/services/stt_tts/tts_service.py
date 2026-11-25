@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import logging
 import re
@@ -12,8 +13,10 @@ DEFAULT_VOICE = "en-US-ChristopherNeural"
 # Circuit breaker state to prevent repeated 403 / network delays on every turn
 _tts_consecutive_failures: int = 0
 _tts_cooldown_until: float = 0.0
-TTS_COOLDOWN_SECONDS: float = 120.0  # 2 minute cooldown once tripped
-TTS_FAILURE_THRESHOLD: int = 1       # Fast trip on first handshake/auth failure to protect conversation speed
+TTS_COOLDOWN_SECONDS: float = 30.0   # Short cooldown: voice should come back quickly after an outage
+TTS_FAILURE_THRESHOLD: int = 3       # A single transient failure must not mute the interviewer
+TTS_RETRY_DELAY_SECONDS: float = 0.4
+TTS_ATTEMPTS: int = 2                # One retry per request before counting a failure
 
 def is_tts_service_available() -> bool:
     """Returns True if the remote TTS service is operational and not in cooldown."""
@@ -59,23 +62,29 @@ async def generate_tts_audio_bytes(text: str, voice: str = DEFAULT_VOICE) -> byt
     cleaned_text = text.strip()
     voice_name = voice or DEFAULT_VOICE
 
-    try:
-        communicate = edge_tts.Communicate(cleaned_text, voice_name)
-        audio_buffer = bytearray()
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                audio_buffer.extend(chunk["data"])
+    last_error = "No audio data received"
+    for attempt in range(1, TTS_ATTEMPTS + 1):
+        try:
+            communicate = edge_tts.Communicate(cleaned_text, voice_name)
+            audio_buffer = bytearray()
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    audio_buffer.extend(chunk["data"])
 
-        if audio_buffer:
-            record_tts_success()
-            return bytes(audio_buffer)
+            if audio_buffer:
+                record_tts_success()
+                return bytes(audio_buffer)
+            last_error = "No audio data received"
+        except Exception as e:
+            last_error = str(e)
+            logger.warning(
+                f"Edge TTS attempt {attempt}/{TTS_ATTEMPTS} failed for text length {len(text)}: {e}"
+            )
+        if attempt < TTS_ATTEMPTS:
+            await asyncio.sleep(TTS_RETRY_DELAY_SECONDS)
 
-        record_tts_failure("No audio data received")
-        return b""
-    except Exception as e:
-        record_tts_failure(str(e))
-        logger.warning(f"Edge TTS synthesis failed for text length {len(text)}: {e}")
-        return b""
+    record_tts_failure(last_error)
+    return b""
 
 async def generate_tts_audio_base64(text: str, voice: str = DEFAULT_VOICE) -> str:
     """Generates a data:audio/mp3;base64 URI string or empty string if audio is unavailable."""

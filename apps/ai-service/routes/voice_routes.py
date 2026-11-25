@@ -9,13 +9,15 @@ from pydantic import BaseModel, Field
 from agents.interviewer_agent import run_interviewer_agent, InterviewerState
 from workers.resume_builder_worker import process_resume_builder_job
 
-from services.stt_tts.stt_service import transcribe_audio_bytes
+from services.stt_tts.stt_service import SttUnavailableError, transcribe_audio_bytes
 from services.stt_tts.tts_service import generate_tts_audio_base64, stream_sentence_tts
 from core.config import settings
 
 logger = logging.getLogger("voice_routes")
 
 voice_router = APIRouter(prefix="/api/v1/ai/interview", tags=["voice-interview"])
+
+MAX_TRANSCRIBE_BYTES = 10 * 1024 * 1024
 
 class GenerateResumeRequest(BaseModel):
     sessionId: str
@@ -34,6 +36,7 @@ class TranscribeRequest(BaseModel):
 class TranscribeResponse(BaseModel):
     transcript: str
     confidence: Optional[float] = None
+    no_speech: bool = False
 
 class InterviewRespondRequest(BaseModel):
     interviewId: str
@@ -73,6 +76,7 @@ class TTSResponse(BaseModel):
 async def transcribe_audio(
     request: Request,
     file: Optional[UploadFile] = File(None),
+    language: str = "en",
 ):
     logger.info("Voice: Received audio transcription request")
 
@@ -97,8 +101,16 @@ async def transcribe_audio(
     if not audio_bytes or len(audio_bytes) == 0:
         raise HTTPException(status_code=400, detail="No audio provided.")
 
-    transcript, confidence = transcribe_audio_bytes(audio_bytes, filename=filename)
-    return TranscribeResponse(transcript=transcript, confidence=confidence)
+    if len(audio_bytes) > MAX_TRANSCRIBE_BYTES:
+        raise HTTPException(status_code=413, detail="Audio too large. Keep answers under a few minutes.")
+
+    try:
+        transcript, confidence = await asyncio.to_thread(
+            transcribe_audio_bytes, audio_bytes, filename, language
+        )
+    except SttUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return TranscribeResponse(transcript=transcript, confidence=confidence, no_speech=not transcript)
 
 @voice_router.post("/respond", response_model=InterviewRespondResponse)
 async def generate_interview_response(request: InterviewRespondRequest):

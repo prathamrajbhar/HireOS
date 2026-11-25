@@ -28,6 +28,7 @@ from services.stt_tts.tts_service import (
     generate_tts_audio_bytes,
     is_tts_service_available,
     reset_tts_circuit,
+    TTS_FAILURE_THRESHOLD,
 )
 from services.llm.llm_service import extract_json_object, _extract_gemini_text
 from workers.resume_builder_worker import _build_resume_prompt
@@ -243,9 +244,10 @@ async def test_edge_tts_403_fast_fails_without_crashing_turn():
 
         mock_stream.side_effect = failing_stream
 
-        # First attempt fails and trips circuit
-        audio_b64 = await generate_tts_audio_base64("Hello world")
-        assert audio_b64 == ""
+        # Failures never crash the turn; the breaker opens only after repeated failed requests
+        with patch("services.stt_tts.tts_service.TTS_RETRY_DELAY_SECONDS", 0):
+            for _ in range(TTS_FAILURE_THRESHOLD):
+                assert await generate_tts_audio_base64("Hello world") == ""
         assert is_tts_service_available() is False
 
         # Second attempt immediately returns empty without touching edge_tts.Communicate
@@ -254,6 +256,7 @@ async def test_edge_tts_403_fast_fails_without_crashing_turn():
             assert audio_b64_2 == ""
             # Ensure Communicate was not even instantiated due to circuit breaker
             assert mock_comm.call_count == 0
+    reset_tts_circuit()
 
 
 # ---------------------------------------------------------------------------
