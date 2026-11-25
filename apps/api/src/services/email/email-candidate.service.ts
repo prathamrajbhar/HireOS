@@ -28,7 +28,7 @@ export class EmailCandidateService extends EmailTransportService {
     toEmail: string,
     candidateName: string,
     jobTitle: string,
-    orgName = 'NextRound Hiring Network'
+    orgName = 'HireOS Hiring Network'
   ): Promise<boolean> {
     const appUrl = env('APP_URL');
     const dashboardUrl = `${appUrl}/candidate/dashboard`;

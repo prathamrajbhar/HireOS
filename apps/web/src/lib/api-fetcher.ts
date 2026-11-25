@@ -85,13 +85,17 @@ export async function fetchApi<T>(
   return result;
 }
 
-async function refreshAccessToken(): Promise<boolean> {
+async function refreshAccessToken(timeoutMs: number): Promise<boolean> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const base = stripTrailingSlash(API_BASE_URL);
     const refreshRes = await fetch(base + '/auth/refresh', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
     });
     const refreshData = refreshRes.headers.get('content-type')?.includes('application/json')
       ? await refreshRes.json()
@@ -99,6 +103,8 @@ async function refreshAccessToken(): Promise<boolean> {
     return refreshData.success === true;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -138,13 +144,13 @@ async function fetchNetworkApi<T>(
     if (res.status === 401 && !isRetry && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
 
       if (!refreshPromise) {
-        refreshPromise = refreshAccessToken().finally(() => {
+        refreshPromise = refreshAccessToken(timeoutMs ?? DEFAULT_TIMEOUT_MS).finally(() => {
           refreshPromise = null;
         });
       }
       const refreshed = await refreshPromise;
       if (refreshed) {
-        return fetchNetworkApi<T>(endpoint, options, true);
+        return fetchNetworkApi<T>(endpoint, options, true, timeoutMs);
       }
     }
 

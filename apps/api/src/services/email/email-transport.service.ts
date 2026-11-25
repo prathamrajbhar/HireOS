@@ -74,7 +74,7 @@ export class EmailTransportService {
 
   public async sendImmediate(options: EmailOptions): Promise<boolean> {
     try {
-      const from = process.env.SMTP_FROM || 'NextRound <noreply@nextround.ai>';
+      const from = process.env.SMTP_FROM || 'HireOS <noreply@hireos.ai>';
       if (this.transporter) {
         await this.transporter.sendMail({
           from,

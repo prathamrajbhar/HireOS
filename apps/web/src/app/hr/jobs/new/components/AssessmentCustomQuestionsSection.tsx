@@ -128,6 +128,9 @@ export function AssessmentCustomQuestionsSection({
         experienceLevel,
         difficulty: params.difficulty,
         categoryDistribution: params.categoryDistribution,
+      }, {
+        timeoutMs: 150_000,
+        retryOnFailure: false,
       });
 
       if (res && Array.isArray(res.questions) && res.questions.length > 0) {

@@ -46,7 +46,7 @@ async function callOllama(prompt: string, timeoutMs: number): Promise<string> {
 
 async function callGroq(prompt: string, timeoutMs: number): Promise<string> {
   const groqApiKey = process.env.GROQ_API_KEY;
-  const groqModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+  const groqModel = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
 
   if (!groqApiKey) {
     throw new Error('GROQ_API_KEY is not configured in the environment.');
@@ -138,7 +138,7 @@ function isQuotaOrRateLimitError(err: unknown): boolean {
 }
 
 export async function generateText(prompt: string, timeoutMs = 120000): Promise<string> {
-  const provider = (process.env.LLM_PROVIDER || 'gemini').toLowerCase();
+  const provider = (process.env.LLM_PROVIDER || 'groq').toLowerCase();
 
   // 1. Ollama requested
   if (provider === 'ollama') {
@@ -164,10 +164,6 @@ export async function generateText(prompt: string, timeoutMs = 120000): Promise<
       return await callGroq(prompt, timeoutMs);
     } catch (err) {
       log.warn('Groq call failed:', err);
-      if (process.env.GEMINI_API_KEY && !isQuotaOrRateLimitError(err)) {
-        log.info('Falling back to Gemini from Groq...');
-        return await callGemini(prompt, timeoutMs);
-      }
       throw err;
     }
   }

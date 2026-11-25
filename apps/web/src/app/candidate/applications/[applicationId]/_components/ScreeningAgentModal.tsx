@@ -104,7 +104,7 @@ export function ScreeningAgentModal({
 
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Click below to execute or re-evaluate your candidate profile using the Gemini AI screening agent:
+                  Click below to execute or re-evaluate your candidate profile using the Groq AI screening agent:
                 </p>
                 <button
                   onClick={onRunScreening}

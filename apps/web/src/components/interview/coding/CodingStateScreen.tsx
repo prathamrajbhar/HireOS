@@ -10,7 +10,7 @@ interface CodingStateScreenProps {
   loadingLabel?: string;
 }
 
-export function CodingStateScreen({ error, loadingLabel = 'Generating live coding problem via Gemini AI...' }: CodingStateScreenProps) {
+export function CodingStateScreen({ error, loadingLabel = 'Generating live coding problem via Groq AI...' }: CodingStateScreenProps) {
   if (error) {
     return (
       <div className="w-full h-screen bg-slate-50 dark:bg-[#0a0a0a] flex flex-col items-center justify-center font-sans">

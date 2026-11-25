@@ -68,10 +68,10 @@ export function renderProfessionalEmailLayout(props: EmailLayoutProps): string {
               <table role="presentation" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="background-color:#0f172a;width:28px;height:28px;border-radius:6px;text-align:center;vertical-align:middle;">
-                    <span style="color:#ffffff;font-size:14px;font-weight:700;line-height:28px;">N</span>
+                    <span style="color:#ffffff;font-size:14px;font-weight:700;line-height:28px;">H</span>
                   </td>
                   <td style="padding-left:10px;font-size:17px;font-weight:700;color:#0f172a;letter-spacing:-0.2px;">
-                    NextRound
+                    HireOS
                   </td>
                 </tr>
               </table>
@@ -115,10 +115,10 @@ export function renderProfessionalEmailLayout(props: EmailLayoutProps): string {
           <tr>
             <td style="padding:24px 8px;text-align:left;font-size:12px;color:#94a3b8;line-height:1.5;">
               <p style="margin:0 0 6px 0;">
-                ${footerNotice || 'This is an automated notification from NextRound. Please do not reply directly to this email.'}
+                ${footerNotice || 'This is an automated notification from HireOS. Please do not reply directly to this email.'}
               </p>
               <p style="margin:0;">
-                &copy; ${new Date().getFullYear()} NextRound Platform. All rights reserved.
+                &copy; ${new Date().getFullYear()} HireOS Platform. All rights reserved.
               </p>
             </td>
           </tr>
