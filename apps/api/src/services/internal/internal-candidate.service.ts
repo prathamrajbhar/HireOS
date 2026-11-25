@@ -5,7 +5,7 @@ import { getCandidateInterviewContext } from '../candidate/candidate-context.ser
 import { deleteCandidateSocialSource as removeCandidateSocialSource } from '../social/social-sync.service';
 
 async function fetchProfileEmbedding(text: string): Promise<number[] | null> {
-  const aiServiceUrl = process.env.AI_BASE_URL || 'http://localhost:8000';
+  const aiServiceUrl = process.env.AI_BASE_URL || 'http://localhost:8012';
   try {
     const response = await fetch(`${aiServiceUrl}/api/v1/embeddings/generate`, {
       method: 'POST',

@@ -1,0 +1,77 @@
+# Production stack for the self-hosted server (API + AI service + Redis).
+# The frontend is hosted on Vercel; the database is external (DATABASE_URL in .env).
+# Ports bind to localhost only and are exposed publicly via `tailscale funnel`.
+name: hireos
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./apps/ai-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      AI_PORT: 8012
+      AI_HOST: 0.0.0.0
+      AI_ENVIRONMENT: production
+      API_BASE_URL: http://api:4012/api/v1
+      REDIS_URL: redis://redis:6379
+      LOCAL_REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:8012:8012"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8012/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: 4012
+      NODE_ENV: production
+      REDIS_URL: redis://redis:6379
+      LOCAL_REDIS_URL: redis://redis:6379
+      AI_BASE_URL: http://ai-service:8012
+    ports:
+      - "127.0.0.1:4012:4012"
+    volumes:
+      - api_uploads:/app/apps/api/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4012/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  redis_data:
+  api_uploads:

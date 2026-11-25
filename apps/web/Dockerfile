@@ -23,8 +23,8 @@ COPY apps/web ./apps/web
 
 # Accept Next.js build-time public environment variables
 ARG NEXT_PUBLIC_APP_URL=http://localhost:3000
-ARG NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
-ARG NEXT_PUBLIC_AI_BASE_URL=http://localhost:8000
+ARG NEXT_PUBLIC_API_URL=http://localhost:4012/api/v1
+ARG NEXT_PUBLIC_AI_BASE_URL=http://localhost:8012
 
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
     NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \

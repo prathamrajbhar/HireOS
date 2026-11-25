@@ -39,7 +39,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production \
-    PORT=4000
+    PORT=4012
 
 RUN apk add --no-cache openssl curl
 
@@ -53,6 +53,6 @@ COPY --from=builder /app/apps/api ./apps/api
 
 WORKDIR /app/apps/api
 
-EXPOSE 4000
+EXPOSE 4012
 
 CMD ["node", "dist/index.js"]

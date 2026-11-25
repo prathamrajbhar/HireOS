@@ -4,7 +4,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    port: int = Field(8000, validation_alias="AI_PORT")
+    port: int = Field(8012, validation_alias="AI_PORT")
     host: str = Field("0.0.0.0", validation_alias="AI_HOST")
     environment: str = Field("development", validation_alias="AI_ENVIRONMENT")
     # Stored as a raw comma-separated string to prevent pydantic-settings from
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.cors_origins_raw.split(",") if o.strip()]
 
     internal_service_secret: str = "internal_secret_key_change_in_production"
-    api_base_url: str = "http://localhost:4000/api/v1"
+    api_base_url: str = "http://localhost:4012/api/v1"
     redis_url: str = Field("redis://localhost:6379", validation_alias="REDIS_URL")
 
     llm_provider: str = "gemini"

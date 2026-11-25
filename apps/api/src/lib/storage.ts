@@ -95,7 +95,7 @@ export async function uploadFile(
         // ignore secondary target failure
       }
     }
-    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4000/api/v1').replace(/\/api\/v1\/?$/, '');
+    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4012/api/v1').replace(/\/api\/v1\/?$/, '');
     return `${appUrl}/uploads/${normalizedKey}`;
   }
 
@@ -136,7 +136,7 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
   }
 
   if (isLocalStorage) {
-    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4000/api/v1').replace(/\/api\/v1\/?$/, '');
+    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4012/api/v1').replace(/\/api\/v1\/?$/, '');
     return `${appUrl}/uploads/${normalizedKey}`;
   }
 

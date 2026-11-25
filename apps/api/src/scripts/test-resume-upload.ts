@@ -57,7 +57,7 @@ startxref
 
   // 3. Test POST /candidate/profile/parse-resume
   console.log('📤 Sending POST /api/v1/candidate/profile/parse-resume ...');
-  const uploadRes = await fetch('http://localhost:4000/api/v1/candidate/profile/parse-resume', {
+  const uploadRes = await fetch('http://localhost:4012/api/v1/candidate/profile/parse-resume', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -90,7 +90,7 @@ startxref
 
   // 5. Test GET /api/v1/candidate/profile
   console.log('📥 Calling GET /api/v1/candidate/profile ...');
-  const getProfileRes = await fetch('http://localhost:4000/api/v1/candidate/profile', {
+  const getProfileRes = await fetch('http://localhost:4012/api/v1/candidate/profile', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -104,7 +104,7 @@ startxref
 
   // 6. Test updating profile without losing resume_url
   console.log('💾 Testing profile details save preserves resume_url ...');
-  const saveRes = await fetch('http://localhost:4000/api/v1/candidate/profile', {
+  const saveRes = await fetch('http://localhost:4012/api/v1/candidate/profile', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -125,7 +125,7 @@ startxref
 
   // 7. Test deleting resume (resumeUrl: null)
   console.log('🗑️ Testing resume deletion (resumeUrl: null) ...');
-  const deleteRes = await fetch('http://localhost:4000/api/v1/candidate/profile', {
+  const deleteRes = await fetch('http://localhost:4012/api/v1/candidate/profile', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

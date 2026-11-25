@@ -122,7 +122,7 @@ export async function endResumeSession(req: Request, res: Response, next: NextFu
       logger.child('ResumeBuilder').warn('BullMQ enqueue warning:', queueErr);
     }
 
-    const aiServiceUrl = process.env.AI_BASE_URL || 'http://localhost:8000';
+    const aiServiceUrl = process.env.AI_BASE_URL || 'http://localhost:8012';
     const sessionRubric = (updated.rubric as Record<string, unknown>) || {};
     fetch(`${aiServiceUrl}/api/v1/ai/interview/resume-builder/generate`, {
       method: 'POST',

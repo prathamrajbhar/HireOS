@@ -44,7 +44,9 @@ export function useAssessmentTimer({
   });
 
   const onExpireRef = useRef(onExpire);
-  onExpireRef.current = onExpire;
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
   const expiredHandledRef = useRef(isExpired);
 
   useEffect(() => {

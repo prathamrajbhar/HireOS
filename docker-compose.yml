@@ -79,13 +79,13 @@ services:
     container_name: nextround-ai-service
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8012:8012"
     environment:
-      AI_PORT: 8000
+      AI_PORT: 8012
       AI_HOST: 0.0.0.0
       AI_ENVIRONMENT: ${AI_ENVIRONMENT:-production}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET:-internal_secret_key_change_in_production}
-      API_BASE_URL: http://api:4000/api/v1
+      API_BASE_URL: http://api:4012/api/v1
       REDIS_URL: redis://redis:6379
       LOCAL_REDIS_URL: redis://redis:6379
       LLM_PROVIDER: ${LLM_PROVIDER:-groq}
@@ -108,7 +108,7 @@ services:
       localstack:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8012/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -128,12 +128,12 @@ services:
     container_name: nextround-api
     restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "4012:4012"
     dns:
       - 1.1.1.1
       - 8.8.8.8
     environment:
-      PORT: 4000
+      PORT: 4012
       NODE_ENV: ${NODE_ENV:-production}
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:123456789@postgres:5432/postgres}
       DIRECT_URL: ${DIRECT_URL:-postgresql://postgres:123456789@postgres:5432/postgres}
@@ -143,7 +143,7 @@ services:
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-your-jwt-refresh-secret-at-least-16-chars}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET:-internal_secret_key_change_in_production}
       APP_URL: ${APP_URL:-http://localhost:3000}
-      AI_BASE_URL: http://ai-service:8000
+      AI_BASE_URL: http://ai-service:8012
       LLM_PROVIDER: ${LLM_PROVIDER:-groq}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
@@ -172,7 +172,7 @@ services:
       ai-service:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:4000/api/v1/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:4012/api/v1/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -191,8 +191,8 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
-        NEXT_PUBLIC_AI_BASE_URL: ${NEXT_PUBLIC_AI_BASE_URL:-http://localhost:8000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4012/api/v1}
+        NEXT_PUBLIC_AI_BASE_URL: ${NEXT_PUBLIC_AI_BASE_URL:-http://localhost:8012}
     container_name: nextround-web
     restart: unless-stopped
     ports:
@@ -201,8 +201,8 @@ services:
       PORT: 3000
       NODE_ENV: ${NODE_ENV:-production}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
-      NEXT_PUBLIC_AI_BASE_URL: ${NEXT_PUBLIC_AI_BASE_URL:-http://localhost:8000}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4012/api/v1}
+      NEXT_PUBLIC_AI_BASE_URL: ${NEXT_PUBLIC_AI_BASE_URL:-http://localhost:8012}
     depends_on:
       api:
         condition: service_healthy

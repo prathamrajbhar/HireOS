@@ -1,0 +1,81 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  backend:
+    name: Deploy backend (server)
+    needs: ci
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_DIR: /home/jarvis/SharedDrive/temp
+      DEPLOY_USER: jarvis
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          printf 'Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n' "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
+
+      - name: Sync code
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude 'node_modules' --exclude '.next' --exclude 'dist' \
+            --exclude '.env' --exclude 'uploads' --exclude '.venv' --exclude '.turbo' \
+            ./ server:"$DEPLOY_DIR"/
+
+      - name: Build & start containers
+        run: |
+          ssh server "cd $DEPLOY_DIR && test -f .env || { echo 'Missing $DEPLOY_DIR/.env on server'; exit 1; }
+            docker compose -f docker-compose.prod.yml build
+            docker compose -f docker-compose.prod.yml run --rm -w /app/packages/database api npx prisma migrate deploy
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans"
+
+      - name: Health check
+        run: |
+          ssh server "for i in \$(seq 1 30); do
+              curl -fsS http://127.0.0.1:4012/api/v1/health >/dev/null && curl -fsS http://127.0.0.1:8012/health >/dev/null && echo healthy && exit 0
+              sleep 5
+            done
+            cd $DEPLOY_DIR && docker compose -f docker-compose.prod.yml logs --tail=80
+            exit 1"
+
+  frontend:
+    name: Deploy frontend (Vercel)
+    needs: ci
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm i -g vercel@latest
+      - run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - run: vercel build --prod --token="$VERCEL_TOKEN"
+      - run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
