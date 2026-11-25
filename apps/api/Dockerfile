@@ -55,4 +55,4 @@ WORKDIR /app/apps/api
 
 EXPOSE 4012
 
-CMD ["node", "dist/index.js"]
+CMD ["npx", "tsx", "src/index.ts"]
