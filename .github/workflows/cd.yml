@@ -10,12 +10,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  ci:
-    uses: ./.github/workflows/ci.yml
-
   backend:
     name: Deploy backend (server)
-    needs: ci
     runs-on: ubuntu-latest
     env:
       DEPLOY_DIR: /home/jarvis/SharedDrive/temp
@@ -64,7 +60,6 @@ jobs:
 
   frontend:
     name: Deploy frontend (Vercel)
-    needs: ci
     runs-on: ubuntu-latest
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
