@@ -1,6 +1,7 @@
 # Production stack for the self-hosted server (API + AI service).
 # Host networking so the containers reach the server's own Redis (6379) and
-# LocalStack (4566) on localhost. The frontend is on Vercel; the DB is external (.env).
+# LocalStack (4566) on localhost. resolv.prod.conf: the server's resolvers can't
+# resolve the Neon hostname, so containers use public DNS. The frontend is on Vercel; the DB is external (.env).
 name: hireos
 
 services:
@@ -10,6 +11,8 @@ services:
     restart: unless-stopped
     network_mode: host
     env_file: .env
+    volumes:
+      - ./resolv.prod.conf:/etc/resolv.conf:ro
     environment:
       AI_PORT: 8012
       AI_HOST: 0.0.0.0
@@ -34,6 +37,7 @@ services:
       NODE_ENV: production
       AI_BASE_URL: http://localhost:8012
     volumes:
+      - ./resolv.prod.conf:/etc/resolv.conf:ro
       - api_uploads:/app/apps/api/uploads
     depends_on:
       ai-service:
