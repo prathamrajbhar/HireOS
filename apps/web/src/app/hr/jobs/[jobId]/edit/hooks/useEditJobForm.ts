@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/contexts/ToastContext';
 import { Job } from '@/types';
+import { buildJobLocation, parseJobLocation, formatSalaryRange } from '@/lib/jobLocation';
 import { RubricWeights, DEFAULT_ASSESSMENT_CONFIG, rebalanceRubric } from '../../../new/hooks/rubricBalancing';
 import {
   PipelineStage,
   AssessmentConfig,
   normalizeExperienceLevel,
-  normalizeLocationType,
   parseSalaryRange,
   buildAssessmentConfig,
 } from './editJobUtils';
@@ -26,9 +26,10 @@ export function useEditJobForm(jobId: string) {
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('Engineering');
   const [locationType, setLocationType] = useState('Remote');
-  const [experienceLevel, setExperienceLevel] = useState('Senior (5-8 Yrs)');
-  const [minSalary, setMinSalary] = useState(1300000);
-  const [maxSalary, setMaxSalary] = useState(1800000);
+  const [locationCity, setLocationCity] = useState('');
+  const [experienceLevel, setExperienceLevel] = useState('');
+  const [minSalary, setMinSalary] = useState(0);
+  const [maxSalary, setMaxSalary] = useState(0);
   const [status, setStatus] = useState<'active' | 'draft' | 'closed'>('active');
   const [orgName, setOrgName] = useState<string>('');
   const [orgLogo, setOrgLogo] = useState<string>('');
@@ -73,7 +74,9 @@ export function useEditJobForm(jobId: string) {
           setTitle(data.title || '');
           setJd(data.description || '');
           setDepartment(data.department || 'Engineering');
-          setLocationType(normalizeLocationType(data.location));
+          const parsedLoc = parseJobLocation(data.location);
+          setLocationType(parsedLoc.workMode);
+          setLocationCity(parsedLoc.city);
           setExperienceLevel(normalizeExperienceLevel(data.experienceLevel));
           setStatus(data.status === 'published' ? 'active' : (data.status as 'active' | 'draft' | 'closed') || 'active');
           if (data.orgName) setOrgName(data.orgName);
@@ -245,8 +248,8 @@ export function useEditJobForm(jobId: string) {
       title,
       description: jd,
       department,
-      location: locationType === 'Remote' ? 'Remote' : `${locationType} (Office)`,
-      salary: `₹${(minSalary / 100000).toFixed(1)}L - ₹${(maxSalary / 100000).toFixed(1)}L`,
+      location: buildJobLocation(locationType, locationCity),
+      salary: formatSalaryRange(minSalary, maxSalary),
       experienceLevel,
       status,
       skills,
@@ -279,6 +282,8 @@ export function useEditJobForm(jobId: string) {
     department,
     setDepartment,
     locationType,
+    locationCity,
+    setLocationCity,
     setLocationType,
     experienceLevel,
     setExperienceLevel,
