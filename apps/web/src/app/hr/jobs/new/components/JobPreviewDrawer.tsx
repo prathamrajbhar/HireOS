@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { buildJobLocation, formatSalaryRange } from '@/lib/jobLocation';
 import {
   Briefcase,
   MapPin,
@@ -15,6 +16,7 @@ interface JobPreviewProps {
   title: string;
   department: string;
   locationType: string;
+  locationCity?: string;
   experienceLevel: string;
   minSalary: number;
   maxSalary: number;
@@ -31,6 +33,7 @@ export function JobPreviewDrawer({
   title,
   department,
   locationType,
+  locationCity,
   experienceLevel,
   minSalary,
   maxSalary,
@@ -72,16 +75,18 @@ export function JobPreviewDrawer({
         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
           <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
             <MapPin className="h-3 w-3 text-slate-400" />
-            {locationType}
+            {buildJobLocation(locationType, locationCity || '')}
           </span>
           <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
             <Briefcase className="h-3 w-3 text-slate-400" />
-            {experienceLevel}
+            {experienceLevel || 'Level not specified'}
           </span>
-          <span className="inline-flex items-center gap-1 bg-brand-500/10 text-brand-700 dark:text-brand-300 font-bold px-2.5 py-1 rounded-lg">
-            <IndianRupee className="h-3 w-3" />
-            ₹{(minSalary / 100000).toFixed(1)}L - ₹{(maxSalary / 100000).toFixed(1)}L / yr
-          </span>
+          {formatSalaryRange(minSalary, maxSalary) && (
+            <span className="inline-flex items-center gap-1 bg-brand-500/10 text-brand-700 dark:text-brand-300 font-bold px-2.5 py-1 rounded-lg">
+              <IndianRupee className="h-3 w-3" />
+              {formatSalaryRange(minSalary, maxSalary)} / yr
+            </span>
+          )}
         </div>
 
         {skills.length > 0 && (

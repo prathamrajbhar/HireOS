@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/apiClient';
 import { useToast } from '@/contexts/ToastContext';
+import { buildJobLocation, formatSalaryRange } from '@/lib/jobLocation';
 import { RubricWeights, AssessmentConfig, DEFAULT_ASSESSMENT_CONFIG, rebalanceRubric } from './rubricBalancing';
 
 export type PipelineStage = 'screening' | 'assessment' | 'voice_screen' | 'hr_round' | 'panel' | 'decision';
@@ -15,9 +16,10 @@ export function useCreateJobForm() {
   const [title, setTitle] = useState('');
   const [department, setDepartment] = useState('Engineering');
   const [locationType, setLocationType] = useState('Remote');
-  const [experienceLevel, setExperienceLevel] = useState('Senior (5+ Years)');
-  const [minSalary, setMinSalary] = useState(1300000);
-  const [maxSalary, setMaxSalary] = useState(1800000);
+  const [experienceLevel, setExperienceLevel] = useState('');
+  const [locationCity, setLocationCity] = useState('');
+  const [minSalary, setMinSalary] = useState(0);
+  const [maxSalary, setMaxSalary] = useState(0);
 
   const [jd, setJd] = useState('');
   const [assisting, setAssisting] = useState(false);
@@ -228,9 +230,9 @@ export function useCreateJobForm() {
     rubric,
     thresholds: { minScore, autoOffer },
     status,
-    location: locationType === 'Remote' ? 'Remote' : 'Bengaluru, KA (On-site)',
-    salary: `₹${(minSalary / 100000).toFixed(1)}L - ₹${(maxSalary / 100000).toFixed(1)}L`,
-    experienceLevel,
+    location: buildJobLocation(locationType, locationCity),
+    salary: formatSalaryRange(minSalary, maxSalary) || undefined,
+    experienceLevel: experienceLevel || undefined,
     stages,
     assessmentConfig,
   });
@@ -315,6 +317,8 @@ export function useCreateJobForm() {
     setDepartment,
     locationType,
     setLocationType,
+    locationCity,
+    setLocationCity,
     experienceLevel,
     setExperienceLevel,
     minSalary,

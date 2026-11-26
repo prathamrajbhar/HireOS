@@ -18,7 +18,7 @@ export function normalizeLocationType(loc?: string): string {
 }
 
 export function parseSalaryRange(salaryStr?: string): { minSalary: number; maxSalary: number } {
-  if (!salaryStr) return { minSalary: 1300000, maxSalary: 1800000 };
+  if (!salaryStr) return { minSalary: 0, maxSalary: 0 };
   const matches = salaryStr.match(/(\d+(?:\.\d+)?)/g);
   if (matches && matches.length >= 2) {
     const minVal = parseFloat(matches[0]);
@@ -29,11 +29,11 @@ export function parseSalaryRange(salaryStr?: string): { minSalary: number; maxSa
       maxSalary: isLPA ? Math.round(maxVal * 100000) : Math.round(maxVal),
     };
   }
-  return { minSalary: 1300000, maxSalary: 1800000 };
+  return { minSalary: 0, maxSalary: 0 };
 }
 
 export function normalizeExperienceLevel(rawExp?: string): string {
-  if (!rawExp) return 'Senior (5-8 Yrs)';
+  if (!rawExp) return '';
   if (rawExp.includes('Entry') || rawExp.includes('0-2')) return 'Entry-Level (0-2 Yrs)';
   if (rawExp.includes('Mid') || rawExp.includes('2-5')) return 'Mid-Level (2-5 Yrs)';
   if (rawExp.includes('Senior') || rawExp.includes('5-8') || rawExp.includes('5+')) return 'Senior (5-8 Yrs)';
