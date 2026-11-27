@@ -58,6 +58,8 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
               setDepartment={form.setDepartment}
               locationType={form.locationType}
               setLocationType={form.setLocationType}
+              locationCity={form.locationCity}
+              setLocationCity={form.setLocationCity}
               experienceLevel={form.experienceLevel}
               setExperienceLevel={form.setExperienceLevel}
               minSalary={form.minSalary}
@@ -139,6 +141,7 @@ export default function HrEditJobPage({ params }: { params: Promise<{ jobId: str
             title={form.title}
             department={form.department}
             locationType={form.locationType}
+            locationCity={form.locationCity}
             experienceLevel={form.experienceLevel}
             minSalary={form.minSalary}
             maxSalary={form.maxSalary}

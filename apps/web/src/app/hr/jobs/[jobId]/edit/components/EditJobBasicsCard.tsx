@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { formatSalaryRange } from '@/lib/jobLocation';
 import { Briefcase, Building2, MapPin, Layers, IndianRupee } from '@/lib/lucide-google-icons';
 import { Autocomplete, CompanyLogo } from '@/components/ui';
 import { SUGGESTED_ROLES } from '@/lib/suggestedOptions';
@@ -12,6 +13,8 @@ interface EditJobBasicsCardProps {
   setDepartment: (val: string) => void;
   locationType: string;
   setLocationType: (val: string) => void;
+  locationCity: string;
+  setLocationCity: (val: string) => void;
   experienceLevel: string;
   setExperienceLevel: (val: string) => void;
   minSalary: number;
@@ -34,6 +37,8 @@ export function EditJobBasicsCard({
   setDepartment,
   locationType,
   setLocationType,
+  locationCity,
+  setLocationCity,
   experienceLevel,
   setExperienceLevel,
   minSalary,
@@ -123,6 +128,9 @@ export function EditJobBasicsCard({
             onChange={(e) => setExperienceLevel(e.target.value)}
             className="w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all cursor-pointer"
           >
+            <option value="" className="dark:bg-slate-900">
+              Not specified
+            </option>
             {EXPERIENCE_LEVELS.map((exp) => (
               <option key={exp} value={exp} className="dark:bg-slate-900">
                 {exp}
@@ -155,6 +163,13 @@ export function EditJobBasicsCard({
               );
             })}
           </div>
+          <input
+            type="text"
+            value={locationCity}
+            onChange={(e) => setLocationCity(e.target.value)}
+            placeholder={locationType === 'Remote' ? 'Region / timezone (optional)' : 'City, State (e.g. Pune, MH)'}
+            className="w-full mt-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800/90 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -164,7 +179,7 @@ export function EditJobBasicsCard({
               <span>Annual Compensation (LPA)</span>
             </label>
             <span className="text-[11px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-lg">
-              ₹{(minSalary / 100000).toFixed(1)}L - ₹{(maxSalary / 100000).toFixed(1)}L
+              {formatSalaryRange(minSalary, maxSalary) || 'Not set'}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -173,7 +188,7 @@ export function EditJobBasicsCard({
               <input
                 type="number"
                 step="50000"
-                value={minSalary}
+                value={minSalary || ''}
                 onChange={(e) => setMinSalary(Number(e.target.value))}
                 placeholder="Min Salary"
                 className="w-full pl-7 pr-3 py-2 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
@@ -185,7 +200,7 @@ export function EditJobBasicsCard({
               <input
                 type="number"
                 step="50000"
-                value={maxSalary}
+                value={maxSalary || ''}
                 onChange={(e) => setMaxSalary(Number(e.target.value))}
                 placeholder="Max Salary"
                 className="w-full pl-7 pr-3 py-2 text-xs font-bold rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
