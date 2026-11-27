@@ -112,14 +112,6 @@ export default function HrJobPipeline({ params }: { params: Promise<{ jobId: str
     return candidates.filter((c) => c.stage === stage);
   };
 
-  const gridColsClass = {
-    2: 'md:grid-cols-2',
-    3: 'md:grid-cols-3',
-    4: 'md:grid-cols-4',
-    5: 'md:grid-cols-5',
-    6: 'md:grid-cols-6',
-  }[columns.length] || 'md:grid-cols-5';
-
   return (
     <div className="space-y-6 animate-in fade-in duration-200 pb-12">
       <PipelineHeader
@@ -131,7 +123,7 @@ export default function HrJobPipeline({ params }: { params: Promise<{ jobId: str
         orgLogo={job.orgLogo}
       />
 
-      <div className={`grid grid-cols-1 ${gridColsClass} gap-4 items-start w-full`}>
+      <div className="flex flex-col md:flex-row md:overflow-x-auto gap-4 items-stretch w-full pb-2 scrollbar-thin scrollbar-thumb-slate-300/60 dark:scrollbar-thumb-slate-700/60">
         {columns.map((col) => {
           const colApps = getColCandidates(col.id);
           return (
