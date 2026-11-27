@@ -28,6 +28,14 @@ function assertS3Configured(): void {
   }
 }
 
+function decodeKeySegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+}
+
 function normalizeKey(key: string): string {
   return key.replace(/\\/g, '/').replace(/^\/+/, '');
 }
@@ -85,7 +93,8 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
   if (normalizedKey.startsWith('http://') || normalizedKey.startsWith('https://')) {
     try {
       const parsed = new URL(normalizedKey);
-      const pathParts = parsed.pathname.replace(/^\/+/, '').split('/');
+      // URL pathnames are percent-encoded (e.g. a space becomes %20); the S3 key is not.
+      const pathParts = parsed.pathname.replace(/^\/+/, '').split('/').map(decodeKeySegment);
       if (pathParts.length > 1 && pathParts[0] === bucket) {
         normalizedKey = pathParts.slice(1).join('/');
       } else {
