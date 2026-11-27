@@ -7,6 +7,9 @@ export interface Application {
   candidateName: string;
   candidateEmail: string;
   candidateAvatar?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
   status: ApplicationStatus;
   scores?: {
     composite: number;

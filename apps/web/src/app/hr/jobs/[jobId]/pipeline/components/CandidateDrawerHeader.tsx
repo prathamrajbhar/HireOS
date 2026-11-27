@@ -15,9 +15,6 @@ export function CandidateDrawerHeader({
   app,
   onClose,
 }: CandidateDrawerHeaderProps) {
-  const linkedinHandle = app.candidateName.toLowerCase().replace(/\s+/g, '-');
-  const githubHandle = app.candidateName.toLowerCase().replace(/\s+/g, '');
-
   return (
     <div className="p-5 md:p-6 border-b border-slate-200/80 dark:border-slate-800/80 flex justify-between items-center bg-slate-50/80 dark:bg-[#0b0f19] flex-shrink-0">
       <div className="flex gap-3.5 items-center min-w-0">
@@ -53,25 +50,33 @@ export function CandidateDrawerHeader({
             ) : (
               <span>Stage: <strong className="text-brand-600 dark:text-orange-400 uppercase">{app.stage}</strong></span>
             )}
-            <span>•</span>
-            <a
-              href={`https://linkedin.com/in/${linkedinHandle}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-900/60 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/80 transition-colors"
-            >
-              <LinkedinIcon className="h-2.5 w-2.5" />
-              <span>LinkedIn</span>
-            </a>
-            <a
-              href={`https://github.com/${githubHandle}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-[9px] font-extrabold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              <GithubIcon className="h-2.5 w-2.5" />
-              <span>GitHub</span>
-            </a>
+            {(app.linkedinUrl || app.githubUrl) && (
+              <>
+                <span>•</span>
+                {app.linkedinUrl && (
+                  <a
+                    href={app.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/80 border border-blue-200/60 dark:border-blue-900/60 px-2 py-0.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/80 transition-colors"
+                  >
+                    <LinkedinIcon className="h-2.5 w-2.5" />
+                    <span>LinkedIn</span>
+                  </a>
+                )}
+                {app.githubUrl && (
+                  <a
+                    href={app.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[9px] font-extrabold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <GithubIcon className="h-2.5 w-2.5" />
+                    <span>GitHub</span>
+                  </a>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
