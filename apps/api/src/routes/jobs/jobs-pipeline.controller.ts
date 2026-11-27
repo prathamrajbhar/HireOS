@@ -84,6 +84,8 @@ export async function getJobApplications(req: Request, res: Response, next: Next
         candidate: {
           select: {
             id: true,
+            full_name: true,
+            avatar_url: true,
             user: { select: { email: true } },
             resume_url: true,
             skills: true,

@@ -126,6 +126,8 @@ hrDashboardRouter.get(
           candidate: {
             select: {
               id: true,
+              full_name: true,
+              avatar_url: true,
               user: { select: { email: true } },
               skills: true,
               target_roles: true,

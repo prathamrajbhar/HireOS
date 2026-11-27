@@ -5,6 +5,7 @@ import {
   statusToStage,
   candidateName,
   candidateEmail,
+  candidateAvatar,
   orgName,
   toIso,
   toDatePart,
@@ -95,9 +96,7 @@ export function serializeApplication(app: Rec, options?: { scheduledSlots?: stri
     id: app.id,
     candidateName: candidateName(candidate),
     candidateEmail: candidateEmail(candidate),
-    candidateAvatar: (isObject(app.candidate) && typeof app.candidate.avatar_url === 'string' && app.candidate.avatar_url)
-      ? (app.candidate.avatar_url as string)
-      : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(candidateName(candidate))}`,
+    candidateAvatar: candidateAvatar(candidate),
     jobId: job?.id || app.job_id,
     jobTitle: typeof job?.title === 'string' ? job.title : '',
     orgName: orgName(job),
@@ -156,7 +155,7 @@ export function serializeOffer(offerRaw: Rec, application?: Rec): Rec {
     id: offerRaw.id,
     applicationId: application?.id,
     candidateName: candidateName(candidate),
-    candidateAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(candidateName(candidate))}`,
+    candidateAvatar: candidateAvatar(candidate),
     jobId: job?.id,
     jobTitle: typeof job?.title === 'string' ? job.title : '',
     orgName: orgName(job),

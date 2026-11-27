@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../../lib/prisma';
+import { candidateAvatar, type Rec } from '../../lib/serializers.common';
 
 export async function getApplicationOnboarding(req: Request, res: Response, next: NextFunction) {
   try {
@@ -86,7 +87,7 @@ export async function getApplicationOnboarding(req: Request, res: Response, next
       id: `onboard-${application.id}`,
       applicationId: application.id,
       candidateName,
-      candidateAvatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${candidateName}`,
+      candidateAvatar: candidateAvatar(application.candidate as unknown as Rec),
       jobTitle: application.job.title,
       orgName: application.job.organization.name,
       startDate,
