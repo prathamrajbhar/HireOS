@@ -134,7 +134,12 @@ async function runInterpreted(
     if (result.timedOut) {
       return { actual: null, timedOut: true, error: `${label} process timed out (${(timeoutMs / 1000).toFixed(1)}s limit)` };
     }
-    if (result.error) return { actual: null, error: `Process error: ${result.error.message}` };
+    if (result.error) {
+      if ((result.error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return { actual: null, error: `${label} runtime (${commands.join(' / ')}) is not installed on the execution server.` };
+      }
+      return { actual: null, error: `Process error: ${result.error.message}` };
+    }
     return interpretMarkedOutput(result.stdout, result.stderr, label);
   } catch (error) {
     return { actual: null, error: error instanceof Error ? error.message : `${label} execution failed` };

@@ -41,7 +41,11 @@ WORKDIR /app
 ENV NODE_ENV=production \
     PORT=4012
 
-RUN apk add --no-cache openssl curl
+# Coding round: user code is executed with these toolchains (Python, C++, Java; Node is already present).
+# Without them submissions fail with "spawn python ENOENT".
+RUN apk add --no-cache openssl curl python3 g++ openjdk17-jdk
+ENV JAVA_HOME=/usr/lib/jvm/default-jvm
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Copy runtime packages and node_modules from builder
 COPY --from=builder /app/package.json ./package.json
