@@ -15,7 +15,7 @@ export default function KanbanColumn({
   children,
 }: KanbanColumnProps) {
   return (
-    <div className="rounded-2xl border border-white/60 dark:border-slate-800 bg-white/20 dark:bg-slate-900/40 p-3 shadow-sm backdrop-blur-sm glass-panel space-y-3 min-h-[450px] flex flex-col transition-all hover:bg-white/25 dark:hover:bg-slate-900/60">
+    <div className="w-full md:w-[270px] md:min-w-[270px] md:flex-1 rounded-2xl border border-white/60 dark:border-slate-800 bg-white/20 dark:bg-slate-900/40 p-3 shadow-sm backdrop-blur-sm glass-panel space-y-3 min-h-[450px] flex flex-col transition-all hover:bg-white/25 dark:hover:bg-slate-900/60">
       <div className="flex justify-between items-center px-1 border-b border-slate-200/60 dark:border-slate-800 pb-2 flex-shrink-0 select-none">
         <span className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight uppercase">
           {name}
