@@ -12,7 +12,6 @@ import { CandidateProfileBreadcrumbs } from './components/CandidateProfileBreadc
 import { CandidateDossierCard } from './components/CandidateDossierCard';
 import { CandidateMetaCard } from './components/CandidateMetaCard';
 import { CandidateProfileNotFound } from './components/CandidateProfileNotFound';
-import { downloadCandidateResumePdf } from '@/lib/pdf/candidateResumePdf';
 import type { ProctoringReport } from './components/ProctoringReportCard';
 
 export default function HrCandidateProfilePage({
@@ -60,10 +59,6 @@ export default function HrCandidateProfilePage({
     return <CandidateProfileNotFound />;
   }
 
-  const handleDownloadResume = async () => {
-    await downloadCandidateResumePdf(app, job?.title || app.jobTitle);
-  };
-
   return (
     <div className="space-y-6 animate-in fade-in duration-200 pb-12 font-sans">
       <CandidateProfileBreadcrumbs
@@ -102,7 +97,7 @@ export default function HrCandidateProfilePage({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-6">
-          <CandidateDossierCard app={app} onDownloadResume={handleDownloadResume} />
+          <CandidateDossierCard app={app} />
         </div>
 
         <div className="space-y-6">

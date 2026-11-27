@@ -3,13 +3,14 @@
 import React from 'react';
 import { FileText, Download, CheckCircle2 } from '@/lib/lucide-google-icons';
 import { Application } from '@/types';
+import { ResumeDownloadLink } from '@/components/hr/ResumeDownloadLink';
+import { resumeFileName } from '@/lib/resumeFile';
 
 interface CandidateDossierCardProps {
   app: Application;
-  onDownloadResume: () => void;
 }
 
-export function CandidateDossierCard({ app, onDownloadResume }: CandidateDossierCardProps) {
+export function CandidateDossierCard({ app }: CandidateDossierCardProps) {
   return (
     <div className="space-y-6">
       <div className="p-5 rounded-3xl bg-brand-50/50 dark:bg-slate-900/90 border border-brand-200/60 dark:border-slate-800 flex items-center justify-between shadow-2xs backdrop-blur-md glass-panel">
@@ -19,7 +20,7 @@ export function CandidateDossierCard({ app, onDownloadResume }: CandidateDossier
           </div>
           <div>
             <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-display">
-              {app.candidateName.replace(/\s+/g, '_')}_Resume.pdf
+              {resumeFileName(app.resumeUrl) || 'No resume uploaded'}
             </h4>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold block mt-0.5">
               Candidate Resume PDF
@@ -27,14 +28,14 @@ export function CandidateDossierCard({ app, onDownloadResume }: CandidateDossier
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onDownloadResume}
+        <ResumeDownloadLink
+          applicationId={app.id}
+          resumeUrl={app.resumeUrl}
           className="px-4 py-2.5 rounded-xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
         >
           <Download className="h-4 w-4" />
           <span>Download PDF</span>
-        </button>
+        </ResumeDownloadLink>
       </div>
 
       <div className="rounded-3xl border border-white/60 dark:border-slate-800 bg-white/45 dark:bg-slate-900/60 p-6 shadow-md backdrop-blur-md glass-panel space-y-3">

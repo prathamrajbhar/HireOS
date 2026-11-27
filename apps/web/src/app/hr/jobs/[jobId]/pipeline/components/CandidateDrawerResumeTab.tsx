@@ -3,16 +3,16 @@
 import React from 'react';
 import { FileText, Download, CheckCircle2 } from '@/lib/lucide-google-icons';
 import { Application } from '@/types';
+import { ResumeDownloadLink } from '@/components/hr/ResumeDownloadLink';
+import { resumeFileName } from '@/lib/resumeFile';
 import { formatCompensationLPA } from '@/app/candidate/profile/_utils/profileUtils';
 
 interface CandidateDrawerResumeTabProps {
   app: Application;
-  onDownloadResume: () => void;
 }
 
 export function CandidateDrawerResumeTab({
   app,
-  onDownloadResume,
 }: CandidateDrawerResumeTabProps) {
   return (
     <div className="space-y-5">
@@ -50,22 +50,22 @@ export function CandidateDrawerResumeTab({
           </div>
           <div>
             <h4 className="text-xs font-extrabold text-slate-900 dark:text-slate-100 font-display">
-              {app.candidateName.replace(/\s+/g, '_')}_Resume.pdf
+              {resumeFileName(app.resumeUrl) || 'No resume uploaded'}
             </h4>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold block mt-0.5">
-              Candidate dossier
+              Uploaded resume
             </span>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onDownloadResume}
+        <ResumeDownloadLink
+          applicationId={app.id}
+          resumeUrl={app.resumeUrl}
           className="px-3.5 py-2 rounded-xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
         >
           <Download className="h-3.5 w-3.5" />
           <span>Download PDF</span>
-        </button>
+        </ResumeDownloadLink>
       </div>
 
       <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-[#161f30] border border-slate-200/80 dark:border-slate-800 space-y-2.5 shadow-2xs">
