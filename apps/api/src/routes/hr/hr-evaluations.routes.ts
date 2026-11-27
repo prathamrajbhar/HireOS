@@ -6,6 +6,7 @@ import { requireOrgScope, rejectOrgIdParam } from '../../middleware/orgScope';
 import { deriveSalary } from '../../lib/offer-terms';
 import { upsertOffer } from '../../services/offer/offer.service';
 import { emailService } from '../../services/email/email.service';
+import { recordWorkflowAudit } from '../../lib/audit-log';
 
 export const hrEvaluationsRouter = Router();
 
@@ -70,6 +71,21 @@ hrEvaluationsRouter.patch(
       await prisma.application.update({
         where: { id: appId },
         data: { status: nextStatus },
+      });
+
+      await recordWorkflowAudit({
+        orgId,
+        jobId: job.id,
+        agentName: 'hr_user',
+        action: 'hr_evaluation_override',
+        applicationId: appId,
+        input: {
+          evaluation_id: evalId,
+          hr_user_id: req.user!.userId,
+          decision,
+          notes: notes ?? null,
+        },
+        output: { status: nextStatus },
       });
 
       if (decision === 'hire') {

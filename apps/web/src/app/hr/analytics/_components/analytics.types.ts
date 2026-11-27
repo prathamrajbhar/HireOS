@@ -1,13 +1,18 @@
 export interface HRAnalyticsData {
   totalCandidatesProcessed: number;
-  zeroHumanHires: number;
-  avgTimeToOfferDays: number;
+  zeroHumanHires: number | null;
+  totalHires: number;
+  avgTimeToOfferDays: number | null;
   funnel: { stage: string; count: number; pct: number }[];
   monthlyTrends: { month: string; applicants: number; hires: number; passRate: number }[];
   kpis?: {
     totalApplications?: number;
-    zeroHumanHires?: number;
+    activeJobs?: number;
+    zeroHumanHires?: number | null;
+    totalHires?: number;
+    avgTimeToOfferDays?: number | null;
     avgTimeToHireDays?: number;
+    offerAcceptanceRatePercent?: number;
   };
   dropoffAnalysis?: { stage: string; percentage: number; dropCount: number }[];
   weeklyFunnel?: { week?: string; applied?: number; offered?: number }[];
@@ -15,8 +20,9 @@ export interface HRAnalyticsData {
 
 export const INITIAL_ANALYTICS: HRAnalyticsData = {
   totalCandidatesProcessed: 0,
-  zeroHumanHires: 0,
-  avgTimeToOfferDays: 0,
+  zeroHumanHires: null,
+  totalHires: 0,
+  avgTimeToOfferDays: null,
   funnel: [
     { stage: 'Sourced', count: 0, pct: 0 },
     { stage: 'Screened', count: 0, pct: 0 },
