@@ -3,6 +3,7 @@ import { prisma } from '@nextround/database';
 import { enqueueDecision } from '../../lib/queues/decision.queue';
 import { HrResultBodySchema } from '../../validators/interview.schemas';
 import { computeCompositeScore } from './interviews.helpers';
+import { recordWorkflowAudit } from '../../lib/audit-log';
 
 export async function saveHrResult(req: Request, res: Response, next: NextFunction) {
   try {
@@ -58,6 +59,23 @@ export async function saveHrResult(req: Request, res: Response, next: NextFuncti
         },
       }),
     ]);
+
+    await recordWorkflowAudit({
+      orgId,
+      jobId: application.job_id,
+      agentName: 'hr_user',
+      action: 'hr_round_decision',
+      applicationId,
+      input: {
+        hr_user_id: req.user?.userId ?? null,
+        decision,
+        notes: notes ?? null,
+      },
+      output: {
+        hr_round_status: hrRoundStatus,
+        status: nextAppStatus,
+      },
+    });
 
     if (decision === 'pass') {
       const compositeScore = computeCompositeScore(evaluation);

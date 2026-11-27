@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma';
 import { enqueueScheduling } from '../../lib/queues/scheduling.queue';
 import { notFound, forbidden } from '../../lib/http-errors';
+import { recordWorkflowAudit } from '../../lib/audit-log';
 
 export interface AppUserCtx {
   userId: string;
@@ -56,6 +57,21 @@ export async function scheduleInterview(
       status: 'scheduled',
     },
   });
+
+  if (user.role === 'hr') {
+    await recordWorkflowAudit({
+      orgId: application.job.org_id,
+      jobId: application.job_id,
+      agentName: 'hr_user',
+      action: 'hr_manual_schedule',
+      applicationId: appId,
+      input: {
+        hr_user_id: user.userId,
+        scheduled_at: scheduledTime.toISOString(),
+      },
+      output: { status: 'interview_scheduled' },
+    });
+  }
 
   return { application: updatedApp, interview };
 }

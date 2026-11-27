@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma';
 import type { ApplicationStatus } from '@nextround/database';
 import { evaluateApplicationScreening } from '../screening/screening-evaluator.service';
 import { notFound, forbidden, badRequest } from '../../lib/http-errors';
+import { recordWorkflowAudit } from '../../lib/audit-log';
 import type { AppUserCtx } from './application-scheduling.service';
 
 export async function runScreening(appId: string, user: AppUserCtx) {
@@ -67,6 +68,20 @@ export async function overrideStatus(
     });
   }
 
+  await recordWorkflowAudit({
+    orgId,
+    jobId: application.job_id,
+    agentName: 'hr_user',
+    action: 'hr_status_override',
+    applicationId: appId,
+    input: {
+      previous_status: application.status,
+      new_status: body.status,
+      reasoning: body.reasoning ?? null,
+    },
+    output: { status: body.status },
+  });
+
   return { application: updatedApp };
 }
 
@@ -128,6 +143,20 @@ export async function advanceStage(
   const updatedApp = await prisma.application.update({
     where: { id: appId },
     data: { status: nextStatus },
+  });
+
+  await recordWorkflowAudit({
+    orgId,
+    jobId: application.job_id,
+    agentName: 'hr_user',
+    action: 'hr_stage_advance',
+    applicationId: appId,
+    input: {
+      previous_status: application.status,
+      new_status: nextStatus,
+      stage: stage ?? null,
+    },
+    output: { status: nextStatus },
   });
 
   return {

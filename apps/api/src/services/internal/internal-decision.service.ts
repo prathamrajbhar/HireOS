@@ -3,6 +3,7 @@ import type { EvaluationDecision } from '@nextround/database';
 import { emailService } from '../email/email.service';
 import { upsertOffer } from '../offer/offer.service';
 import { notFound, badRequest } from '../../lib/http-errors';
+import { recordWorkflowAudit } from '../../lib/audit-log';
 
 export async function recordFinalEvaluation(body: Record<string, unknown>) {
   const { application_id, composite_score, confidence, reasoning } = body;
@@ -98,6 +99,16 @@ export async function applyDecision(evaluationId: string, body: Record<string, u
 
     await prisma.application.update({ where: { id: app.id }, data: { status: 'offered' } });
 
+    await recordWorkflowAudit({
+      orgId: app.job.org_id,
+      jobId: app.job_id,
+      agentName: 'decision_agent',
+      action: 'automated_decision',
+      applicationId: app.id,
+      input: { evaluation_id: evaluation?.id ?? null },
+      output: { decision: decisionVal, status: 'offered' },
+    });
+
     if (isNew) {
       const candidateName = app.candidate.user.email.split('@')[0];
       await emailService.sendOfferEmail(app.candidate.user.email, candidateName, app.job.title, {
@@ -110,6 +121,16 @@ export async function applyDecision(evaluationId: string, body: Record<string, u
     return { evaluation, offer, status: 'offered' };
   } else if (decision === 'reject') {
     await prisma.application.update({ where: { id: app.id }, data: { status: 'rejected' } });
+
+    await recordWorkflowAudit({
+      orgId: app.job.org_id,
+      jobId: app.job_id,
+      agentName: 'decision_agent',
+      action: 'automated_decision',
+      applicationId: app.id,
+      input: { evaluation_id: evaluation?.id ?? null },
+      output: { decision: decisionVal, status: 'rejected' },
+    });
 
     const candidateName = app.candidate.user.email.split('@')[0];
     await emailService.sendConstructiveRejection(

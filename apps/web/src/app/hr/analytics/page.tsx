@@ -37,8 +37,15 @@ export default function HrAnalyticsDashboard() {
   const analyticsData: HRAnalyticsData = {
     ...raw,
     totalCandidatesProcessed: raw.kpis?.totalApplications ?? raw.totalCandidatesProcessed ?? 0,
-    zeroHumanHires: raw.kpis?.zeroHumanHires ?? raw.zeroHumanHires ?? 0,
-    avgTimeToOfferDays: raw.kpis?.avgTimeToHireDays ?? raw.avgTimeToOfferDays ?? 0,
+    zeroHumanHires:
+      raw.kpis?.zeroHumanHires !== undefined
+        ? raw.kpis.zeroHumanHires
+        : (raw.zeroHumanHires ?? null),
+    totalHires: raw.kpis?.totalHires ?? raw.totalHires ?? 0,
+    avgTimeToOfferDays:
+      raw.kpis?.avgTimeToOfferDays !== undefined
+        ? raw.kpis.avgTimeToOfferDays
+        : (raw.avgTimeToOfferDays ?? null),
     funnel,
     monthlyTrends,
   };
@@ -101,8 +108,9 @@ export default function HrAnalyticsDashboard() {
         <div className="space-y-6">
           <DropoffAnalysisCard dropoffAnalysis={analyticsData.dropoffAnalysis} />
           <AiAccuracyCard
-            avgTimeToOfferDays={analyticsData.avgTimeToOfferDays ?? 0}
-            zeroHumanHires={analyticsData.zeroHumanHires ?? 0}
+            avgTimeToOfferDays={analyticsData.avgTimeToOfferDays}
+            zeroHumanHires={analyticsData.zeroHumanHires}
+            totalHires={analyticsData.totalHires}
           />
         </div>
       </div>
