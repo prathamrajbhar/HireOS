@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import {
   S3Client,
   PutObjectCommand,
@@ -11,42 +9,24 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { logger } from './logger';
 
-const isLocalStorage =
-  process.env.STORAGE_DRIVER === 'local' ||
-  !process.env.AWS_ENDPOINT_URL ||
-  process.env.AWS_ENDPOINT_URL.includes('localhost') ||
-  process.env.AWS_ENDPOINT_URL.includes('127.0.0.1');
-
-const primaryUploadsDir = path.resolve(__dirname, '../../uploads');
-const fallbackUploadsDir = path.resolve(__dirname, '../../../../uploads');
-const cwdUploadsDir = path.resolve(process.cwd(), 'uploads');
-const cwdAppsApiUploadsDir = path.resolve(process.cwd(), 'apps/api/uploads');
-
-const targetDirs = Array.from(new Set([primaryUploadsDir, fallbackUploadsDir, cwdUploadsDir, cwdAppsApiUploadsDir]));
-for (const d of targetDirs) {
-  try {
-    if (!fs.existsSync(d)) {
-      fs.mkdirSync(d, { recursive: true });
-    }
-  } catch {
-    // ignore
-  }
-}
-
 const endpoint = process.env.AWS_ENDPOINT_URL || undefined;
 const region = process.env.AWS_DEFAULT_REGION || process.env.AWS_REGION || 'ap-south-1';
-const accessKeyId = process.env.AWS_ACCESS_KEY_ID || 'test';
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || 'test';
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.AWS_S3_BUCKET || 'nextroundbucket';
 
+// All files live in S3 (or an S3-compatible service via AWS_ENDPOINT_URL). There is no local-disk mode.
 const s3Client = new S3Client({
   ...(endpoint ? { endpoint, forcePathStyle: true } : {}),
   region,
-  credentials: {
-    accessKeyId,
-    secretAccessKey,
-  },
+  ...(accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {}),
 });
+
+function assertS3Configured(): void {
+  if (!accessKeyId || !secretAccessKey) {
+    throw new Error('S3 storage is not configured: set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY (and AWS_S3_BUCKET).');
+  }
+}
 
 function normalizeKey(key: string): string {
   return key.replace(/\\/g, '/').replace(/^\/+/, '');
@@ -54,7 +34,7 @@ function normalizeKey(key: string): string {
 
 let bucketEnsured = false;
 export async function ensureBucket(): Promise<void> {
-  if (isLocalStorage || bucketEnsured) return;
+  if (bucketEnsured) return;
   try {
     await s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
     bucketEnsured = true;
@@ -82,23 +62,7 @@ export async function uploadFile(
 ): Promise<string> {
   const normalizedKey = normalizeKey(key);
 
-  if (isLocalStorage) {
-    for (const d of targetDirs) {
-      try {
-        const filePath = path.join(d, normalizedKey);
-        const dir = path.dirname(filePath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-        await fs.promises.writeFile(filePath, body);
-      } catch {
-        // ignore secondary target failure
-      }
-    }
-    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4012/api/v1').replace(/\/api\/v1\/?$/, '');
-    return `${appUrl}/uploads/${normalizedKey}`;
-  }
-
+  assertS3Configured();
   await ensureBucket();
   await s3Client.send(
     new PutObjectCommand({
@@ -121,9 +85,6 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
   if (normalizedKey.startsWith('http://') || normalizedKey.startsWith('https://')) {
     try {
       const parsed = new URL(normalizedKey);
-      if (parsed.pathname.startsWith('/uploads/')) {
-        return normalizedKey;
-      }
       const pathParts = parsed.pathname.replace(/^\/+/, '').split('/');
       if (pathParts.length > 1 && pathParts[0] === bucket) {
         normalizedKey = pathParts.slice(1).join('/');
@@ -135,11 +96,7 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
     }
   }
 
-  if (isLocalStorage) {
-    const appUrl = (process.env.API_BASE_URL || 'http://localhost:4012/api/v1').replace(/\/api\/v1\/?$/, '');
-    return `${appUrl}/uploads/${normalizedKey}`;
-  }
-
+  assertS3Configured();
   const command = new GetObjectCommand({
     Bucket: bucket,
     Key: normalizedKey,
@@ -151,20 +108,7 @@ export async function getPresignedUrl(key: string, expiresInSeconds = 3600): Pro
 export async function deleteFile(key: string): Promise<void> {
   const normalizedKey = normalizeKey(key);
 
-  if (isLocalStorage) {
-    for (const d of targetDirs) {
-      try {
-        const filePath = path.join(d, normalizedKey);
-        if (fs.existsSync(filePath)) {
-          await fs.promises.unlink(filePath).catch(() => {});
-        }
-      } catch {
-        // ignore
-      }
-    }
-    return;
-  }
-
+  assertS3Configured();
   try {
     await s3Client.send(
       new DeleteObjectCommand({

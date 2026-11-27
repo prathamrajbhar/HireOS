@@ -35,14 +35,10 @@ const nextConfig: NextConfig = {
     // talk only to this origin: /api/v1/* is proxied to the backend, so auth cookies are
     // first-party. Without it (local dev) the browser calls the absolute NEXT_PUBLIC_API_URL.
     const proxyTarget = (process.env.API_PROXY_TARGET || "").replace(/\/$/, "");
-    const backendOrigin =
-      proxyTarget ||
-      (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4012/api/v1").replace(/\/api\/v1\/?$/, "");
     return [
       ...(proxyTarget
         ? [{ source: "/api/v1/:path*", destination: `${proxyTarget}/api/v1/:path*` }]
         : []),
-      { source: "/uploads/:path*", destination: `${backendOrigin}/uploads/:path*` },
     ];
   },
 };

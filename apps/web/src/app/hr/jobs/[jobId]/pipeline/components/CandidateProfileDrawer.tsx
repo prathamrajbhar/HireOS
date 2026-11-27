@@ -8,7 +8,7 @@ import { CandidateDrawerHeader } from './CandidateDrawerHeader';
 import { CandidateDrawerResumeTab } from './CandidateDrawerResumeTab';
 import { CandidateDrawerScorecardTab } from './CandidateDrawerScorecardTab';
 import { CandidateDrawerTranscriptTab } from './CandidateDrawerTranscriptTab';
-import { downloadCandidateResumePdf } from '@/lib/pdf/candidateResumePdf';
+import { ResumeDownloadLink } from '@/components/hr/ResumeDownloadLink';
 
 interface CandidateProfileDrawerProps {
   app: Application | null;
@@ -25,10 +25,6 @@ export default function CandidateProfileDrawer({
 
   if (!isOpen || !app) return null;
 
-  const handleDownloadResume = async () => {
-    await downloadCandidateResumePdf(app);
-  };
-
   return (
     <div className="fixed top-16 inset-x-0 bottom-0 z-40 bg-slate-900/40 dark:bg-slate-950/80 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
@@ -37,7 +33,6 @@ export default function CandidateProfileDrawer({
         <CandidateDrawerHeader
           app={app}
           onClose={onClose}
-          onDownloadResume={handleDownloadResume}
         />
 
         <div className="h-11 px-6 bg-slate-100/70 dark:bg-[#161f30] border-b border-slate-200/80 dark:border-slate-800 flex items-center gap-6 text-xs font-bold text-slate-500 dark:text-slate-400 flex-shrink-0">
@@ -78,7 +73,7 @@ export default function CandidateProfileDrawer({
 
         <div className="flex-1 p-6 overflow-y-auto space-y-5 text-xs bg-white dark:bg-[#111827]">
           {activeTab === 'resume' && (
-            <CandidateDrawerResumeTab app={app} onDownloadResume={handleDownloadResume} />
+            <CandidateDrawerResumeTab app={app} />
           )}
           {activeTab === 'scorecard' && <CandidateDrawerScorecardTab app={app} />}
           {activeTab === 'transcript' && <CandidateDrawerTranscriptTab app={app} />}
@@ -86,14 +81,14 @@ export default function CandidateProfileDrawer({
 
         <div className="p-4 md:p-5 bg-slate-50/90 dark:bg-[#0b0f19] border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-end gap-3 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDownloadResume}
+            <ResumeDownloadLink
+              applicationId={app.id}
+              resumeUrl={app.resumeUrl}
               className="px-3.5 py-2.5 rounded-xl bg-brand-600 dark:bg-orange-600 hover:bg-brand-700 dark:hover:bg-orange-700 text-white text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
             >
               <Download className="h-3.5 w-3.5" />
               <span>Resume PDF</span>
-            </button>
+            </ResumeDownloadLink>
             <Link
               href={`/hr/candidates/${app.id}/scoring`}
               className="px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all border border-slate-200 dark:border-slate-700 shadow-2xs"

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { CandidateProfileSchema } from '@nextround/shared';
 import { prisma } from '../../lib/prisma';
 import { Prisma } from '@nextround/database';
-import { uploadFile } from '../../lib/storage';
+import { uploadFile, getPresignedUrl } from '../../lib/storage';
 import { extractTextFromBuffer, parseResumeWithGemini } from '../../services/resume/resume-parser.service';
 import { enqueueEmbeddingRebuild } from '../../services/candidate/candidate-embedding.service';
 import { emailService } from '../../services/email/email.service';
@@ -298,3 +298,22 @@ export async function uploadAndParseResume(req: Request, res: Response, next: Ne
   }
 }
 
+
+/** Redirects the signed-in candidate to a short-lived presigned URL for their own uploaded resume. */
+export async function redirectToMyResume(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const profile = await prisma.candidateProfile.findUnique({
+      where: { user_id: req.user.userId },
+      select: { resume_url: true },
+    });
+    if (!profile?.resume_url) {
+      return res.status(404).json({ success: false, error: 'No resume uploaded' });
+    }
+    return res.redirect(await getPresignedUrl(profile.resume_url, 300));
+  } catch (error) {
+    return next(error);
+  }
+}

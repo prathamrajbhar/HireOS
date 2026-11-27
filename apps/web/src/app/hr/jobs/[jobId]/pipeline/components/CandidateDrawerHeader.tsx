@@ -1,5 +1,6 @@
 'use client';
 
+import { ResumeDownloadLink } from '@/components/hr/ResumeDownloadLink';
 import React from 'react';
 import Image from 'next/image';
 import { X, Download, GithubIcon, LinkedinIcon } from '@/lib/lucide-google-icons';
@@ -8,13 +9,11 @@ import { Application } from '@/types';
 interface CandidateDrawerHeaderProps {
   app: Application;
   onClose: () => void;
-  onDownloadResume: () => void;
 }
 
 export function CandidateDrawerHeader({
   app,
   onClose,
-  onDownloadResume,
 }: CandidateDrawerHeaderProps) {
   const linkedinHandle = app.candidateName.toLowerCase().replace(/\s+/g, '-');
   const githubHandle = app.candidateName.toLowerCase().replace(/\s+/g, '');
@@ -78,15 +77,14 @@ export function CandidateDrawerHeader({
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        <button
-          type="button"
-          onClick={onDownloadResume}
-          title="Download Candidate Resume PDF"
+        <ResumeDownloadLink
+          applicationId={app.id}
+          resumeUrl={app.resumeUrl}
           className="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 dark:bg-orange-600 dark:hover:bg-orange-700 text-white text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
         >
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">Download Resume</span>
-        </button>
+        </ResumeDownloadLink>
         <button
           type="button"
           onClick={onClose}

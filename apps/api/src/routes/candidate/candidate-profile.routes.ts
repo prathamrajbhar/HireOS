@@ -12,6 +12,7 @@ import {
   upsertProfile,
   getProfile,
   uploadAndParseResume,
+  redirectToMyResume,
 } from './candidate-profile.controller';
 
 export const candidateProfileRouter = Router();
@@ -54,4 +55,5 @@ candidateProfileRouter.delete('/social/:source', authenticate, requireRole('cand
 candidateProfileRouter.post('/profile', authenticate, requireRole('candidate'), upload.single('resume'), upsertProfile);
 candidateProfileRouter.post('/profile/parse-resume', authenticate, requireRole('candidate'), upload.single('resume'), uploadAndParseResume);
 candidateProfileRouter.get('/profile', authenticate, requireRole('candidate'), getProfile);
+candidateProfileRouter.get('/profile/resume', authenticate, requireRole('candidate'), redirectToMyResume);
 

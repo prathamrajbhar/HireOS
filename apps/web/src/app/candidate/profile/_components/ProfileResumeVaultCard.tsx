@@ -11,6 +11,7 @@ import {
   Zap,
 } from '@/lib/lucide-google-icons';
 import { ResumeDeleteModal } from '../../resumes/_components/ResumeDeleteModal';
+import { myResumeHref } from '@/lib/resumeFile';
 
 interface ResumeHistoryItem {
   id: string;
@@ -77,7 +78,7 @@ export function ProfileResumeVaultCard({
             {resumeUrl && (
               <>
                 <a
-                  href={resumeUrl}
+                  href={myResumeHref()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-brand-600 dark:text-orange-400 cursor-pointer transition-colors"
