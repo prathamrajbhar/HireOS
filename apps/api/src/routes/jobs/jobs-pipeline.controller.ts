@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../../lib/prisma';
 import { serializeApplicationList } from '../../lib/serializers';
+import { candidateSerializerSelect } from '../../lib/candidate-select';
 
 export async function getJobPipeline(req: Request, res: Response, next: NextFunction) {
   try {
@@ -81,17 +82,7 @@ export async function getJobApplications(req: Request, res: Response, next: Next
             organization: { select: { name: true, logo_url: true } },
           },
         },
-        candidate: {
-          select: {
-            id: true,
-            full_name: true,
-            avatar_url: true,
-            user: { select: { email: true } },
-            resume_url: true,
-            skills: true,
-            target_roles: true,
-          },
-        },
+        candidate: { select: candidateSerializerSelect },
         evaluations: true,
         interview: true,
         offer: true,
