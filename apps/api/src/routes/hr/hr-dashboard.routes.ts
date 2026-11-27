@@ -4,6 +4,7 @@ import { authenticate } from '../../middleware/auth';
 import { requireRole } from '../../middleware/rbac';
 import { requireOrgScope, rejectOrgIdParam } from '../../middleware/orgScope';
 import { serializeApplicationList } from '../../lib/serializers';
+import { candidateSerializerSelect } from '../../lib/candidate-select';
 
 export const hrDashboardRouter = Router();
 
@@ -123,15 +124,7 @@ hrDashboardRouter.get(
               organization: { select: { id: true, name: true, logo_url: true } },
             },
           },
-          candidate: {
-            select: {
-              id: true,
-              user: { select: { email: true } },
-              skills: true,
-              target_roles: true,
-              resume_url: true,
-            },
-          },
+          candidate: { select: candidateSerializerSelect },
           evaluations: true,
           interview: true,
           offer: true,
