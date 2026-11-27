@@ -7,6 +7,7 @@ import type { Prisma } from '@nextround/database';
  */
 export const candidateSerializerSelect = {
   id: true,
+  full_name: true,
   user: { select: { email: true } },
   avatar_url: true,
   resume_url: true,

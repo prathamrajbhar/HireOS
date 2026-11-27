@@ -1,3 +1,5 @@
+import { candidateAvatar, type Rec } from '../../lib/serializers.common';
+
 const AVATAR_POOL = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
@@ -95,6 +97,7 @@ export interface InterviewWithApplication {
     candidate: {
       id: string;
       full_name: string | null;
+      avatar_url?: string | null;
       user: { email: string };
     };
     job: { title: string };
@@ -115,7 +118,7 @@ export function buildProfile(interview: InterviewWithApplication) {
     id: interview.id,
     candidateName,
     role: application.job.title,
-    avatar: getAvatarUrl(candidate.id),
+    avatar: candidateAvatar(candidate as unknown as Rec),
     interviewDate: new Date(interview.created_at).toLocaleDateString(),
     hasAudioAnalysis,
     audioUrl: interview.audio_url,
