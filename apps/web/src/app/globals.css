@@ -4,8 +4,9 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: var(--font-google-sans), system-ui, sans-serif;
-  --font-display: var(--font-google-sans), system-ui, sans-serif;
+  --font-sans: 'Google Sans Flex Variable', system-ui, sans-serif;
+  --font-display: 'Google Sans Flex Variable', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
 
   --text-xs: 0.875rem;
   

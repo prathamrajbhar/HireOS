@@ -1,6 +1,8 @@
 
 import type { Metadata } from "next";
-import { Google_Sans_Flex, Geist_Mono } from "next/font/google";
+// Self-hosted via fontsource so builds never depend on fetching Google Fonts.
+import "@fontsource-variable/google-sans-flex";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -8,18 +10,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { QueryProvider } from "@/lib/query-client";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { MediaRouteGuard } from "@/components/media/MediaRouteGuard";
-
-const googleSans = Google_Sans_Flex({
-  variable: "--font-google-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  adjustFontFallback: false,
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "HireOS — AI-Native Recruitment Marketplace",
@@ -43,7 +33,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${googleSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <head>
         <script
