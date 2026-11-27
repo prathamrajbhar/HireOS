@@ -23,6 +23,9 @@ export interface Application {
   candidateName: string;
   candidateEmail: string;
   candidateAvatar: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
   jobId: string;
   jobTitle: string;
   orgName: string;

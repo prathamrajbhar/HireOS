@@ -37,6 +37,30 @@ interface AssessmentRecord {
   score?: number;
 }
 
+function normalizeSocialUrl(url: unknown, defaultDomain?: 'github.com' | 'linkedin.com'): string | undefined {
+  if (typeof url !== 'string') return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^(www\.)?(github\.com|linkedin\.com)/i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+
+  if (defaultDomain) {
+    const cleanHandle = trimmed.replace(/^@/, '');
+    if (defaultDomain === 'linkedin.com') {
+      return `https://linkedin.com/in/${cleanHandle}`;
+    }
+    return `https://github.com/${cleanHandle}`;
+  }
+
+  return `https://${trimmed}`;
+}
+
 export function serializeApplication(app: Rec, options?: { scheduledSlots?: string[] }): Rec {
   const candidate = isObject(app.candidate) ? app.candidate : undefined;
   const job = isObject(app.job) ? app.job : undefined;
@@ -70,6 +94,33 @@ export function serializeApplication(app: Rec, options?: { scheduledSlots?: stri
         description: typeof exp.description === 'string' ? exp.description : '',
       };
     });
+
+  const socialData = isObject(candidate?.social_data) ? (candidate!.social_data as Rec) : undefined;
+  const rawGithub =
+    (typeof candidate?.github_url === 'string' && candidate.github_url) ||
+    (isObject(socialData?.github) && typeof (socialData!.github as Rec).profileUrl === 'string' && (socialData!.github as Rec).profileUrl) ||
+    (isObject(socialData?.github) && typeof (socialData!.github as Rec).url === 'string' && (socialData!.github as Rec).url) ||
+    (typeof parsedResume?.githubUrl === 'string' && parsedResume.githubUrl) ||
+    (typeof parsedResume?.github === 'string' && parsedResume.github) ||
+    undefined;
+
+  const rawLinkedin =
+    (typeof candidate?.linkedin_url === 'string' && candidate.linkedin_url) ||
+    (isObject(socialData?.linkedin) && typeof (socialData!.linkedin as Rec).profileUrl === 'string' && (socialData!.linkedin as Rec).profileUrl) ||
+    (isObject(socialData?.linkedin) && typeof (socialData!.linkedin as Rec).url === 'string' && (socialData!.linkedin as Rec).url) ||
+    (typeof parsedResume?.linkedinUrl === 'string' && parsedResume.linkedinUrl) ||
+    (typeof parsedResume?.linkedin === 'string' && parsedResume.linkedin) ||
+    undefined;
+
+  const rawPortfolio =
+    (typeof candidate?.portfolio_url === 'string' && candidate.portfolio_url) ||
+    (typeof parsedResume?.portfolioUrl === 'string' && parsedResume.portfolioUrl) ||
+    (typeof parsedResume?.portfolio === 'string' && parsedResume.portfolio) ||
+    undefined;
+
+  const githubUrl = normalizeSocialUrl(rawGithub, 'github.com');
+  const linkedinUrl = normalizeSocialUrl(rawLinkedin, 'linkedin.com');
+  const portfolioUrl = normalizeSocialUrl(rawPortfolio);
 
   const rawAssessmentsList = Array.isArray(app.assessments) ? (app.assessments as unknown[]) : [];
   const assessments = rawAssessmentsList
@@ -109,6 +160,9 @@ export function serializeApplication(app: Rec, options?: { scheduledSlots?: stri
     hrRoundCompletedAt: toIso(app.hr_round_completed_at),
     appliedDate: toDatePart(app.applied_at) || new Date().toISOString().split('T')[0],
     resumeUrl: isObject(app.candidate) && typeof app.candidate.resume_url === 'string' ? app.candidate.resume_url : '',
+    githubUrl,
+    linkedinUrl,
+    portfolioUrl,
     skills: asStringArray(candidate?.skills),
     targetRoles: asStringArray(candidate?.target_roles),
     yearsOfExperience: typeof candidate?.years_of_experience === 'number' ? candidate.years_of_experience : undefined,
