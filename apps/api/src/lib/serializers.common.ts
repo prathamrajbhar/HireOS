@@ -55,6 +55,15 @@ export function candidateEmail(candidate: Rec | undefined): string {
   return typeof userEmail === 'string' ? userEmail : '';
 }
 
+export const DEFAULT_CANDIDATE_AVATAR = '/avatar-girl.jpg';
+
+export function candidateAvatar(candidate: Rec | undefined): string {
+  if (candidate && typeof candidate.avatar_url === 'string' && candidate.avatar_url.trim().length > 0) {
+    return candidate.avatar_url;
+  }
+  return DEFAULT_CANDIDATE_AVATAR;
+}
+
 export function orgName(job: Rec | undefined): string {
   const organization = job?.organization;
   if (isObject(organization) && typeof organization.name === 'string') return organization.name;
